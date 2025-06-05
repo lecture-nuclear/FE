@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import JoinView from '../views/JoinView.vue' // 🚩 회원가입 뷰 임포트
+import JoinView from '../views/JoinView.vue'
+import AboutView from '../views/AboutView.vue'
+import CoursesView from '../views/CoursesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,9 +13,19 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/join', // 🚩 회원가입 라우트 추가
+      path: '/join',
       name: 'join',
       component: JoinView,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
+    },
+    {
+      path: '/courses',
+      name: 'courses',
+      component: CoursesView,
     },
   ],
 })
