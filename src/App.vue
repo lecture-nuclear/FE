@@ -1,85 +1,39 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <div id="app">
+    <AppHeader />
+    <RouterView />
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<script setup>
+import { RouterView } from 'vue-router'
+import AppHeader from '@/components/common/AppHeader.vue'
+</script>
+
+<style>
+/* 🚩 전역 스타일 (main.js 또는 main.css에서 임포트될 수 있음) */
+/* 웹 페이지 전체에 기본적으로 적용될 스타일 */
+body {
+  margin: 0; /* 기본 마진 제거 */
+  padding: 0; /* 기본 패딩 제거 */
+  font-family: Arial, sans-serif; /* 기본 폰트 설정 */
+  box-sizing: border-box; /* 모든 요소에 box-sizing 적용 */
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* 🚩 #app 컨테이너가 100% 너비를 차지하는지 확인 */
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  box-sizing: border-box;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+/* RouterView가 나머지 공간을 차지하도록 설정 (선택 사항) */
+/* RouterView를 감싸는 별도의 컨테이너를 두는 것이 좋음 */
+/*
+.router-view-container {
+  flex-grow: 1;
 }
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
+*/
 </style>
