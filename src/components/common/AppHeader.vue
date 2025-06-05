@@ -1,3 +1,4 @@
+<!-- src/components/common/AppHeader.vue -->
 <template>
   <header class="app-header">
     <div class="header-left">
@@ -10,16 +11,20 @@
     <nav class="header-center">
       <router-link to="/courses" class="nav-item">강의</router-link>
       <router-link to="/about" class="nav-item">About</router-link>
-      <router-link to="/about" class="nav-item">Search</router-link>
+      <!-- 🚩 Search 탭을 일반 nav-item 텍스트로 변경 -->
+      <router-link to="/search" class="nav-item">Search</router-link>
     </nav>
 
     <div class="header-right">
-      <div class="user-bar-placeholder"></div>
+      <UserBar />
     </div>
   </header>
 </template>
 
-<script setup></script>
+<script setup>
+import { RouterLink } from 'vue-router'
+import UserBar from '@/components/common/UserBar.vue'
+</script>
 
 <style scoped>
 /* 헤더 전체 스타일 */
@@ -34,7 +39,6 @@
 
   width: 100%;
   box-sizing: border-box;
-  /* min-width: 900px; */ /* 필요에 따라 유지하거나 제거 */
 }
 
 /* 왼쪽 로고 영역 */
@@ -49,7 +53,7 @@
   text-decoration: none;
   color: #333;
   font-weight: bold;
-  font-size: 24px; /* 로고 텍스트 크기 */
+  font-size: 24px;
 }
 
 .logo-img {
@@ -67,8 +71,7 @@
 .nav-item {
   text-decoration: none;
   color: #555;
-  /* 🚩 글자 크기 조정: 로고 텍스트와 비슷하게 또는 원하는 크기로 설정 */
-  font-size: 20px; /* 기존 18px -> 20px 또는 22px로 변경하여 크게 조정 */
+  font-size: 20px; /* 강의, About, Search 모두 이 크기 적용 */
   padding: 5px 0;
   transition: color 0.3s ease;
 }
@@ -78,44 +81,28 @@
   color: #007bff;
 }
 
-/* 🚩 검색 버튼 스타일 */
-.search-button-link {
+/* 🚩 검색 버튼 관련 스타일 제거 (더 이상 사용하지 않음) */
+/* .search-button-link {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 5px;
   cursor: pointer;
   padding: 5px 10px;
-}
+} */
 
-.search-icon {
-  /* 🚩 아이콘 크기 조정: nav-item의 폰트 크기에 맞춰 조절 */
-  font-size: 26px; /* 기존 24px -> 26px 또는 28px로 변경하여 크게 조정 */
+/* .search-icon {
+  font-size: 26px;
   color: #555;
   transition: color 0.3s ease;
-}
+} */
 
-.search-button-link:hover .search-icon {
+/* .search-button-link:hover .search-icon {
   color: #007bff;
-}
+} */
 
-/* 오른쪽 User Bar (Placeholder) */
+/* UserBar 컴포넌트가 들어갈 자리 */
 .header-right {
-  text-align: right;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.user-bar-placeholder {
-  height: 30px;
-  width: 100px;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #777;
-  font-size: 14px;
+  position: relative;
 }
 </style>
