@@ -368,7 +368,7 @@ onMounted(() => {
 <style scoped>
 .lecture-detail-page {
   padding: 40px;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   /* 🚩 margin: 0 auto; 줄 삭제 */
   box-sizing: border-box;
   min-height: calc(100vh - 100px);
@@ -719,15 +719,6 @@ onMounted(() => {
     gap: 20px;
   }
   .main-lecture-content,
-  .sidebar-actions {
-    min-width: unset;
-    width: 100%;
-  }
-  .sidebar-actions {
-    border-top: 1px solid #eee;
-    padding-top: 20px;
-    align-items: stretch;
-  }
   .lecture-thumbnail-full,
   .lecture-thumbnail-placeholder {
     max-width: 100%;
