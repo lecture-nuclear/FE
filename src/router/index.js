@@ -4,7 +4,7 @@ import JoinView from '../views/JoinView.vue'
 import AboutView from '../views/AboutView.vue'
 import CoursesView from '../views/CoursesView.vue'
 import LectureDetailsView from '../views/LectureDetailsView.vue'
-import SearchView from '../views/SearchView.vue' // 🚩 추가
+import SearchView from '../views/SearchView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,7 +35,7 @@ const router = createRouter({
       component: LectureDetailsView,
     },
     {
-      path: '/search', // 🚩 검색 페이지 라우트 추가
+      path: '/search',
       name: 'search',
       component: SearchView,
     },
