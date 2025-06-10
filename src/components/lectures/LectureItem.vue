@@ -23,7 +23,6 @@
       <div class="lecture-actions">
         <button @click="viewDetails" class="btn-details">상세 보기</button>
         <button @click="addToCart" class="btn-add-cart">장바구니 담기</button>
-        <!-- TODO: 장바구니 api 연결하기 -->
       </div>
     </div>
   </div>
