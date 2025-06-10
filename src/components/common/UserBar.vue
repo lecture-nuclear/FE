@@ -243,14 +243,6 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
-.user-dropdown .user-info-header {
-  background-color: #333;
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-}
 .user-info-header .user-info-name {
   font-size: 18px;
   display: block;
