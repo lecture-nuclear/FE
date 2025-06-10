@@ -4,7 +4,7 @@
     <div class="lecture-thumbnail">
       <!-- 강의 썸네일 이미지 (예시 이미지 또는 실제 이미지 URL) -->
       <img
-        :src="lecture.imageUrl || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
+        :src="lecture.thumbnailUrl || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
         :alt="lecture.title"
         class="thumbnail-img"
       />

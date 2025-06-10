@@ -32,7 +32,7 @@
           :key="lecture.id"
           :lecture="lecture"
           @viewDetails="handleViewDetails"
-          @addToCart="handleAddToCart"
+          @addToCart="handleAddToCartComposables"
         />
       </div>
       <div v-else class="no-lectures-message">아직 등록된 강의가 없습니다.</div>
@@ -71,11 +71,11 @@
 import { ref, onMounted } from 'vue'
 import axiosInstance from '@/utils/axiosInstance'
 import LectureItem from '@/components/lectures/LectureItem.vue'
-import { useCartStore } from '@/stores/cartStore'
 import { useRouter } from 'vue-router'
+import { useCartActions } from '@/composables/useCartActions' // 새로운 컴포저블 임포트
 
-const cartStore = useCartStore()
 const router = useRouter()
+const { handleAddToCart: handleAddToCartComposables } = useCartActions() // composable 함수 임포트 및 별칭 사용
 
 const lectures = ref([])
 const loading = ref(true)
@@ -142,18 +142,6 @@ const goToPage = (page) => {
 const handleViewDetails = (lectureId) => {
   console.log('상세 보기 클릭:', lectureId)
   router.push(`/lectures/${lectureId}`)
-}
-
-const handleAddToCart = (lecture) => {
-  console.log('장바구니 담기 클릭:', lecture.title)
-  cartStore.addItem({
-    id: lecture.id,
-    title: lecture.title,
-    price: lecture.price,
-    quantity: 1,
-    image: lecture.imageUrl,
-  })
-  alert(`${lecture.title} 강의가 장바구니에 담겼습니다!`)
 }
 
 onMounted(() => {
@@ -256,16 +244,16 @@ onMounted(() => {
 }
 
 .lecture-grid {
-  /* 🚩 기존 flex 속성 제거 및 grid 속성 추가 */
+  /* 🚩 이전 버전의 그리드 레이아웃으로 복원 */
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 🚩 3개의 동일한 너비의 열 생성 */
+  grid-template-columns: repeat(3, 1fr); /* 3개의 동일한 너비의 열 생성 */
   gap: 25px; /* 아이템 간 간격 */
   padding: 20px 0;
   flex-grow: 1;
   justify-items: center; /* 그리드 아이템들을 셀의 중앙에 정렬 */
 }
 
-/* 🚩 반응형 디자인을 위한 미디어 쿼리 추가 */
+/* � 개별 미디어 쿼리의 grid-template-columns 복원 */
 @media (max-width: 1024px) {
   /* 태블릿 */
   .lecture-grid {

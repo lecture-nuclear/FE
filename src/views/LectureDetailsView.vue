@@ -21,6 +21,7 @@
       </div>
 
       <div class="content-and-sidebar-wrapper">
+        <!-- 🚩 데스크톱에서 메인 콘텐츠가 왼쪽에 오도록 먼저 배치 -->
         <div class="main-lecture-content">
           <div v-if="lectureDetails.thumbnailUrl" class="lecture-thumbnail-full">
             <img
@@ -53,6 +54,7 @@
           </ul>
         </div>
 
+        <!-- 🚩 데스크톱에서 구매/장바구니 버튼이 오른쪽에 오도록 배치 -->
         <div class="sidebar-actions">
           <template v-if="userStore.isLoggedIn">
             <template v-if="isPurchased">
@@ -266,7 +268,6 @@ const goToReviewPage = (page) => {
 const handleEnrollLecture = async () => {
   if (!userStore.isLoggedIn) {
     alert('강의를 구매하려면 로그인해야 합니다.')
-    router.push('/login')
     return
   }
 
@@ -299,22 +300,51 @@ const handleTakeLecture = () => {
   alert(`${lectureDetails.value.title} 강의를 수강합니다! (이동 로직 추가 필요)`)
 }
 
-const handleAddToCart = () => {
+// 🚩 장바구니에 강의를 추가하는 함수 (백엔드 PUT 요청)
+const handleAddToCart = async () => {
+  // 🚩 async 추가
   if (!userStore.isLoggedIn) {
     alert('장바구니에 담으려면 로그인해야 합니다.')
     router.push('/login')
     return
   }
-  if (!lectureDetails.value) return
+  if (!lectureDetails.value) {
+    alert('강의 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+    return
+  }
 
-  cartStore.addItem({
-    id: lectureDetails.value.id,
-    title: lectureDetails.value.title,
-    price: lectureDetails.value.price,
-    quantity: 1,
-    image: lectureDetails.value.thumbnailUrl,
-  })
-  alert(`${lectureDetails.value.title} 강의가 장바구니에 담겼습니다!`)
+  try {
+    // 🚩 백엔드 PUT 요청: /api/v1/shopping-cart
+    const response = await axiosInstance.put('/v1/shopping-cart', {
+      memberId: userStore.id,
+      lectureId: lectureDetails.value.id,
+    })
+
+    if (response.status === 201) {
+      // 200 OK 또는 201 Created 등 성공 응답
+      alert(`${lectureDetails.value.title} 강의가 장바구니에 담겼습니다!`)
+      // 🚩 장바구니 Pinia 스토어 업데이트 (선택 사항이지만 권장)
+      // 백엔드에서 최신 장바구니 데이터를 보내주면 그걸로 업데이트
+      // 아니면, 현재 장바구니에 아이템을 수동으로 추가 (중복 방지 로직 필요)
+      cartStore.addItem({
+        id: lectureDetails.value.id,
+        title: lectureDetails.value.title,
+        price: lectureDetails.value.price,
+        quantity: 1, // 장바구니 추가 시 기본 수량
+        image: lectureDetails.value.thumbnailUrl, // 썸네일 URL
+      })
+    } else {
+      alert('장바구니 추가에 실패했습니다. 다시 시도해주세요.')
+    }
+  } catch (error) {
+    console.error('장바구니 추가 실패:', error)
+    if (error.response && error.response.status === 409) {
+      // 이미 장바구니에 있는 경우 등
+      alert('이미 장바구니에 있는 강의입니다.')
+    } else {
+      alert('장바구니 추가 중 오류가 발생했습니다.')
+    }
+  }
 }
 
 const formatDate = (dateString) => {
@@ -338,8 +368,8 @@ onMounted(() => {
 <style scoped>
 .lecture-detail-page {
   padding: 40px;
-  max-width: 1200px; /* 🚩 max-width를 1200px로 증가 */
-  margin: 0 auto;
+  max-width: 1200px;
+  /* 🚩 margin: 0 auto; 줄 삭제 */
   box-sizing: border-box;
   min-height: calc(100vh - 100px);
   display: flex;
@@ -420,6 +450,7 @@ onMounted(() => {
   gap: 30px;
   margin-bottom: 40px;
   flex-wrap: wrap;
+  /* 데스크톱에서는 flex-direction 기본값인 row가 유지됩니다. (main-lecture-content 왼쪽에, sidebar-actions 오른쪽에) */
 }
 
 .main-lecture-content {
@@ -431,7 +462,7 @@ onMounted(() => {
   flex: 1;
   min-width: 200px;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* 버튼들을 세로로 정렬 */
   gap: 15px;
   align-items: center;
   padding-top: 20px;
@@ -440,7 +471,7 @@ onMounted(() => {
 
 .lecture-thumbnail-full {
   width: 100%;
-  max-width: 800px; /* 🚩 썸네일 최대 너비 증가 (1200px에 맞춰 3:1 비율 고려) */
+  max-width: 800px; /* 썸네일 최대 너비는 1200px의 main-lecture-content에 맞춰 유지 */
   margin: 0 auto 30px auto;
   border-radius: 8px;
   overflow: hidden;
@@ -453,7 +484,7 @@ onMounted(() => {
 }
 .lecture-thumbnail-placeholder {
   width: 100%;
-  max-width: 800px; /* 🚩 플레이스홀더 최대 너비 증가 */
+  max-width: 800px;
   height: 300px;
   background-color: #e0e0e0;
   display: flex;
@@ -677,31 +708,29 @@ onMounted(() => {
 }
 
 @media (max-width: 1200px) {
-  /* 🚩 1200px 미만 화면 크기에 대한 조정 */
   .lecture-detail-page {
-    padding: 30px; /* 양쪽 패딩 조정 */
+    padding: 30px;
   }
 }
 
 @media (max-width: 992px) {
-  /* 🚩 태블릿 가로 */
   .content-and-sidebar-wrapper {
-    flex-direction: column; /* 세로로 쌓이도록 */
+    flex-direction: column-reverse;
     gap: 20px;
   }
   .main-lecture-content,
   .sidebar-actions {
-    min-width: unset; /* 최소 너비 제한 해제 */
-    width: 100%; /* 전체 너비 차지 */
+    min-width: unset;
+    width: 100%;
   }
   .sidebar-actions {
-    border-top: 1px solid #eee; /* 구분선 다시 추가 */
+    border-top: 1px solid #eee;
     padding-top: 20px;
-    align-items: stretch; /* 버튼들이 가로로 꽉 차도록 */
+    align-items: stretch;
   }
   .lecture-thumbnail-full,
   .lecture-thumbnail-placeholder {
-    max-width: 100%; /* 너비 꽉 채우도록 */
+    max-width: 100%;
   }
 }
 
