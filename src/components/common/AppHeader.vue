@@ -20,7 +20,12 @@
       <nav :class="{ 'nav-open': showMobileMenu }">
         <router-link to="/courses" class="nav-link" @click="closeMobileMenu">강의</router-link>
         <router-link to="/about" class="nav-link" @click="closeMobileMenu">About</router-link>
-        <router-link to="/search" class="nav-link" @click="closeMobileMenu">Search</router-link>
+        <router-link
+          :to="{ name: 'search', query: { keyword: '' } }"
+          class="nav-link"
+          @click="closeMobileMenu"
+          >Search</router-link
+        >
       </nav>
 
       <!-- 사용자 로그인/장바구니 바 -->

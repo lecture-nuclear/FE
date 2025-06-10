@@ -168,7 +168,7 @@ const handleViewDetails = (lectureId) => {
 
 onMounted(() => {
   // 컴포넌트 마운트 시 URL 쿼리 파라미터에 따라 검색 실행
-  if (searchKeyword.value) {
+  if (searchKeyword.value !== null && searchKeyword.value !== undefined) {
     fetchLectures()
   }
 })
