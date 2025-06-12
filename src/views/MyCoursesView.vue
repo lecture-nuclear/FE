@@ -47,7 +47,6 @@ const userStore = useUserStore() // user 정보 pinia
 const fetchMyLectures = async () => {
   loading.value = true
   errorMessage.value = ''
-  console.log(userStore.name)
 
   try {
     // 실제 사용자 강의 목록을 가져오는 API 엔드포인트로 변경해야 합니다.
