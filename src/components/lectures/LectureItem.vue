@@ -1,8 +1,6 @@
-<!-- src/components/lectures/LectureItem.vue -->
 <template>
   <div class="lecture-item-card">
     <div class="lecture-thumbnail">
-      <!-- 강의 썸네일 이미지 (예시 이미지 또는 실제 이미지 URL) -->
       <img
         :src="lecture.thumbnailUrl || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
         :alt="lecture.title"
@@ -22,7 +20,8 @@
       </div>
       <div class="lecture-actions">
         <button @click="viewDetails" class="btn-details">상세 보기</button>
-        <button @click="addToCart" class="btn-add-cart">장바구니 담기</button>
+        <button v-if="!noCartButton" @click="addToCart" class="btn-add-cart">장바구니 담기</button>
+        <button v-else class="btn-enrolled" disabled>수강 중</button>
       </div>
     </div>
   </div>
@@ -31,7 +30,7 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 
-// 부모 컴포넌트로부터 lecture 객체를 props로 받습니다.
+// 부모 컴포넌트로부터 lecture 객체와 enrolled 여부를 props로 받습니다.
 const props = defineProps({
   lecture: {
     type: Object,
@@ -42,8 +41,12 @@ const props = defineProps({
       description: '설명 없음',
       price: 0,
       viewCount: 0,
-      imageUrl: '', // 썸네일 이미지 URL (옵션)
+      thumbnailUrl: '', // 썸네일 이미지 URL (옵션)
     }),
+  },
+  noCartButton: {
+    type: Boolean,
+    default: false, // 기본값은 수강하지 않은 상태
   },
 })
 
@@ -62,6 +65,7 @@ const addToCart = () => {
 </script>
 
 <style scoped>
+/* 기존 스타일 유지 */
 .lecture-item-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -156,7 +160,9 @@ const addToCart = () => {
 }
 
 .btn-details,
-.btn-add-cart {
+.btn-add-cart,
+.btn-enrolled {
+  /* btn-enrolled 스타일 추가 */
   flex: 1;
   padding: 10px 15px;
   border: none;
@@ -184,5 +190,13 @@ const addToCart = () => {
 
 .btn-add-cart:hover {
   background-color: #218838;
+}
+
+/* 수강 중 버튼 스타일 */
+.btn-enrolled {
+  background-color: #6c757d; /* 회색 계열 */
+  color: white;
+  cursor: default; /* 마우스 오버 시 커서 변경 안 함 */
+  opacity: 0.8;
 }
 </style>

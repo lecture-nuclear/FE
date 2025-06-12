@@ -16,7 +16,7 @@
             </div>
           </div>
           <div class="dropdown-section">
-            <div class="dropdown-item">수강 중 강좌</div>
+            <div class="dropdown-item" @click="goToMyCourses">수강 중 강좌</div>
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
             </div>
@@ -106,18 +106,18 @@ const toggleCartDropdown = async () => {
     showUserDropdown.value = false
     // 장바구니가 열릴 때만 백엔드에서 정보 로드
     // userStore.id가 null이 아닌 경우에만 로드 시도
-    if (userStore.isLoggedIn && userStore.id !== null) {
-      // 🚩 로그인 상태 및 id 유효성 확인 추가
+    if (userStore.isLoggedIn && userStore.getMemberId !== null) {
+      // getMemberId getter 사용
       try {
         // userStore의 id를 URL에 포함하여 요청
-        const response = await axiosInstance.get(`/v1/shopping-cart/${userStore.id}`)
+        const response = await axiosInstance.get(`/v1/shopping-cart/${userStore.getMemberId}`) // getMemberId getter 사용
         // 백엔드 응답 구조에 맞춰 response.data.data.lectureList 사용
         const loadedItems = response.data.data.lectureList.map((item) => ({
           id: item.id,
           title: item.title,
           price: item.price,
           quantity: 1, // 백엔드에서 quantity를 주지 않는 경우 기본값 1 설정
-          image: item.image || null, // 이미지가 있다면 추가, 없다면 null
+          image: item.thumbnailUrl || null, // 이미지가 있다면 추가, 없다면 null (thumbnailUrl로 필드명 변경)
         }))
         cartStore.setCart(loadedItems)
       } catch (error) {
@@ -154,6 +154,12 @@ const logout = async () => {
 const showProfile = () => {
   alert('프로필 페이지로 이동합니다.')
   showUserDropdown.value = false
+}
+
+// "수강 중 강좌" 클릭 시 MyCourses 라우트로 이동
+const goToMyCourses = () => {
+  router.push('/my-courses')
+  showUserDropdown.value = false // 드롭다운 닫기
 }
 
 // 장바구니 아이템 삭제 (예시)
