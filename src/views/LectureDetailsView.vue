@@ -210,15 +210,16 @@ const fetchLectureDetails = async () => {
 
 const fetchPurchaseStatus = async (lectureId) => {
   try {
-    const response = await axiosInstance.get(`/v1/enroll/status`, {
-      params: {
-        lectureId: lectureId,
-      },
-    })
+    const memberId = userStore.getMemberId
+    const response = await axiosInstance.post(`/v1/enroll/status`, {
+      memberId: memberId,
+      lectureId: lectureId,
+    }) // TODO: lastViewdAt 말고, watchTimeMillis를 반환함
+    console.log(response)
 
     if (response.data && response.data.data) {
       isPurchased.value = response.data.data.isPurchased || false
-      lastViewedAt.value = response.data.data.lastViewedAt || null
+      lastViewedAt.value = response.data.data.watchedTimeMillis || null
     } else {
       isPurchased.value = false
       lastViewedAt.value = null
