@@ -149,7 +149,7 @@ const performSearch = () => {
   fetchLectures()
 }
 
-const setPageSize = (size) => {
+const setPageSize = () => {
   currentPage.value = 0
   fetchLectures()
 }

@@ -127,7 +127,7 @@ const fetchLectures = async () => {
   }
 }
 
-const setPageSize = (size) => {
+const setPageSize = () => {
   currentPage.value = 0
   fetchLectures()
 }
