@@ -1,0 +1,429 @@
+<template>
+  <div class="upload-course-container">
+    <div class="upload-course-header">
+      <h1>강의 업로드</h1>
+      <p>새로운 강의를 업로드하세요.</p>
+    </div>
+
+    <form @submit.prevent="handleSubmit" class="upload-form">
+      <!-- 기본 정보 섹션 -->
+      <div class="form-section">
+        <h2>기본 정보</h2>
+        
+        <div class="form-group">
+          <label for="title">강의 제목 *</label>
+          <input
+            type="text"
+            id="title"
+            v-model="courseData.title"
+            placeholder="강의 제목을 입력하세요"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="description">강의 설명 *</label>
+          <textarea
+            id="description"
+            v-model="courseData.description"
+            placeholder="강의 설명을 입력하세요"
+            rows="5"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="thumbnail">썸네일 이미지 *</label>
+          <input
+            type="file"
+            id="thumbnail"
+            @change="handleThumbnailChange"
+            accept="image/*"
+            required
+          />
+          <div v-if="thumbnailPreview" class="thumbnail-preview">
+            <img :src="thumbnailPreview" alt="썸네일 미리보기" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 비디오 섹션 -->
+      <div class="form-section">
+        <div class="section-header">
+          <h2>강의 비디오</h2>
+          <button type="button" @click="addVideo" class="add-video-btn">
+            + 비디오 추가
+          </button>
+        </div>
+
+        <div v-if="videos.length === 0" class="no-videos">
+          <p>아직 추가된 비디오가 없습니다. 비디오를 추가해주세요.</p>
+        </div>
+
+        <div v-for="(video, index) in videos" :key="video.id" class="video-item">
+          <div class="video-header">
+            <h3>비디오 {{ index + 1 }}</h3>
+            <button type="button" @click="removeVideo(index)" class="remove-video-btn">
+              - 제거
+            </button>
+          </div>
+
+          <div class="video-form">
+            <div class="form-group">
+              <label :for="`video-file-${video.id}`">비디오 파일 *</label>
+              <input
+                type="file"
+                :id="`video-file-${video.id}`"
+                @change="(event) => handleVideoFileChange(event, index)"
+                accept="video/*"
+                required
+              />
+              <div v-if="video.fileName" class="file-info">
+                선택된 파일: {{ video.fileName }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label :for="`video-title-${video.id}`">비디오 제목 *</label>
+              <input
+                type="text"
+                :id="`video-title-${video.id}`"
+                v-model="video.title"
+                placeholder="비디오 제목을 입력하세요"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 제출 버튼 -->
+      <div class="form-actions">
+        <button type="button" @click="resetForm" class="cancel-btn">
+          취소
+        </button>
+        <button type="submit" :disabled="isSubmitting" class="submit-btn">
+          {{ isSubmitting ? '업로드 중...' : '강의 업로드' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// 폼 데이터
+const courseData = reactive({
+  title: '',
+  description: '',
+  thumbnail: null
+})
+
+const videos = ref([])
+const thumbnailPreview = ref(null)
+const isSubmitting = ref(false)
+
+// 비디오 아이템 카운터 (고유 ID 생성용)
+let videoCounter = 0
+
+// 썸네일 파일 변경 처리
+const handleThumbnailChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    courseData.thumbnail = file
+    // 미리보기 생성
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      thumbnailPreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+// 비디오 추가
+const addVideo = () => {
+  videos.value.push({
+    id: ++videoCounter,
+    file: null,
+    fileName: '',
+    title: ''
+  })
+}
+
+// 비디오 제거
+const removeVideo = (index) => {
+  videos.value.splice(index, 1)
+}
+
+// 비디오 파일 변경 처리
+const handleVideoFileChange = (event, index) => {
+  const file = event.target.files[0]
+  if (file) {
+    videos.value[index].file = file
+    videos.value[index].fileName = file.name
+  }
+}
+
+// 폼 제출 처리
+const handleSubmit = async () => {
+  isSubmitting.value = true
+  
+  try {
+    // 여기에 실제 업로드 로직이 들어갈 예정
+    console.log('Course Data:', courseData)
+    console.log('Videos:', videos.value)
+    
+    // 프로토타입이므로 임시 알림
+    alert('강의 업로드가 완료되었습니다! (프로토타입)')
+    
+    // 업로드 완료 후 강의 목록으로 이동
+    router.push('/courses')
+  } catch (error) {
+    console.error('업로드 실패:', error)
+    alert('업로드에 실패했습니다.')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// 폼 초기화
+const resetForm = () => {
+  courseData.title = ''
+  courseData.description = ''
+  courseData.thumbnail = null
+  thumbnailPreview.value = null
+  videos.value = []
+  
+  // 파일 input 초기화
+  const thumbnailInput = document.getElementById('thumbnail')
+  if (thumbnailInput) thumbnailInput.value = ''
+}
+
+// 초기 비디오 하나 추가
+addVideo()
+</script>
+
+<style scoped>
+.upload-course-container {
+  width: 90%;
+  max-width: none;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.upload-course-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.upload-course-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.upload-course-header p {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.upload-form {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.form-section {
+  margin-bottom: 40px;
+}
+
+.form-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-video-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.add-video-btn:hover {
+  background-color: #218838;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.thumbnail-preview {
+  margin-top: 10px;
+}
+
+.thumbnail-preview img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.no-videos {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.video-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f8f9fa;
+}
+
+.video-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.video-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.remove-video-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.remove-video-btn:hover {
+  background-color: #c82333;
+}
+
+.video-form {
+  display: grid;
+  gap: 15px;
+}
+
+.file-info {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.cancel-btn,
+.submit-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+.submit-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .upload-course-container {
+    padding: 10px;
+  }
+  
+  .upload-form {
+    padding: 20px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+</style>

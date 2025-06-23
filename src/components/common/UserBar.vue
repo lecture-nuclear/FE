@@ -16,7 +16,14 @@
             </div>
           </div>
           <div class="dropdown-section">
-            <div class="dropdown-item" @click="goToMyCourses">수강 중 강좌</div>
+            <div
+              class="dropdown-item"
+              @click="
+                userStore.isLoaded && userStore.id === 1 ? goToUploadCourse() : goToMyCourses()
+              "
+            >
+              {{ userStore.isLoaded && userStore.id === 1 ? '강의 업로드' : '수강 중 강좌' }}
+            </div>
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
             </div>
@@ -159,6 +166,12 @@ const showProfile = () => {
 // "수강 중 강좌" 클릭 시 MyCourses 라우트로 이동
 const goToMyCourses = () => {
   router.push('/my-courses')
+  showUserDropdown.value = false // 드롭다운 닫기
+}
+
+// "강의 업로드" 클릭 시 Upload Course 라우트로 이동 (admin 전용)
+const goToUploadCourse = () => {
+  router.push('/admin/upload-course')
   showUserDropdown.value = false // 드롭다운 닫기
 }
 

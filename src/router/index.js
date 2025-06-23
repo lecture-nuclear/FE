@@ -6,6 +6,7 @@ import CoursesView from '../views/CoursesView.vue'
 import LectureDetailsView from '../views/LectureDetailsView.vue'
 import SearchView from '../views/SearchView.vue'
 import MyCoursesView from '@/views/MyCoursesView.vue'
+import UploadCourseView from '@/views/UploadCourseView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,12 @@ const router = createRouter({
       name: 'MyCourses',
       component: MyCoursesView,
       // meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능하도록 설정 (예시)
+    },
+    {
+      path: '/admin/upload-course',
+      name: 'UploadCourse',
+      component: UploadCourseView,
+      // meta: { requiresAuth: true, requiresAdmin: true }, // 관리자만 접근 가능
     },
   ],
 })
