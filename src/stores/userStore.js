@@ -50,33 +50,30 @@ export const useUserStore = defineStore('user', {
       }
 
       // 새로운 로딩 Promise 생성 및 저장
-      this.loadingPromise = new Promise((resolve, reject) => {
-        const executeAsync = async () => {
-          try {
-            const response = await axiosInstance.get('/auth/status') // 예시 API 엔드포인트
-            if (response.status === 200 && response.data && response.data.data) {
-              this.checkSuccess(response.data) // 로그인 상태 및 사용자 정보 업데이트
-              resolve() // 성공적으로 완료되었음을 알림
-            } else {
-              // 200 OK라도 데이터 형식이 안 맞으면 로그아웃 처리
-              console.error('로그인 상태 확인 응답 형식이 올바르지 않습니다.')
-              this.logout()
-              reject(new Error('Invalid login status response'))
-            }
-          } catch (error) {
-            if (error.response && error.response.status === 401) {
-              console.warn('인증 실패 (401): 로그인 필요')
-              this.logout() // 인증되지 않음
-            } else {
-              console.error('로그인 상태 확인 실패:', error)
-              this.logout() // 그 외 에러 발생 시 로그아웃 처리
-            }
-            reject(error) // 오류 발생 시 reject
-          } finally {
-            this.loadingPromise = null // 로딩 완료 또는 실패 후 Promise 초기화
+      this.loadingPromise = new Promise(async (resolve, reject) => {
+        try {
+          const response = await axiosInstance.get('/auth/status') // 예시 API 엔드포인트
+          if (response.status === 200 && response.data && response.data.data) {
+            this.checkSuccess(response.data) // 로그인 상태 및 사용자 정보 업데이트
+            resolve() // 성공적으로 완료되었음을 알림
+          } else {
+            // 200 OK라도 데이터 형식이 안 맞으면 로그아웃 처리
+            console.error('로그인 상태 확인 응답 형식이 올바르지 않습니다.')
+            this.logout()
+            reject(new Error('Invalid login status response'))
           }
+        } catch (error) {
+          if (error.response && error.response.status === 401) {
+            console.warn('인증 실패 (401): 로그인 필요')
+            this.logout() // 인증되지 않음
+          } else {
+            console.error('로그인 상태 확인 실패:', error)
+            this.logout() // 그 외 에러 발생 시 로그아웃 처리
+          }
+          reject(error) // 오류 발생 시 reject
+        } finally {
+          this.loadingPromise = null // 로딩 완료 또는 실패 후 Promise 초기화
         }
-        executeAsync()
       })
       return this.loadingPromise
     },
