@@ -40,15 +40,31 @@
           <ul class="video-list">
             <li v-for="(video, index) in lectureDetails.videos" :key="index" class="video-item">
               <span class="video-title">{{ index + 1 }}. {{ video.title }}</span>
-              <a
-                v-if="video.link"
-                :href="video.link"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="video-link"
-              >
-                영상 보기
-              </a>
+              <template v-if="video.link">
+                <router-link
+                  v-if="isPurchased"
+                  :to="{
+                    name: 'VideoPlayer',
+                    params: { lectureId: lectureDetails.id, videoIndex: index },
+                    query: { 
+                      url: video.link, 
+                      title: video.title,
+                      lectureTitle: lectureDetails.title
+                    }
+                  }"
+                  class="video-link"
+                >
+                  영상 보기
+                </router-link>
+                <button
+                  v-else
+                  @click="handleUnpurchasedVideoClick"
+                  class="video-link disabled"
+                  disabled
+                >
+                  영상 보기
+                </button>
+              </template>
               <span v-else class="no-link">링크 없음</span>
             </li>
           </ul>
@@ -301,6 +317,10 @@ const handleTakeLecture = () => {
   alert(`${lectureDetails.value.title} 강의를 수강합니다! (이동 로직 추가 필요)`)
 }
 
+const handleUnpurchasedVideoClick = () => {
+  alert('강의를 구매한 후 영상을 시청할 수 있습니다.')
+}
+
 // 🚩 장바구니에 강의를 추가하는 함수 (백엔드 PUT 요청)
 const handleAddToCart = async () => {
   // 🚩 async 추가
@@ -549,10 +569,22 @@ onMounted(() => {
   font-size: 14px;
   transition: background-color 0.2s ease;
   margin-left: 15px;
+  border: none;
+  cursor: pointer;
 }
 
-.video-link:hover {
+.video-link:hover:not(.disabled) {
   background-color: #218838;
+}
+
+.video-link.disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.video-link.disabled:hover {
+  background-color: #6c757d;
 }
 
 .no-link {
