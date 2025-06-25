@@ -7,6 +7,7 @@ import LectureDetailsView from '../views/LectureDetailsView.vue'
 import SearchView from '../views/SearchView.vue'
 import MyCoursesView from '@/views/MyCoursesView.vue'
 import UploadCourseView from '@/views/UploadCourseView.vue'
+import VideoPlayerView from '@/views/VideoPlayerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +53,12 @@ const router = createRouter({
       name: 'UploadCourse',
       component: UploadCourseView,
       // meta: { requiresAuth: true, requiresAdmin: true }, // 관리자만 접근 가능
+    },
+    {
+      path: '/lectures/:lectureId/video/:videoIndex',
+      name: 'VideoPlayer',
+      component: VideoPlayerView,
+      // meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
     },
   ],
 })
