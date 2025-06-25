@@ -1,48 +1,50 @@
 <template>
   <div class="review-write-section">
     <h3 class="section-title">리뷰 작성</h3>
-    
+
     <div v-if="!isLoggedIn" class="login-required">
       <p>리뷰를 작성하려면 로그인해야 합니다.</p>
-      <router-link to="/login" class="login-link">로그인하기</router-link>
     </div>
 
     <form v-else @submit.prevent="submitReview" class="review-form">
-      <!-- 별점 선택 -->
-      <div class="form-group">
-        <label class="form-label">별점 *</label>
-        <div class="star-rating">
-          <button
-            v-for="star in 5"
-            :key="star"
-            type="button"
-            @click="setRating(star)"
-            @mouseover="hoverRating = star"
-            @mouseleave="hoverRating = 0"
-            class="star-button"
-            :class="{ 
-              'active': star <= rating,
-              'hover': star <= hoverRating && hoverRating > 0
-            }"
-          >
-            ★
-          </button>
+      <!-- 별점과 제목을 한 줄에 배치 -->
+      <div class="form-row">
+        <!-- 별점 선택 -->
+        <div class="form-group rating-group">
+          <label class="form-label">별점 *</label>
+          <div class="star-rating">
+            <button
+              v-for="star in 5"
+              :key="star"
+              type="button"
+              @click="setRating(star)"
+              @mouseover="hoverRating = star"
+              @mouseleave="hoverRating = 0"
+              class="star-button"
+              :class="{
+                active: star <= rating,
+                hover: star <= hoverRating && hoverRating > 0,
+              }"
+            >
+              ★
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- 제목 입력 -->
-      <div class="form-group">
-        <label for="review-title" class="form-label">제목 *</label>
-        <input
-          type="text"
-          id="review-title"
-          v-model="title"
-          placeholder="리뷰 제목을 입력하세요 (최대 15자)"
-          maxlength="15"
-          required
-          class="form-input"
-        />
-        <span class="char-count">{{ title.length }}/15</span>
+        <!-- 제목 입력 -->
+        <div class="form-group title-group">
+          <label for="review-title" class="form-label">제목 *</label>
+          <input
+            type="text"
+            id="review-title"
+            v-model="title"
+            placeholder="리뷰 제목을 입력하세요 (최대 15자)"
+            maxlength="15"
+            required
+            class="form-input"
+          />
+          <span class="char-count">{{ title.length }}/15</span>
+        </div>
       </div>
 
       <!-- 내용 입력 -->
@@ -79,8 +81,8 @@ import axiosInstance from '@/utils/axiosInstance'
 const props = defineProps({
   lectureId: {
     type: [String, Number],
-    required: true
-  }
+    required: true,
+  },
 })
 
 const emit = defineEmits(['reviewSubmitted'])
@@ -113,7 +115,7 @@ const submitReview = async () => {
     const response = await axiosInstance.post(`/v1/curriculum/${props.lectureId}/review`, {
       score: rating.value,
       title: title.value.trim(),
-      content: content.value.trim()
+      content: content.value.trim(),
     })
 
     if (response.status === 200 || response.status === 201) {
@@ -161,7 +163,7 @@ const resetForm = () => {
 
 .login-required {
   text-align: center;
-  padding: 40px 0;
+  padding: 15px 0;
 }
 
 .login-required p {
@@ -185,16 +187,32 @@ const resetForm = () => {
 }
 
 .review-form {
-  max-width: 600px;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 10px;
+}
+
+.rating-group {
+  flex: 0 0 200px;
+  margin-bottom: 0;
+}
+
+.title-group {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   font-weight: 600;
   color: #333;
   font-size: 16px;
@@ -265,7 +283,7 @@ const resetForm = () => {
   display: flex;
   gap: 15px;
   justify-content: flex-end;
-  margin-top: 30px;
+  margin-top: 15px;
 }
 
 .cancel-btn,
@@ -305,11 +323,22 @@ const resetForm = () => {
   .review-write-section {
     padding: 20px;
   }
-  
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .rating-group,
+  .title-group {
+    flex: none;
+    margin-bottom: 20px;
+  }
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .cancel-btn,
   .submit-btn {
     width: 100%;
