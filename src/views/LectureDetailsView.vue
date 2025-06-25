@@ -37,6 +37,7 @@
           <p class="lecture-description">{{ lectureDetails.description }}</p>
 
           <h2 class="section-title">강의 영상 목록</h2>
+          <!-- TODO: 영상 시간 api 추가 -->
           <ul class="video-list">
             <li v-for="(video, index) in lectureDetails.videos" :key="index" class="video-item">
               <span class="video-title">{{ index + 1 }}. {{ video.title }}</span>
@@ -108,18 +109,10 @@
       </div>
 
       <!-- 리뷰 작성 섹션 -->
-      <div v-if="userStore.isLoggedIn">
-        <ReviewWriteComponent 
-          :lectureId="lectureDetails.id" 
-          @reviewSubmitted="handleReviewSubmitted"
-        />
-      </div>
-      <div v-else class="review-login-required">
-        <h3 class="section-title">리뷰 작성</h3>
-        <div class="login-message">
-          <p>리뷰를 작성하려면 로그인하세요</p>
-        </div>
-      </div>
+      <ReviewWriteComponent 
+        :lectureId="lectureDetails.id" 
+        @reviewSubmitted="handleReviewSubmitted"
+      />
 
       <!-- 리뷰 조회 섹션 -->
       <ReviewListComponent 
@@ -607,33 +600,6 @@ onMounted(() => {
   width: 100%;
 }
 
-.review-login-required {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  padding: 30px;
-  margin-bottom: 30px;
-}
-
-.review-login-required .section-title {
-  font-size: 24px;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 8px;
-  display: inline-block;
-}
-
-.login-message {
-  text-align: center;
-  padding: 40px 0;
-}
-
-.login-message p {
-  font-size: 18px;
-  color: #666;
-  margin: 0;
-}
 
 
 @media (max-width: 1200px) {
