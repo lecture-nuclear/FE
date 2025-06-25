@@ -52,11 +52,11 @@ axiosInstance.interceptors.response.use(
       // 이미 refresh 요청이 진행 중인 경우 큐에 추가
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          failedQueue.push({ 
+          failedQueue.push({
             resolve: (token) => {
               resolve(axiosInstance(originalRequest))
-            }, 
-            reject 
+            },
+            reject,
           })
         })
       }
@@ -70,7 +70,7 @@ axiosInstance.interceptors.response.use(
 
         if (refreshResponse.status === 200 && refreshResponse.data.data) {
           const userData = refreshResponse.data.data
-          
+
           // userStore 업데이트
           userStore.loginSuccess({
             name: userData.name || '사용자',
@@ -79,10 +79,10 @@ axiosInstance.interceptors.response.use(
           })
 
           console.log('✅ 토큰 갱신 성공')
-          
+
           // 대기 중인 요청들 재실행
           processQueue(null)
-          
+
           // 원래 요청 재시도
           return axiosInstance(originalRequest)
         } else {
@@ -90,21 +90,18 @@ axiosInstance.interceptors.response.use(
         }
       } catch (refreshError) {
         console.error('⛔ 토큰 갱신 실패:', refreshError)
-        
+
         // 대기 중인 요청들 모두 실패 처리
         processQueue(refreshError)
-        
+
         // 로그아웃 처리
         userStore.logout()
-        
-        // 사용자에게 알림 및 로그인 페이지로 리다이렉트
-        alert('세션이 만료되었습니다. 다시 로그인해주세요.')
-        
+
         // 현재 경로가 로그인 페이지가 아닌 경우에만 리다이렉트
         if (router.currentRoute.value.path !== '/') {
           router.push('/')
         }
-        
+
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
@@ -132,7 +129,7 @@ axiosInstance.interceptors.request.use(
   (error) => {
     console.error('📤 요청 에러:', error)
     return Promise.reject(error)
-  }
+  },
 )
 
 export default axiosInstance
