@@ -39,8 +39,12 @@
             id="thumbnail"
             @change="handleThumbnailChange"
             accept="image/*"
+            :disabled="thumbnailUploading"
             required
           />
+          <div v-if="thumbnailUploading" class="upload-status">
+            업로드 중...
+          </div>
           <div v-if="thumbnailPreview" class="thumbnail-preview">
             <img :src="thumbnailPreview" alt="썸네일 미리보기" />
           </div>
@@ -76,8 +80,12 @@
                 :id="`video-file-${video.id}`"
                 @change="(event) => handleVideoFileChange(event, index)"
                 accept="video/*"
+                :disabled="videoUploading[index]"
                 required
               />
+              <div v-if="videoUploading[index]" class="upload-status">
+                업로드 중...
+              </div>
               <div v-if="video.fileName" class="file-info">
                 선택된 파일: {{ video.fileName }}
               </div>
@@ -120,27 +128,63 @@ const router = useRouter()
 const courseData = reactive({
   title: '',
   description: '',
-  thumbnail: null
+  thumbnail: null,
+  thumbnailUrl: null
 })
 
 const videos = ref([])
 const thumbnailPreview = ref(null)
 const isSubmitting = ref(false)
+const thumbnailUploading = ref(false)
+const videoUploading = ref({})
 
 // 비디오 아이템 카운터 (고유 ID 생성용)
 let videoCounter = 0
 
 // 썸네일 파일 변경 처리
-const handleThumbnailChange = (event) => {
+const handleThumbnailChange = async (event) => {
   const file = event.target.files[0]
   if (file) {
     courseData.thumbnail = file
+    
     // 미리보기 생성
     const reader = new FileReader()
     reader.onload = (e) => {
       thumbnailPreview.value = e.target.result
     }
     reader.readAsDataURL(file)
+    
+    // 썸네일 업로드
+    await uploadThumbnail(file)
+  }
+}
+
+// 썸네일 업로드 함수
+const uploadThumbnail = async (file) => {
+  thumbnailUploading.value = true
+  
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await fetch('http://localhost:8080/api/upload/thumbnail', {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error('썸네일 업로드 실패')
+    }
+    
+    const result = await response.json()
+    courseData.thumbnailUrl = result.data.fileUrl
+    
+    console.log('썸네일 업로드 성공:', result)
+  } catch (error) {
+    console.error('썸네일 업로드 실패:', error)
+    alert('썸네일 업로드에 실패했습니다.')
+  } finally {
+    thumbnailUploading.value = false
   }
 }
 
@@ -150,7 +194,8 @@ const addVideo = () => {
     id: ++videoCounter,
     file: null,
     fileName: '',
-    title: ''
+    title: '',
+    videoUrl: null
   })
 }
 
@@ -160,11 +205,46 @@ const removeVideo = (index) => {
 }
 
 // 비디오 파일 변경 처리
-const handleVideoFileChange = (event, index) => {
+const handleVideoFileChange = async (event, index) => {
   const file = event.target.files[0]
   if (file) {
     videos.value[index].file = file
     videos.value[index].fileName = file.name
+    
+    // 비디오 업로드
+    await uploadVideo(file, index)
+  }
+}
+
+// 비디오 업로드 함수
+const uploadVideo = async (file, index) => {
+  videoUploading.value[index] = true
+  
+  try {
+    const fileName = encodeURIComponent(file.name)
+    const url = `http://localhost:8080/api/upload/video?fileName=${fileName}`
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream'
+      },
+      body: file
+    })
+    
+    if (!response.ok) {
+      throw new Error('비디오 업로드 실패')
+    }
+    
+    const result = await response.json()
+    videos.value[index].videoUrl = result.data.fileUrl
+    
+    console.log('비디오 업로드 성공:', result)
+  } catch (error) {
+    console.error('비디오 업로드 실패:', error)
+    alert('비디오 업로드에 실패했습니다.')
+  } finally {
+    videoUploading.value[index] = false
   }
 }
 
@@ -173,12 +253,49 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   
   try {
-    // 여기에 실제 업로드 로직이 들어갈 예정
-    console.log('Course Data:', courseData)
-    console.log('Videos:', videos.value)
+    // 썸네일 URL이 없으면 업로드 실패
+    if (!courseData.thumbnailUrl) {
+      alert('썸네일 업로드가 완료되지 않았습니다.')
+      return
+    }
     
-    // 프로토타입이므로 임시 알림
-    alert('강의 업로드가 완료되었습니다! (프로토타입)')
+    // 비디오 업로드가 완료되지 않은 것이 있는지 확인
+    const unuploadedVideos = videos.value.filter(video => !video.videoUrl)
+    if (unuploadedVideos.length > 0) {
+      alert('모든 비디오 업로드가 완료되지 않았습니다.')
+      return
+    }
+    
+    // API 요청 데이터 구성
+    const requestData = {
+      title: courseData.title,
+      thumbnailUrl: courseData.thumbnailUrl,
+      description: courseData.description,
+      videos: videos.value.map(video => ({
+        title: video.title,
+        link: video.videoUrl
+      }))
+    }
+    
+    console.log('Sending course data:', requestData)
+    
+    // 강의 업로드 API 호출
+    const response = await fetch('http://localhost:8080/api/v1/curriculum/lecture', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    })
+    
+    if (!response.ok) {
+      throw new Error('강의 업로드 실패')
+    }
+    
+    const result = await response.json()
+    console.log('강의 업로드 성공:', result)
+    
+    alert('강의 업로드가 완료되었습니다!')
     
     // 업로드 완료 후 강의 목록으로 이동
     router.push('/courses')
@@ -195,6 +312,7 @@ const resetForm = () => {
   courseData.title = ''
   courseData.description = ''
   courseData.thumbnail = null
+  courseData.thumbnailUrl = null
   thumbnailPreview.value = null
   videos.value = []
   
@@ -308,6 +426,13 @@ addVideo()
   max-height: 150px;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.upload-status {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #007bff;
+  font-style: italic;
 }
 
 .no-videos {
