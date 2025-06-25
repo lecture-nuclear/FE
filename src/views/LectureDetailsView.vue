@@ -97,54 +97,35 @@
             <p class="login-prompt-text">로그인 후 강의 구매/수강 가능</p>
           </template>
 
-          <button @click="handleAddToCart" class="btn-add-cart">장바구니 담기</button>
-        </div>
-      </div>
-
-      <div class="review-section">
-        <h2 class="section-title">리뷰 목록</h2>
-        <div v-if="reviewLoading" class="loading-message-small">리뷰를 불러오는 중입니다...</div>
-        <div v-else-if="reviewErrorMessage" class="error-message-small">
-          리뷰 오류: {{ reviewErrorMessage }}
-        </div>
-        <div v-else-if="reviews.length > 0" class="review-list">
-          <div v-for="review in reviews" :key="review.id" class="review-item">
-            <div class="review-header">
-              <span class="review-author">{{ review.author }}</span>
-              <span class="review-rating">평점: {{ review.rating }} / 5</span>
-              <span class="review-date">{{ formatDate(review.createdAt) }}</span>
-            </div>
-            <p class="review-content">{{ review.content }}</p>
-          </div>
-        </div>
-        <div v-else class="no-reviews-message">등록된 리뷰가 없습니다.</div>
-
-        <div v-if="totalReviewPages > 1" class="review-pagination">
-          <button
-            @click="goToReviewPage(currentReviewPage - 1)"
-            :disabled="currentReviewPage === 0"
-            class="pagination-btn"
+          <button 
+            v-if="!isPurchased" 
+            @click="handleAddToCart" 
+            class="btn-add-cart"
           >
-            이전
-          </button>
-          <span v-for="page in totalReviewPages" :key="page" class="page-number-wrapper">
-            <button
-              @click="goToReviewPage(page - 1)"
-              :class="{ active: currentReviewPage === page - 1 }"
-              class="pagination-btn page-number-btn"
-            >
-              {{ page }}
-            </button>
-          </span>
-          <button
-            @click="goToReviewPage(currentReviewPage + 1)"
-            :disabled="currentReviewPage === totalReviewPages - 1"
-            class="pagination-btn"
-          >
-            다음
+            장바구니 담기
           </button>
         </div>
       </div>
+
+      <!-- 리뷰 작성 섹션 -->
+      <div v-if="userStore.isLoggedIn">
+        <ReviewWriteComponent 
+          :lectureId="lectureDetails.id" 
+          @reviewSubmitted="handleReviewSubmitted"
+        />
+      </div>
+      <div v-else class="review-login-required">
+        <h3 class="section-title">리뷰 작성</h3>
+        <div class="login-message">
+          <p>리뷰를 작성하려면 로그인하세요</p>
+        </div>
+      </div>
+
+      <!-- 리뷰 조회 섹션 -->
+      <ReviewListComponent 
+        :lectureId="lectureDetails.id" 
+        ref="reviewListRef"
+      />
     </div>
 
     <div v-else class="no-data-message">
@@ -160,6 +141,8 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import axiosInstance from '@/utils/axiosInstance'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
+import ReviewWriteComponent from '@/components/ReviewWriteComponent.vue'
+import ReviewListComponent from '@/components/ReviewListComponent.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -172,14 +155,7 @@ const errorMessage = ref('')
 
 const isPurchased = ref(false)
 const lastViewedAt = ref(null)
-
-const reviews = ref([])
-const reviewLoading = ref(true)
-const reviewErrorMessage = ref('')
-const currentReviewPage = ref(0)
-const reviewsPerPage = ref(10)
-const totalReviewPages = ref(0)
-const totalReviewElements = ref(0)
+const reviewListRef = ref(null)
 
 const fetchLectureDetails = async () => {
   loading.value = true
@@ -200,11 +176,10 @@ const fetchLectureDetails = async () => {
         lectureDetails.value.price = 0
       }
 
+      // TODO: lectureDetail 조회 시 수강 상태 같이 받기
       if (userStore.isLoggedIn && userStore.id !== null) {
         await fetchPurchaseStatus(lectureId)
       }
-
-      await fetchReviews(lectureId)
     } else {
       errorMessage.value = '강의 정보를 불러오는데 실패했습니다: 응답 형식이 올바르지 않습니다.'
     }
@@ -247,38 +222,10 @@ const fetchPurchaseStatus = async (lectureId) => {
   }
 }
 
-const fetchReviews = async (lectureId) => {
-  reviewLoading.value = true
-  reviewErrorMessage.value = ''
-  try {
-    const response = await axiosInstance.get(`/v1/curriculum/lectures/${lectureId}/reviews`, {
-      params: {
-        pageNo: currentReviewPage.value,
-        size: reviewsPerPage.value,
-      },
-    })
-
-    if (response.data && response.data.data && response.data.data.reviews) {
-      reviews.value = response.data.data.reviews
-      totalReviewElements.value = response.data.data.totalElements || reviews.value.length
-      totalReviewPages.value =
-        response.data.data.totalPages || Math.ceil(totalReviewElements.value / reviewsPerPage.value)
-    } else {
-      reviews.value = []
-      reviewErrorMessage.value = '리뷰 목록 응답 형식이 올바르지 않습니다.'
-    }
-  } catch (error) {
-    console.error('리뷰 목록 불러오기 실패:', error)
-    reviewErrorMessage.value = '리뷰 목록을 불러오는 중 오류가 발생했습니다.'
-  } finally {
-    reviewLoading.value = false
-  }
-}
-
-const goToReviewPage = (page) => {
-  if (page >= 0 && page < totalReviewPages.value) {
-    currentReviewPage.value = page
-    fetchReviews(lectureDetails.value.id)
+const handleReviewSubmitted = () => {
+  // 리뷰가 작성되면 리뷰 목록을 새로고침
+  if (reviewListRef.value && reviewListRef.value.refreshReviews) {
+    reviewListRef.value.refreshReviews()
   }
 }
 
@@ -660,85 +607,34 @@ onMounted(() => {
   width: 100%;
 }
 
-.review-section {
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px solid #eee;
-  width: 100%;
+.review-login-required {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  margin-bottom: 30px;
 }
 
-.review-section .section-title {
-  margin-top: 0;
-  margin-bottom: 25px;
+.review-login-required .section-title {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+  display: inline-block;
 }
 
-.review-list {
-  background-color: #fcfcfc;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 15px;
-}
-
-.review-item {
-  padding: 15px 0;
-  border-bottom: 1px dashed #e0e0e0;
-}
-.review-item:last-child {
-  border-bottom: none;
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.review-author {
-  font-weight: bold;
-  color: #333;
-  font-size: 16px;
-}
-.review-rating {
-  font-size: 15px;
-  color: #f39c12;
-  font-weight: 600;
-}
-.review-date {
-  font-size: 13px;
-  color: #999;
-}
-.review-content {
-  font-size: 15px;
-  color: #555;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.no-reviews-message {
+.login-message {
   text-align: center;
+  padding: 40px 0;
+}
+
+.login-message p {
   font-size: 18px;
-  color: #777;
-  padding: 30px 0;
+  color: #666;
+  margin: 0;
 }
 
-.loading-message-small,
-.error-message-small {
-  text-align: center;
-  font-size: 16px;
-  color: #888;
-  padding: 20px 0;
-}
-.error-message-small {
-  color: #e74c3c;
-}
-
-.review-pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 30px;
-  gap: 8px;
-}
 
 @media (max-width: 1200px) {
   .lecture-detail-page {
