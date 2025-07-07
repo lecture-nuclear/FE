@@ -4,7 +4,7 @@
     <div class="header-left">
       <router-link to="/" class="logo">
         <img src="@/assets/logo.svg" alt="MyService Logo" class="logo-img" />
-        <span>MyService</span>
+        <span>Lecture</span>
       </router-link>
     </div>
 
