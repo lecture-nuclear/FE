@@ -42,21 +42,13 @@
             <li v-for="(video, index) in lectureDetails.videos" :key="index" class="video-item">
               <span class="video-title">{{ index + 1 }}. {{ video.title }}</span>
               <template v-if="video.link">
-                <router-link
+                <button
                   v-if="isPurchased"
-                  :to="{
-                    name: 'VideoPlayer',
-                    params: { lectureId: lectureDetails.id, videoIndex: index },
-                    query: { 
-                      url: video.link, 
-                      title: video.title,
-                      lectureTitle: lectureDetails.title
-                    }
-                  }"
+                  @click="() => handleWatchVideo(video, index)"
                   class="video-link"
                 >
                   영상 보기
-                </router-link>
+                </button>
                 <button
                   v-else
                   @click="handleUnpurchasedVideoClick"
@@ -259,6 +251,21 @@ const handleTakeLecture = () => {
 
 const handleUnpurchasedVideoClick = () => {
   alert('강의를 구매한 후 영상을 시청할 수 있습니다.')
+}
+
+const handleWatchVideo = (video, index) => {
+  const videoId = video.id || index
+  
+  // 바로 VideoPlayerView로 이동
+  router.push({
+    name: 'VideoPlayer',
+    params: { lectureId: lectureDetails.value.id, videoId: videoId },
+    query: { 
+      url: video.link, 
+      title: video.title,
+      lectureTitle: lectureDetails.value.title
+    }
+  })
 }
 
 // 🚩 장바구니에 강의를 추가하는 함수 (백엔드 PUT 요청)

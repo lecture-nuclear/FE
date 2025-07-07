@@ -44,17 +44,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
+import axiosInstance from '@/utils/axiosInstance'
+import { useUserStore } from '@/stores/userStore'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(true)
 const errorMessage = ref('')
 const player = ref(null)
+
+// 시간 추적 변수들
+const sessionStartTime = ref(null)
+const totalWatchTime = ref(0)
+const lastUpdateTime = ref(null)
+const currentPosition = ref(0)
+const isPlaying = ref(false)
+const watchTimeInterval = ref(null)
+const backupInterval = ref(null)
+const isSendingData = ref(false)
 
 const lectureId = ref(route.params.lectureId)
 const videoIndex = ref(parseInt(route.params.videoIndex))
@@ -68,13 +81,109 @@ const isYouTubeVideo = ref(false)
 const youtubeId = ref('')
 const videoType = ref('video/mp4')
 
-const initializePlayer = () => {
+// 시간 추적 함수들
+const startWatchTimeTracking = () => {
+  sessionStartTime.value = Date.now()
+  lastUpdateTime.value = Date.now()
+  console.log('📊 시청 시간 추적 시작')
+}
+
+const updateWatchTime = () => {
+  if (isPlaying.value && lastUpdateTime.value) {
+    const now = Date.now()
+    const timeDiff = now - lastUpdateTime.value
+    totalWatchTime.value += timeDiff
+    lastUpdateTime.value = now
+  }
+}
+
+const startWatchTimeInterval = () => {
+  if (watchTimeInterval.value) {
+    clearInterval(watchTimeInterval.value)
+  }
+  watchTimeInterval.value = setInterval(() => {
+    updateWatchTime()
+    if (player.value && typeof player.value.currentTime === 'number') {
+      currentPosition.value = Math.floor(player.value.currentTime * 1000)
+    }
+  }, 1000)
+}
+
+const startBackupInterval = () => {
+  if (backupInterval.value) {
+    clearInterval(backupInterval.value)
+  }
+  backupInterval.value = setInterval(() => {
+    console.log('📊 주기적 백업 전송')
+    sendWatchTimeData()
+  }, 30000) // 30초마다
+}
+
+const stopBackupInterval = () => {
+  if (backupInterval.value) {
+    clearInterval(backupInterval.value)
+    backupInterval.value = null
+  }
+}
+
+
+const stopWatchTimeInterval = () => {
+  if (watchTimeInterval.value) {
+    clearInterval(watchTimeInterval.value)
+    watchTimeInterval.value = null
+  }
+  updateWatchTime()
+}
+
+const sendWatchTimeData = async () => {
+  if (isSendingData.value) {
+    console.log('📊 이미 전송 중 - 스킵')
+    return
+  }
+
+  if (!userStore.getMemberId || !route.params.videoId) {
+    console.warn('⚠️ 사용자 ID 또는 비디오 ID가 없습니다.')
+    return
+  }
+
+  isSendingData.value = true
+
+  try {
+    updateWatchTime()
+    
+    if (totalWatchTime.value > 0) {
+      const requestData = {
+        watchTimeMillis: totalWatchTime.value,
+        lastTimeMillis: currentPosition.value,
+        memberId: userStore.getMemberId,
+        videoId: parseInt(route.params.videoId)
+      }
+      
+      console.log('📊 시청 시간 전송:', requestData)
+      
+      await axiosInstance.put('/v1/last-view', requestData)
+      console.log('✅ 시청 시간 전송 완료')
+      
+      // 전송 후 리셋
+      totalWatchTime.value = 0
+      sessionStartTime.value = Date.now()
+      lastUpdateTime.value = Date.now()
+    }
+  } catch (error) {
+    console.error('❌ 시청 시간 전송 실패:', error)
+  } finally {
+    isSendingData.value = false
+  }
+}
+
+const initializePlayer = async () => {
   try {
     if (!videoUrl.value) {
       errorMessage.value = '영상 URL이 없습니다.'
       loading.value = false
       return
     }
+
 
     // YouTube 링크 체크
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
@@ -125,14 +234,28 @@ const initializePlayer = () => {
       // 플레이어 이벤트 리스너
       player.value.on('ready', () => {
         console.log('플레이어가 준비되었습니다.')
+        startWatchTimeTracking()
+        startBackupInterval()
       })
 
       player.value.on('play', () => {
         console.log('영상 재생 시작')
+        isPlaying.value = true
+        lastUpdateTime.value = Date.now()
+        startWatchTimeInterval()
       })
 
       player.value.on('pause', () => {
         console.log('영상 일시정지')
+        isPlaying.value = false
+        stopWatchTimeInterval()
+      })
+
+      player.value.on('seeking', () => {
+        updateWatchTime()
+        if (player.value && typeof player.value.currentTime === 'number') {
+          currentPosition.value = Math.floor(player.value.currentTime * 1000)
+        }
       })
     }, 100)
 
@@ -143,15 +266,73 @@ const initializePlayer = () => {
   }
 }
 
+// 이벤트 리스너 등록
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    console.log('📊 페이지가 숨겨짐 - 시청 시간 전송')
+    sendWatchTimeData()
+  } else {
+    console.log('📊 페이지가 다시 보임 - 시청 시간 추적 재시작')
+    lastUpdateTime.value = Date.now()
+  }
+}
+
+const handleBeforeUnload = () => {
+  console.log('📊 페이지 떠남 - 시청 시간 전송')
+  sendWatchTimeData()
+}
+
 onMounted(() => {
   initializePlayer()
+  
+  // 이벤트 리스너 등록
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 onUnmounted(() => {
+  stopWatchTimeInterval()
+  stopBackupInterval()
+  sendWatchTimeData()
+  
   if (player.value) {
     player.value.destroy()
   }
+  
+  // 이벤트 리스너 제거
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
+
+onBeforeUnmount(() => {
+  sendWatchTimeData()
+})
+
+onBeforeRouteLeave(async (to, from, next) => {
+  await sendWatchTimeData()
+  next()
+})
+
+onBeforeRouteUpdate(async (to, from, next) => {
+  // 다른 비디오로 이동할 때 현재 비디오의 시간 전송
+  if (to.params.videoId !== from.params.videoId) {
+    await sendWatchTimeData()
+  }
+  next()
+})
+
+// videoId 변경 감지
+watch(
+  () => route.params.videoId,
+  async (newVideoId, oldVideoId) => {
+    if (oldVideoId && newVideoId !== oldVideoId) {
+      console.log('📊 비디오 변경 감지 - 이전 비디오 시간 전송')
+      await sendWatchTimeData()
+      // 새 비디오 시간 추적 시작
+      startWatchTimeTracking()
+    }
+  }
+)
 </script>
 
 <style scoped>

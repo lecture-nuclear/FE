@@ -73,6 +73,35 @@ This is a Vue 3 e-learning platform built with:
 - Review system (GET/POST reviews for courses)
 - Cart operations (add/remove items, checkout)
 
+### Video Time Tracking
+
+**Simple Video Watching Flow:**
+1. **Direct Access**: User clicks "영상 보기" button in LectureDetailsView
+   - Frontend immediately navigates to VideoPlayerView
+   - No session creation or access verification required
+
+2. **Video Playback**: VideoPlayerView loads and starts playing
+   - Video player initializes with Plyr library
+   - Time tracking begins immediately upon player ready
+
+**Time Tracking System:**
+- **Watch Time API**: `PUT /v1/last-view` with `{ watchTimeMillis, lastTimeMillis, memberId, videoId }`
+- **Transmission Triggers**:
+  - Tab visibility change (`visibilitychange` event)
+  - Page unload (`beforeunload` event)
+  - Route changes (`onBeforeRouteLeave`, `onBeforeRouteUpdate`)
+  - Video ID changes (`watch` on `route.params.videoId`)
+  - Periodic backup (every 30 seconds)
+- **Player Event Integration**: Plyr play/pause/seeking events for accurate time tracking
+
+**Backend API:**
+```
+PUT /v1/last-view
+- Updates watch time and last position
+- Request: { watchTimeMillis, lastTimeMillis, memberId, videoId }
+- Response: Success confirmation
+```
+
 ### Component Naming
 - Views: `*View.vue` (e.g., CoursesView, LectureDetailsView)
 - Reusable components: descriptive names (LectureItem, UserBar)

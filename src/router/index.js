@@ -55,7 +55,7 @@ const router = createRouter({
       // meta: { requiresAuth: true, requiresAdmin: true }, // 관리자만 접근 가능
     },
     {
-      path: '/lectures/:lectureId/video/:videoIndex',
+      path: '/lectures/:lectureId/video/:videoId',
       name: 'VideoPlayer',
       component: VideoPlayerView,
       // meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
