@@ -73,34 +73,61 @@ This is a Vue 3 e-learning platform built with:
 - Review system (GET/POST reviews for courses)
 - Cart operations (add/remove items, checkout)
 
-### Video Time Tracking
+### Video Time Tracking System
 
-**Simple Video Watching Flow:**
-1. **Direct Access**: User clicks "영상 보기" button in LectureDetailsView
-   - Frontend immediately navigates to VideoPlayerView
-   - No session creation or access verification required
+**Implemented Features:**
 
-2. **Video Playback**: VideoPlayerView loads and starts playing
-   - Video player initializes with Plyr library
-   - Time tracking begins immediately upon player ready
+**1. Simple Video Access Flow:**
+- User clicks "영상 보기" button in LectureDetailsView
+- Direct navigation to VideoPlayerView with video parameters
+- No session management or access verification needed
+- Immediate video playback with Plyr library
 
-**Time Tracking System:**
-- **Watch Time API**: `PUT /v1/last-view` with `{ watchTimeMillis, lastTimeMillis, memberId, videoId }`
-- **Transmission Triggers**:
-  - Tab visibility change (`visibilitychange` event)
-  - Page unload (`beforeunload` event)
-  - Route changes (`onBeforeRouteLeave`, `onBeforeRouteUpdate`)
-  - Video ID changes (`watch` on `route.params.videoId`)
-  - Periodic backup (every 30 seconds)
-- **Player Event Integration**: Plyr play/pause/seeking events for accurate time tracking
+**2. Comprehensive Time Tracking:**
+- **Automatic tracking start**: When Plyr player is ready
+- **Real-time monitoring**: 1-second interval updates during playback
+- **Accurate position tracking**: Current video position in milliseconds
+- **Session-based accumulation**: Total watch time per viewing session
 
-**Backend API:**
+**3. Multiple Transmission Triggers:**
+- **Tab visibility change**: `visibilitychange` event (tab switch, minimize)
+- **Page unload**: `beforeunload` event (browser close, refresh)
+- **Route navigation**: `onBeforeRouteLeave`, `onBeforeRouteUpdate`
+- **Video switching**: `watch` on `route.params.videoId` changes
+- **Periodic backup**: Every 30 seconds to prevent data loss
+
+**4. Plyr Player Integration:**
+- **Play event**: Start time tracking, reset last update time
+- **Pause event**: Stop time tracking, preserve accumulated time
+- **Seeking event**: Update current position, maintain watch time accuracy
+
+**5. Duplicate Request Prevention:**
+- **Flag-based protection**: `isSendingData` prevents concurrent API calls
+- **Safe async handling**: `finally` block ensures flag cleanup
+- **Console logging**: Clear visibility into transmission status
+
+**6. Router Configuration:**
+- **Route path**: `/lectures/:lectureId/video/:videoId`
+- **Parameter passing**: lectureId, videoId, video URL, titles via query params
+- **Component**: VideoPlayerView with full time tracking capabilities
+
+**Backend API Integration:**
 ```
 PUT /v1/last-view
-- Updates watch time and last position
 - Request: { watchTimeMillis, lastTimeMillis, memberId, videoId }
-- Response: Success confirmation
+- watchTimeMillis: Accumulated watch time for current session
+- lastTimeMillis: Current playback position in milliseconds  
+- memberId: User ID from authentication store
+- videoId: Video identifier from route parameters
+- Response: Standard API response with success confirmation
 ```
+
+**Implementation Notes:**
+- All time values are in milliseconds for precision
+- User ID retrieved from Pinia user store (`userStore.getMemberId`)
+- Automatic session reset after successful transmission
+- Error handling with console logging, no user interruption
+- Compatible with both direct video files and YouTube embeds
 
 ### Component Naming
 - Views: `*View.vue` (e.g., CoursesView, LectureDetailsView)
