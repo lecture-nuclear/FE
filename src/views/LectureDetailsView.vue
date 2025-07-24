@@ -66,10 +66,9 @@
             <template v-if="userStore.isLoggedIn">
               <template v-if="isPurchased">
                 <button @click="handleTakeLecture" class="btn-take-lecture">수강하기</button>
-                <div class="last-viewed-info" v-if="lastViewedAt">
-                  마지막 시청 기록: {{ formatDate(lastViewedAt) }}
+                <div class="watch-time-info">
+                  누적 시청 시간: {{ formatWatchTime(totalWatchTime) }}
                 </div>
-                <div class="last-viewed-info" v-else>아직 시청 기록이 없습니다.</div>
               </template>
               <template v-else>
                 <button @click="handleEnrollLecture" class="btn-enroll">
@@ -132,8 +131,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter, RouterLink, onBeforeRouteLeave } from 'vue-router'
 import axiosInstance from '@/utils/axiosInstance'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
@@ -152,6 +151,7 @@ const errorMessage = ref('')
 
 const isPurchased = ref(false)
 const lastViewedAt = ref(null)
+const totalWatchTime = ref(0)
 const reviewListRef = ref(null)
 
 const fetchLectureDetails = async () => {
@@ -176,6 +176,9 @@ const fetchLectureDetails = async () => {
       // TODO: lectureDetail 조회 시 수강 상태 같이 받기
       if (userStore.isLoggedIn && userStore.id !== null) {
         await fetchPurchaseStatus(lectureId)
+        await fetchTotalWatchTime(lectureId)
+        // 강의 페이지 입장 기록
+        await enterLecture(lectureId)
       }
     } else {
       errorMessage.value = '강의 정보를 불러오는데 실패했습니다: 응답 형식이 올바르지 않습니다.'
@@ -216,6 +219,42 @@ const fetchPurchaseStatus = async (lectureId) => {
     console.error('구매 상태 로드 실패:', error)
     isPurchased.value = false
     lastViewedAt.value = null
+  }
+}
+
+const fetchTotalWatchTime = async (lectureId) => {
+  try {
+    const memberId = userStore.getMemberId
+    const response = await axiosInstance.get(`/v1/last-view/member/${memberId}/lecture/${lectureId}/total-watch-time`)
+    
+    if (response.data && response.data.data !== undefined) {
+      totalWatchTime.value = response.data.data
+    } else {
+      totalWatchTime.value = 0
+    }
+  } catch (error) {
+    console.error('누적 시청 시간 로드 실패:', error)
+    totalWatchTime.value = 0
+  }
+}
+
+const enterLecture = async (lectureId) => {
+  try {
+    const memberId = userStore.getMemberId
+    await axiosInstance.post(`/v1/last-view/member/${memberId}/lecture/${lectureId}/enter`)
+    console.log('강의 입장 기록 완료')
+  } catch (error) {
+    console.error('강의 입장 기록 실패:', error)
+  }
+}
+
+const exitLecture = async (lectureId) => {
+  try {
+    const memberId = userStore.getMemberId
+    await axiosInstance.post(`/v1/last-view/member/${memberId}/lecture/${lectureId}/exit`)
+    console.log('강의 퇴장 기록 완료')
+  } catch (error) {
+    console.error('강의 퇴장 기록 실패:', error)
   }
 }
 
@@ -372,8 +411,62 @@ const formatDate = (dateString) => {
   return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분 ${seconds}초`
 }
 
+const formatWatchTime = (timeInMillis) => {
+  if (!timeInMillis || timeInMillis === 0) {
+    return '0분'
+  }
+  
+  const totalSeconds = Math.floor(timeInMillis / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  
+  if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${seconds}초`
+  } else if (minutes > 0) {
+    return `${minutes}분 ${seconds}초`
+  } else {
+    return `${seconds}초`
+  }
+}
+
+const handleBeforeUnload = () => {
+  if (userStore.isLoggedIn && lectureDetails.value) {
+    exitLecture(lectureDetails.value.id)
+  }
+}
+
+const handleVisibilityChange = () => {
+  if (document.hidden && userStore.isLoggedIn && lectureDetails.value) {
+    exitLecture(lectureDetails.value.id)
+  }
+}
+
 onMounted(() => {
   fetchLectureDetails()
+  
+  // 브라우저 종료/새로고침 시 퇴장 기록
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  // 탭 전환 시 퇴장 기록
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+onUnmounted(() => {
+  if (userStore.isLoggedIn && lectureDetails.value) {
+    exitLecture(lectureDetails.value.id)
+  }
+  
+  // 이벤트 리스너 제거
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
+
+// 라우터 네비게이션 가드
+onBeforeRouteLeave(async (to, from, next) => {
+  if (userStore.isLoggedIn && lectureDetails.value) {
+    await exitLecture(lectureDetails.value.id)
+  }
+  next()
 })
 </script>
 
@@ -633,17 +726,18 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-.last-viewed-info {
+.watch-time-info {
   font-size: 16px;
   color: #555;
   text-align: center;
   margin-top: 5px;
   padding: 10px;
-  background-color: #f0f0f0;
+  background-color: #e8f5e8;
   border-radius: 5px;
   width: 100%;
   max-width: 280px;
   box-sizing: border-box;
+  border: 1px solid #d4edda;
 }
 
 .login-prompt-text {
@@ -707,7 +801,7 @@ onMounted(() => {
   .btn-take-lecture,
   .btn-add-cart,
   .btn-delete-lecture,
-  .last-viewed-info {
+  .watch-time-info {
     width: 100%;
     max-width: none;
   }
