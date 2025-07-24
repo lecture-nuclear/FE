@@ -19,10 +19,10 @@
             <div
               class="dropdown-item"
               @click="
-                userStore.isLoaded && userStore.id === 1 ? goToUploadCourse() : goToMyCourses()
+                isAdmin() ? goToUploadCourse() : goToMyCourses()
               "
             >
-              {{ userStore.isLoaded && userStore.id === 1 ? '강의 업로드' : '수강 중 강좌' }}
+              {{ isAdmin() ? '강의 업로드' : '수강 중 강좌' }}
             </div>
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
@@ -44,15 +44,13 @@
       <template v-if="cartStore.itemCount > 0">
         <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
           <img
-            :src="item.image || 'https://placehold.co/50x50/cccccc/333333?text=상품'"
+            :src="item.image || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
             alt="상품 이미지"
             class="cart-item-image"
           />
           <div class="item-details">
             <span class="item-name">{{ item.title }}</span>
-            <span class="item-qty-price"
-              >{{ item.quantity }} × {{ item.price.toLocaleString() }}₩</span
-            >
+            <span class="item-price">{{ item.price.toLocaleString() }}₩</span>
           </div>
           <button class="remove-item-btn" @click="removeCartItem(item.id)">×</button>
         </div>
@@ -62,7 +60,7 @@
         </div>
         <div class="cart-actions">
           <router-link to="/cart" class="btn-cart-view">장바구니 보기</router-link>
-          <button class="btn-checkout">결제</button>
+          <button class="btn-checkout" @click="goToPayment">결제</button>
         </div>
       </template>
       <template v-else>
@@ -79,6 +77,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
+import { isAdmin } from '@/utils/auth'
 import axiosInstance from '@/utils/axiosInstance'
 import LoginModal from '@/components/modals/LoginModal.vue'
 
@@ -113,7 +112,7 @@ const toggleCartDropdown = async () => {
     showUserDropdown.value = false
     // 장바구니가 열릴 때만 백엔드에서 정보 로드
     // userStore.id가 null이 아닌 경우에만 로드 시도
-    if (userStore.isLoggedIn && userStore.getMemberId !== null) {
+    if (userStore.isLoggedIn && userStore.getMemberId) {
       // getMemberId getter 사용
       try {
         // userStore의 id를 URL에 포함하여 요청
@@ -122,9 +121,8 @@ const toggleCartDropdown = async () => {
         const loadedItems = response.data.data.lectureList.map((item) => ({
           id: item.id,
           title: item.title,
-          price: item.price,
-          quantity: 1, // 백엔드에서 quantity를 주지 않는 경우 기본값 1 설정
-          image: item.thumbnailUrl || null, // 이미지가 있다면 추가, 없다면 null (thumbnailUrl로 필드명 변경)
+          price: item.price || 0, // null인 경우 0으로 처리
+          image: item.thumbnailUrl || null, // 썸네일 URL 사용
         }))
         cartStore.setCart(loadedItems)
       } catch (error) {
@@ -178,6 +176,23 @@ const goToUploadCourse = () => {
 // 장바구니 아이템 삭제 (예시)
 const removeCartItem = (itemId) => {
   cartStore.removeItem(itemId)
+}
+
+// 결제 페이지로 이동
+const goToPayment = () => {
+  if (cartStore.itemCount === 0) {
+    alert('장바구니에 상품이 없습니다.')
+    return
+  }
+  
+  if (!userStore.isLoggedIn) {
+    alert('로그인이 필요합니다.')
+    openLoginModal()
+    return
+  }
+  
+  showCartDropdown.value = false
+  router.push('/payment')
 }
 
 // 드롭다운 외부 클릭 시 닫기
@@ -387,10 +402,11 @@ onBeforeUnmount(() => {
   font-weight: 500;
   color: #333;
 }
-.item-qty-price {
+.item-price {
   color: #777;
   font-size: 14px;
   margin-top: 2px;
+  font-weight: 600;
 }
 .remove-item-btn {
   background: none;

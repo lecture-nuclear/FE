@@ -20,58 +20,64 @@
         </div>
       </div>
 
-      <div class="content-and-sidebar-wrapper">
-        <!-- 🚩 데스크톱에서 메인 콘텐츠가 왼쪽에 오도록 먼저 배치 -->
-        <div class="main-lecture-content">
-          <div v-if="lectureDetails.thumbnailUrl" class="lecture-thumbnail-full">
-            <img
-              :src="lectureDetails.thumbnailUrl"
-              :alt="lectureDetails.title"
-              class="thumbnail-img-full"
-            />
-          </div>
-          <div v-else class="lecture-thumbnail-placeholder">
-            <span class="placeholder-text">이미지 없음</span>
+      <div class="lecture-content-wrapper">
+        <div class="content-and-sidebar-wrapper">
+          <!-- 🚩 데스크톱에서 메인 콘텐츠가 왼쪽에 오도록 먼저 배치 -->
+          <div class="main-lecture-content">
+            <div v-if="lectureDetails.thumbnailUrl" class="lecture-thumbnail-full">
+              <img
+                :src="lectureDetails.thumbnailUrl"
+                :alt="lectureDetails.title"
+                class="thumbnail-img-full"
+              />
+            </div>
+
+            <p class="lecture-description">{{ lectureDetails.description }}</p>
+
+            <h2 class="section-title">강의 영상 목록</h2>
+            <!-- TODO: 영상 시간 api 추가 -->
+            <ul class="video-list">
+              <li v-for="(video, index) in lectureDetails.videos" :key="index" class="video-item">
+                <span class="video-title">{{ index + 1 }}. {{ video.title }}</span>
+                <template v-if="video.link">
+                  <button
+                    v-if="isPurchased"
+                    @click="() => handleWatchVideo(video, index)"
+                    class="video-link"
+                  >
+                    영상 보기
+                  </button>
+                  <button
+                    v-else
+                    @click="handleUnpurchasedVideoClick"
+                    class="video-link disabled"
+                    disabled
+                  >
+                    영상 보기
+                  </button>
+                </template>
+                <span v-else class="no-link">링크 없음</span>
+              </li>
+            </ul>
           </div>
 
-          <p class="lecture-description">{{ lectureDetails.description }}</p>
-
-          <h2 class="section-title">강의 영상 목록</h2>
-          <!-- TODO: 영상 시간 api 추가 -->
-          <ul class="video-list">
-            <li v-for="(video, index) in lectureDetails.videos" :key="index" class="video-item">
-              <span class="video-title">{{ index + 1 }}. {{ video.title }}</span>
-              <template v-if="video.link">
-                <button
-                  v-if="isPurchased"
-                  @click="() => handleWatchVideo(video, index)"
-                  class="video-link"
-                >
-                  영상 보기
-                </button>
-                <button
-                  v-else
-                  @click="handleUnpurchasedVideoClick"
-                  class="video-link disabled"
-                  disabled
-                >
-                  영상 보기
+          <!-- 🚩 데스크톱에서 구매/장바구니 버튼이 오른쪽에 오도록 배치 -->
+          <div class="sidebar-actions">
+            <template v-if="userStore.isLoggedIn">
+              <template v-if="isPurchased">
+                <button @click="handleTakeLecture" class="btn-take-lecture">수강하기</button>
+                <div class="last-viewed-info" v-if="lastViewedAt">
+                  마지막 시청 기록: {{ formatDate(lastViewedAt) }}
+                </div>
+                <div class="last-viewed-info" v-else>아직 시청 기록이 없습니다.</div>
+              </template>
+              <template v-else>
+                <button @click="handleEnrollLecture" class="btn-enroll">
+                  강의 구매 ({{
+                    lectureDetails.price ? lectureDetails.price.toLocaleString() + '₩' : '무료'
+                  }})
                 </button>
               </template>
-              <span v-else class="no-link">링크 없음</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- 🚩 데스크톱에서 구매/장바구니 버튼이 오른쪽에 오도록 배치 -->
-        <div class="sidebar-actions">
-          <template v-if="userStore.isLoggedIn">
-            <template v-if="isPurchased">
-              <button @click="handleTakeLecture" class="btn-take-lecture">수강하기</button>
-              <div class="last-viewed-info" v-if="lastViewedAt">
-                마지막 시청 기록: {{ formatDate(lastViewedAt) }}
-              </div>
-              <div class="last-viewed-info" v-else>아직 시청 기록이 없습니다.</div>
             </template>
             <template v-else>
               <button @click="handleEnrollLecture" class="btn-enroll">
@@ -79,38 +85,43 @@
                   lectureDetails.price ? lectureDetails.price.toLocaleString() + '₩' : '무료'
                 }})
               </button>
+              <p class="login-prompt-text">로그인 후 강의 구매/수강 가능</p>
             </template>
-          </template>
-          <template v-else>
-            <button @click="handleEnrollLecture" class="btn-enroll">
-              강의 구매 ({{
-                lectureDetails.price ? lectureDetails.price.toLocaleString() + '₩' : '무료'
-              }})
-            </button>
-            <p class="login-prompt-text">로그인 후 강의 구매/수강 가능</p>
-          </template>
 
-          <button 
-            v-if="!isPurchased" 
-            @click="handleAddToCart" 
-            class="btn-add-cart"
-          >
-            장바구니 담기
-          </button>
+            <button 
+              v-if="!isPurchased" 
+              @click="handleAddToCart" 
+              class="btn-add-cart"
+            >
+              장바구니 담기
+            </button>
+
+            <!-- 관리자 전용 삭제 버튼 -->
+            <button 
+              v-if="isAdmin()"
+              @click="handleDeleteLecture" 
+              class="btn-delete-lecture"
+            >
+              강의 삭제
+            </button>
+          </div>
+        </div>
+
+        <!-- 리뷰 섹션 -->
+        <div class="review-sections">
+          <!-- 리뷰 작성 섹션 -->
+          <ReviewWriteComponent 
+            :lectureId="lectureDetails.id" 
+            @reviewSubmitted="handleReviewSubmitted"
+          />
+
+          <!-- 리뷰 조회 섹션 -->
+          <ReviewListComponent 
+            :lectureId="lectureDetails.id" 
+            ref="reviewListRef"
+          />
         </div>
       </div>
-
-      <!-- 리뷰 작성 섹션 -->
-      <ReviewWriteComponent 
-        :lectureId="lectureDetails.id" 
-        @reviewSubmitted="handleReviewSubmitted"
-      />
-
-      <!-- 리뷰 조회 섹션 -->
-      <ReviewListComponent 
-        :lectureId="lectureDetails.id" 
-        ref="reviewListRef"
-      />
     </div>
 
     <div v-else class="no-data-message">
@@ -126,6 +137,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import axiosInstance from '@/utils/axiosInstance'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
+import { isAdmin } from '@/utils/auth'
 import ReviewWriteComponent from '@/components/ReviewWriteComponent.vue'
 import ReviewListComponent from '@/components/ReviewListComponent.vue'
 
@@ -298,7 +310,6 @@ const handleAddToCart = async () => {
         id: lectureDetails.value.id,
         title: lectureDetails.value.title,
         price: lectureDetails.value.price,
-        quantity: 1, // 장바구니 추가 시 기본 수량
         image: lectureDetails.value.thumbnailUrl, // 썸네일 URL
       })
     } else {
@@ -311,6 +322,39 @@ const handleAddToCart = async () => {
       alert('이미 장바구니에 있는 강의입니다.')
     } else {
       alert('장바구니 추가 중 오류가 발생했습니다.')
+    }
+  }
+}
+
+const handleDeleteLecture = async () => {
+  if (!lectureDetails.value) {
+    alert('강의 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+    return
+  }
+
+  // 삭제 확인 대화상자
+  const confirmDelete = confirm(`정말로 "${lectureDetails.value.title}" 강의를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)
+  if (!confirmDelete) {
+    return
+  }
+
+  try {
+    const response = await axiosInstance.delete(`/v1/curriculum/lectures/${lectureDetails.value.id}`)
+    
+    if (response.status === 200) {
+      alert(`${lectureDetails.value.title} 강의가 성공적으로 삭제되었습니다.`)
+      router.push('/courses') // 강의 목록 페이지로 이동
+    } else {
+      alert('강의 삭제에 실패했습니다. 다시 시도해주세요.')
+    }
+  } catch (error) {
+    console.error('강의 삭제 실패:', error)
+    if (error.response && error.response.status === 403) {
+      alert('강의 삭제 권한이 없습니다.')
+    } else if (error.response && error.response.status === 404) {
+      alert('강의를 찾을 수 없습니다.')
+    } else {
+      alert('강의 삭제 중 오류가 발생했습니다.')
     }
   }
 }
@@ -413,10 +457,15 @@ onMounted(() => {
   gap: 20px;
 }
 
+.lecture-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
 .content-and-sidebar-wrapper {
   display: flex;
   gap: 30px;
-  margin-bottom: 40px;
   flex-wrap: wrap;
   /* 데스크톱에서는 flex-direction 기본값인 row가 유지됩니다. (main-lecture-content 왼쪽에, sidebar-actions 오른쪽에) */
 }
@@ -449,19 +498,6 @@ onMounted(() => {
   width: 100%;
   height: auto;
   display: block;
-}
-.lecture-thumbnail-placeholder {
-  width: 100%;
-  max-width: 800px;
-  height: 300px;
-  background-color: #e0e0e0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #777;
-  font-size: 20px;
-  border-radius: 8px;
-  margin: 0 auto 30px auto;
 }
 
 .lecture-description {
@@ -542,7 +578,8 @@ onMounted(() => {
 
 .btn-enroll,
 .btn-take-lecture,
-.btn-add-cart {
+.btn-add-cart,
+.btn-delete-lecture {
   padding: 15px 30px;
   border: none;
   border-radius: 8px;
@@ -586,6 +623,16 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
+.btn-delete-lecture {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-delete-lecture:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
 .last-viewed-info {
   font-size: 16px;
   color: #555;
@@ -607,7 +654,11 @@ onMounted(() => {
   width: 100%;
 }
 
-
+.review-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
 
 @media (max-width: 1200px) {
   .lecture-detail-page {
@@ -621,8 +672,7 @@ onMounted(() => {
     gap: 20px;
   }
   .main-lecture-content,
-  .lecture-thumbnail-full,
-  .lecture-thumbnail-placeholder {
+  .lecture-thumbnail-full {
     max-width: 100%;
   }
 }
@@ -656,9 +706,14 @@ onMounted(() => {
   .btn-enroll,
   .btn-take-lecture,
   .btn-add-cart,
+  .btn-delete-lecture,
   .last-viewed-info {
     width: 100%;
     max-width: none;
+  }
+  .review-sections {
+    margin-top: 30px;
+    gap: 20px;
   }
 }
 </style>

@@ -2,7 +2,6 @@
   <div class="review-list-section">
     <div class="section-header">
       <h3 class="section-title">리뷰 목록</h3>
-      <button @click="refreshReviews" class="refresh-btn">새로고침</button>
     </div>
 
     <div v-if="loading" class="loading-message">리뷰를 불러오는 중입니다...</div>
@@ -27,7 +26,7 @@
               v-for="star in 5"
               :key="star"
               class="star"
-              :class="{ 'filled': star <= Math.round(averageRating) }"
+              :class="{ filled: star <= Math.round(averageRating) }"
             >
               ★
             </span>
@@ -36,20 +35,16 @@
       </div>
 
       <div class="review-list">
-        <div
-          v-for="review in reviews"
-          :key="review.id"
-          class="review-item"
-        >
+        <div v-for="review in reviews" :key="review.id" class="review-item">
           <div class="review-header">
             <div class="review-author-info">
-              <span class="review-author">{{ review.author || '익명' }}</span>
+              <span class="review-author">{{ review.name || '익명' }}</span>
               <div class="review-rating">
                 <span
                   v-for="star in 5"
                   :key="star"
                   class="star"
-                  :class="{ 'filled': star <= review.score }"
+                  :class="{ filled: star <= review.score }"
                 >
                   ★
                 </span>
@@ -58,7 +53,7 @@
             </div>
             <span class="review-date">{{ formatDate(review.createdAt) }}</span>
           </div>
-          
+
           <h4 class="review-title">{{ review.title }}</h4>
           <p class="review-content">{{ review.content }}</p>
         </div>
@@ -74,11 +69,9 @@
         >
           이전
         </button>
-        
-        <span class="page-info">
-          {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        
+
+        <span class="page-info"> {{ currentPage + 1 }} / {{ totalPages }} </span>
+
         <button
           @click="goToPage(currentPage + 1)"
           :disabled="currentPage >= totalPages - 1"
@@ -98,8 +91,8 @@ import axiosInstance from '@/utils/axiosInstance'
 const props = defineProps({
   lectureId: {
     type: [String, Number],
-    required: true
-  }
+    required: true,
+  },
 })
 
 const reviews = ref([])
@@ -125,8 +118,8 @@ const fetchReviews = async () => {
     const response = await axiosInstance.get(`/v1/curriculum/${props.lectureId}/review`, {
       params: {
         page: currentPage.value,
-        size: pageSize.value
-      }
+        size: pageSize.value,
+      },
     })
 
     if (response.data && response.data.data) {
@@ -166,13 +159,13 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
 // 외부에서 호출할 수 있도록 expose
 defineExpose({
-  refreshReviews
+  refreshReviews,
 })
 
 onMounted(() => {
@@ -189,9 +182,6 @@ onMounted(() => {
 }
 
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
 }
 
@@ -202,21 +192,6 @@ onMounted(() => {
   border-bottom: 2px solid #007bff;
   padding-bottom: 8px;
   display: inline-block;
-}
-
-.refresh-btn {
-  padding: 8px 16px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.refresh-btn:hover {
-  background-color: #218838;
 }
 
 .loading-message,
@@ -403,24 +378,18 @@ onMounted(() => {
   .review-list-section {
     padding: 20px;
   }
-  
-  .section-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-  
+
   .reviews-summary {
     flex-direction: column;
     gap: 10px;
     text-align: center;
   }
-  
+
   .review-header {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .review-item {
     padding: 15px;
   }

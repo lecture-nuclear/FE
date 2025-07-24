@@ -9,9 +9,9 @@
 
     <div v-else class="player-wrapper">
       <div class="video-header">
-        <router-link :to="`/lectures/${lectureId}`" class="back-button">
+        <button @click="handleBackToLecture" class="back-button">
           ← 강의로 돌아가기
-        </router-link>
+        </button>
         <h1 class="video-title">{{ videoTitle }}</h1>
       </div>
 
@@ -77,6 +77,9 @@ const lectureTitle = ref(route.query.lectureTitle || '강의')
 const videoDescription = ref('')
 const posterImage = ref('')
 
+// 마지막 시청 위치
+const lastViewPosition = ref(0) // 마지막 시청 위치 (밀리초)
+
 const isYouTubeVideo = ref(false)
 const youtubeId = ref('')
 const videoType = ref('video/mp4')
@@ -135,6 +138,28 @@ const stopWatchTimeInterval = () => {
   updateWatchTime()
 }
 
+// 마지막 시청 위치 조회
+const fetchLastViewPosition = async () => {
+  if (!userStore.getMemberId || !route.params.videoId) {
+    console.warn('⚠️ 사용자 ID 또는 비디오 ID가 없어 마지막 시청 위치를 조회할 수 없습니다.')
+    return
+  }
+
+  try {
+    const response = await axiosInstance.get(`/v1/last-view/member/${userStore.getMemberId}/video/${route.params.videoId}`)
+    
+    if (response.data && response.data.data) {
+      lastViewPosition.value = response.data.data.lastTimeMillis || 0
+      console.log('📍 마지막 시청 위치 조회 성공:', lastViewPosition.value, 'ms')
+    } else {
+      lastViewPosition.value = 0
+    }
+  } catch (error) {
+    console.warn('⚠️ 마지막 시청 위치 조회 실패 (처음부터 재생):', error)
+    lastViewPosition.value = 0
+  }
+}
+
 const sendWatchTimeData = async () => {
   if (isSendingData.value) {
     console.log('📊 이미 전송 중 - 스킵')
@@ -184,6 +209,10 @@ const initializePlayer = async () => {
       return
     }
 
+    // 마지막 시청 위치 조회 (로그인된 사용자만)
+    if (userStore.isLoggedIn) {
+      await fetchLastViewPosition()
+    }
 
     // YouTube 링크 체크
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
@@ -234,6 +263,14 @@ const initializePlayer = async () => {
       // 플레이어 이벤트 리스너
       player.value.on('ready', () => {
         console.log('플레이어가 준비되었습니다.')
+        
+        // 마지막 시청 위치로 이동 (0초가 아닌 경우에만)
+        if (lastViewPosition.value > 0) {
+          const seekPosition = lastViewPosition.value / 1000 // 밀리초를 초로 변환
+          console.log(`📍 마지막 시청 위치로 이동: ${seekPosition}초`)
+          player.value.currentTime = seekPosition
+        }
+        
         startWatchTimeTracking()
         startBackupInterval()
       })
@@ -280,6 +317,13 @@ const handleVisibilityChange = () => {
 const handleBeforeUnload = () => {
   console.log('📊 페이지 떠남 - 시청 시간 전송')
   sendWatchTimeData()
+}
+
+// 강의로 돌아가기 버튼 클릭 핸들러
+const handleBackToLecture = async () => {
+  console.log('📊 강의로 돌아가기 - 시청 시간 전송')
+  await sendWatchTimeData()
+  router.push(`/lectures/${lectureId.value}`)
 }
 
 onMounted(() => {
@@ -392,7 +436,9 @@ watch(
   font-size: 16px;
   padding: 8px 16px;
   background-color: rgba(0, 123, 255, 0.1);
+  border: none;
   border-radius: 5px;
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 

@@ -52,7 +52,6 @@ export function useCartActions() {
           id: lecture.id,
           title: lecture.title,
           price: lecture.price,
-          quantity: 1, // 장바구니 추가 시 기본 수량
           image: lecture.thumbnailUrl, // 썸네일 URL (LectureDetailsView에서 넘어옴)
         })
       } else {

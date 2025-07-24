@@ -8,6 +8,8 @@ import SearchView from '../views/SearchView.vue'
 import MyCoursesView from '@/views/MyCoursesView.vue'
 import UploadCourseView from '@/views/UploadCourseView.vue'
 import VideoPlayerView from '@/views/VideoPlayerView.vue'
+import PaymentView from '@/views/PaymentView.vue'
+import CartView from '@/views/CartView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,6 +61,17 @@ const router = createRouter({
       name: 'VideoPlayer',
       component: VideoPlayerView,
       // meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
+    },
+    {
+      path: '/payment',
+      name: 'Payment',
+      component: PaymentView,
+      meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
+    },
+    {
+      path: '/cart',
+      name: 'Cart',
+      component: CartView,
     },
   ],
 })
