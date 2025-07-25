@@ -16,14 +16,6 @@
             </div>
           </div>
           <div class="dropdown-section">
-            <!-- 관리자만 강의 업로드 메뉴 표시 -->
-            <div
-              v-if="isAdmin()"
-              class="dropdown-item"
-              @click="goToUploadCourse()"
-            >
-              강의 업로드
-            </div>
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
             </div>
@@ -161,11 +153,6 @@ const showProfile = () => {
   showUserDropdown.value = false
 }
 
-// "강의 업로드" 클릭 시 Upload Course 라우트로 이동 (admin 전용)
-const goToUploadCourse = () => {
-  router.push('/admin/upload-course')
-  showUserDropdown.value = false // 드롭다운 닫기
-}
 
 // 장바구니 아이템 삭제 (예시)
 const removeCartItem = (itemId) => {
