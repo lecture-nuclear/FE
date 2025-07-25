@@ -6,39 +6,46 @@
       <p>시스템 관리 및 설정을 위한 페이지입니다.</p>
     </div>
 
-    <!-- 탭 네비게이션 -->
-    <div class="admin-tabs">
-      <button 
-        @click="activeTab = 'users'" 
-        :class="{ active: activeTab === 'users' }"
-        class="tab-btn"
-      >
-        👥 사용자 관리
-      </button>
-      <button 
-        @click="activeTab = 'upload'" 
-        :class="{ active: activeTab === 'upload' }"
-        class="tab-btn"
-      >
-        📚 강의 업로드
-      </button>
-    </div>
+    <!-- 메인 컨텐츠 영역 -->
+    <div class="admin-main">
+      <!-- 왼쪽 사이드바 탭 네비게이션 -->
+      <div class="admin-sidebar">
+        <nav class="sidebar-nav">
+          <button 
+            @click="activeTab = 'users'" 
+            :class="{ active: activeTab === 'users' }"
+            class="sidebar-tab"
+          >
+            <span class="tab-icon">👥</span>
+            <span class="tab-text">사용자 관리</span>
+          </button>
+          <button 
+            @click="activeTab = 'upload'" 
+            :class="{ active: activeTab === 'upload' }"
+            class="sidebar-tab"
+          >
+            <span class="tab-icon">📚</span>
+            <span class="tab-text">강의 업로드</span>
+          </button>
+        </nav>
+      </div>
 
-    <!-- 탭 콘텐츠 -->
-    <div class="tab-content">
-      <!-- 사용자 관리 탭 -->
-      <UserManagement v-if="activeTab === 'users'" />
-      
-      <!-- 강의 업로드 탭 -->
-      <div v-if="activeTab === 'upload'" class="upload-section">
-        <div class="upload-notice">
-          <h2>📚 강의 업로드</h2>
-          <p>새로운 강의를 업로드하고 관리할 수 있습니다.</p>
-          
-          <div class="upload-actions">
-            <router-link to="/admin/upload-course" class="upload-link-btn">
-              ➕ 새 강의 업로드
-            </router-link>
+      <!-- 오른쪽 메인 콘텐츠 -->
+      <div class="admin-content">
+        <!-- 사용자 관리 탭 -->
+        <UserManagement v-if="activeTab === 'users'" />
+        
+        <!-- 강의 업로드 탭 -->
+        <div v-if="activeTab === 'upload'" class="upload-section">
+          <div class="upload-notice">
+            <h2>📚 강의 업로드</h2>
+            <p>새로운 강의를 업로드하고 관리할 수 있습니다.</p>
+            
+            <div class="upload-actions">
+              <router-link to="/admin/upload-course" class="upload-link-btn">
+                ➕ 새 강의 업로드
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -80,8 +87,7 @@ onMounted(async () => {
 <style scoped>
 .admin-page {
   padding: 30px;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   box-sizing: border-box;
   min-height: calc(100vh - 100px);
   background-color: #f9f9f9;
@@ -104,53 +110,77 @@ onMounted(async () => {
   color: #7f8c8d;
 }
 
-/* 탭 네비게이션 */
-.admin-tabs {
+/* 메인 컨텐츠 영역 */
+.admin-main {
   display: flex;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 30px;
-  background-color: white;
-  border-radius: 12px;
-  padding: 6px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 30px;
+  gap: 30px;
+  min-height: 600px;
 }
 
-.tab-btn {
-  flex: 1;
-  padding: 14px 20px;
+/* 왼쪽 사이드바 */
+.admin-sidebar {
+  width: 280px;
+  min-width: 280px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  padding: 20px 0;
+  height: fit-content;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 16px 24px;
   border: none;
   background-color: transparent;
   color: #7f8c8d;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 0;
   transition: all 0.3s ease;
-  white-space: nowrap;
+  text-align: left;
+  width: 100%;
+  border-left: 4px solid transparent;
 }
 
-.tab-btn:hover {
+.sidebar-tab:hover {
   background-color: #f8f9fa;
   color: #2c3e50;
+  border-left-color: #ddd;
 }
 
-.tab-btn.active {
-  background-color: #3498db;
-  color: white;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+.sidebar-tab.active {
+  background-color: #f0f8ff;
+  color: #3498db;
+  border-left-color: #3498db;
+  font-weight: 700;
 }
 
-/* 탭 콘텐츠 */
-.tab-content {
+.tab-icon {
+  font-size: 20px;
+  min-width: 24px;
+}
+
+.tab-text {
+  flex: 1;
+}
+
+/* 오른쪽 메인 콘텐츠 */
+.admin-content {
+  flex: 1;
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-  min-height: 500px;
+  min-height: 600px;
 }
 
 /* 강의 업로드 섹션 */
@@ -203,6 +233,22 @@ onMounted(async () => {
 }
 
 /* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .admin-main {
+    gap: 20px;
+  }
+  
+  .admin-sidebar {
+    width: 240px;
+    min-width: 240px;
+  }
+  
+  .sidebar-tab {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-page {
     padding: 20px;
@@ -216,18 +262,44 @@ onMounted(async () => {
     font-size: 16px;
   }
   
-  .admin-tabs {
-    margin: 0 10px 20px;
-    padding: 4px;
+  .admin-main {
+    flex-direction: column;
+    gap: 20px;
   }
   
-  .tab-btn {
-    padding: 12px 16px;
+  .admin-sidebar {
+    width: 100%;
+    min-width: auto;
+    order: 2;
+  }
+  
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0;
+  }
+  
+  .sidebar-tab {
+    min-width: 160px;
+    padding: 12px 20px;
     font-size: 14px;
+    border-left: none;
+    border-bottom: 4px solid transparent;
+    white-space: nowrap;
   }
   
-  .tab-content {
-    margin: 0 10px;
+  .sidebar-tab:hover {
+    border-left-color: transparent;
+    border-bottom-color: #ddd;
+  }
+  
+  .sidebar-tab.active {
+    border-left-color: transparent;
+    border-bottom-color: #3498db;
+  }
+  
+  .admin-content {
+    order: 1;
   }
   
   .upload-section {
@@ -249,14 +321,18 @@ onMounted(async () => {
 }
 
 @media (max-width: 480px) {
-  .admin-tabs {
-    flex-direction: column;
-    gap: 4px;
+  .admin-page {
+    padding: 15px;
   }
   
-  .tab-btn {
-    padding: 12px;
-    font-size: 14px;
+  .sidebar-tab {
+    min-width: 140px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .tab-icon {
+    font-size: 18px;
   }
   
   .upload-notice h2 {

@@ -6,7 +6,7 @@
       <p>등록된 모든 사용자를 조회하고 관리할 수 있습니다.</p>
     </div>
 
-    <!-- 검색 및 필터 영역 -->
+    <!-- 검색 및 정렬 영역 -->
     <div class="search-section">
       <div class="search-bar">
         <input
@@ -18,6 +18,27 @@
         >
         <button @click="handleSearch" class="search-btn">🔍 검색</button>
         <button @click="clearSearch" class="clear-btn">초기화</button>
+      </div>
+      
+      <!-- 정렬 옵션 -->
+      <div class="sort-section">
+        <div class="sort-controls">
+          <label for="sortBy">정렬 기준:</label>
+          <select id="sortBy" v-model="sortBy" @change="handleSortChange" class="sort-select">
+            <option value="createdAt">가입일</option>
+            <option value="name">이름</option>
+            <option value="email">이메일</option>
+            <option value="id">ID</option>
+          </select>
+          
+          <label for="sortDirection">정렬 방향:</label>
+          <select id="sortDirection" v-model="sortDirection" @change="handleSortChange" class="sort-select">
+            <option value="desc">내림차순</option>
+            <option value="asc">오름차순</option>
+          </select>
+          
+          <button @click="refreshUsers" class="refresh-btn">🔄 새로고침</button>
+        </div>
       </div>
     </div>
 
@@ -101,6 +122,8 @@ const error = ref(null)
 const searchKeyword = ref('')
 const showDetailModal = ref(false)
 const selectedUser = ref(null)
+const sortBy = ref('createdAt')
+const sortDirection = ref('desc')
 
 // 필터링된 사용자 목록
 const filteredUsers = computed(() => {
@@ -119,7 +142,7 @@ const fetchUsers = async () => {
   try {
     isLoading.value = true
     error.value = null
-    const response = await getAllUsers()
+    const response = await getAllUsers(sortBy.value, sortDirection.value)
     users.value = response.data
   } catch (err) {
     console.error('사용자 목록 조회 실패:', err)
@@ -164,6 +187,17 @@ const closeDetailModal = () => {
   selectedUser.value = null
 }
 
+// 정렬 변경 처리
+const handleSortChange = () => {
+  console.log(`정렬 변경: ${sortBy.value} ${sortDirection.value}`)
+  fetchUsers()
+}
+
+// 새로고침
+const refreshUsers = () => {
+  fetchUsers()
+}
+
 // 컴포넌트 마운트 시 데이터 로드
 onMounted(() => {
   fetchUsers()
@@ -201,7 +235,61 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto 20px;
+}
+
+.sort-section {
+  display: flex;
+  justify-content: center;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: white;
+  padding: 16px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e1e8ed;
+}
+
+.sort-controls label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.refresh-btn {
+  padding: 8px 16px;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background-color: #219a52;
 }
 
 .search-input {
@@ -410,6 +498,22 @@ onMounted(() => {
   
   .search-bar {
     flex-direction: column;
+  }
+  
+  .sort-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+  
+  .sort-select {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .refresh-btn {
+    padding: 6px 12px;
+    font-size: 13px;
   }
   
   .users-table th,

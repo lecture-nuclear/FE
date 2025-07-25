@@ -7,12 +7,19 @@ import axiosInstance from '@/utils/axiosInstance'
 
 /**
  * 모든 사용자 목록 조회 (관리자용)
+ * @param {string} sortBy - 정렬 기준 (name, email, createdAt, id)
+ * @param {string} sortDirection - 정렬 방향 (asc, desc)
  * @returns {Promise} API 응답
  */
-export const getAllUsers = async () => {
+export const getAllUsers = async (sortBy = 'createdAt', sortDirection = 'desc') => {
   try {
-    console.log('📤 모든 사용자 목록 조회 API 호출')
-    const response = await axiosInstance.get('/v1/member')
+    console.log(`📤 모든 사용자 목록 조회 API 호출 - sortBy: ${sortBy}, sortDirection: ${sortDirection}`)
+    const response = await axiosInstance.get('/v1/member', {
+      params: {
+        sortBy,
+        sortDirection
+      }
+    })
     console.log('✅ 사용자 목록 조회 성공:', response.data)
     return response.data
   } catch (error) {
