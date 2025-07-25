@@ -16,13 +16,13 @@
             </div>
           </div>
           <div class="dropdown-section">
+            <!-- 관리자만 강의 업로드 메뉴 표시 -->
             <div
+              v-if="isAdmin()"
               class="dropdown-item"
-              @click="
-                isAdmin() ? goToUploadCourse() : goToMyCourses()
-              "
+              @click="goToUploadCourse()"
             >
-              {{ isAdmin() ? '강의 업로드' : '수강 중 강좌' }}
+              강의 업로드
             </div>
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
@@ -159,12 +159,6 @@ const logout = async () => {
 const showProfile = () => {
   alert('프로필 페이지로 이동합니다.')
   showUserDropdown.value = false
-}
-
-// "수강 중 강좌" 클릭 시 MyCourses 라우트로 이동
-const goToMyCourses = () => {
-  router.push('/my-courses')
-  showUserDropdown.value = false // 드롭다운 닫기
 }
 
 // "강의 업로드" 클릭 시 Upload Course 라우트로 이동 (admin 전용)

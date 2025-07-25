@@ -20,12 +20,26 @@
       <nav :class="{ 'nav-open': showMobileMenu }">
         <router-link to="/courses" class="nav-link" @click="closeMobileMenu">강의</router-link>
         <router-link to="/about" class="nav-link" @click="closeMobileMenu">About</router-link>
-        <router-link
-          :to="{ name: 'search', query: { keyword: '' } }"
-          class="nav-link"
-          @click="closeMobileMenu"
-          >Search</router-link
-        >
+        <!-- 로그인한 사용자만 보이는 조건부 메뉴 -->
+        <template v-if="userStore.isLoggedIn">
+          <!-- 관리자는 "관리⚙️" 탭, 일반 사용자는 "수강 중 강의" 탭 -->
+          <router-link 
+            v-if="isAdmin()" 
+            to="/admin" 
+            class="nav-link" 
+            @click="closeMobileMenu"
+          >
+            관리⚙️
+          </router-link>
+          <router-link 
+            v-else 
+            to="/my-courses" 
+            class="nav-link" 
+            @click="closeMobileMenu"
+          >
+            수강 중 강의
+          </router-link>
+        </template>
       </nav>
 
       <!-- 사용자 로그인/장바구니 바 -->
@@ -36,7 +50,11 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useUserStore } from '@/stores/userStore'
+import { isAdmin } from '@/utils/auth'
 import UserBar from './UserBar.vue'
+
+const userStore = useUserStore()
 
 const showMobileMenu = ref(false)
 

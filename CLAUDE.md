@@ -235,6 +235,39 @@ PortOne.requestPayment({
 
 ## TODO - 현재 알려진 문제점
 
+### JWT 토큰 검증 시스템 개선 (우선순위: 높음)
+
+#### 즉시 해결 필요 (Critical)
+- [x] **JwtTokenProvider 타입 안전성**: `getMemberIdFromRefresh()` unsafe casting 수정 - ClassCastException 위험 ✅
+- [x] **AuthServiceImpl null 반환**: `login()` 메서드에서 null 반환 가능성 제거 - NPE 위험 ✅
+- [x] **JwtAuthenticationFilter 예외 처리**: MalformedJwtException, SignatureException 등 누락된 예외 처리 추가 ✅
+- [x] **SecurityUtil 코드 중복**: token 추출 로직 통합 및 null/empty 검증 강화 ✅
+
+#### 보안 강화 (Security)
+- [ ] **토큰 검증 로깅**: 인증 성공/실패에 대한 적절한 로깅 추가 (디버깅 및 보안 모니터링)
+- [ ] **에러 응답 표준화**: HTTP 418 대신 표준 상태 코드 사용 (401/403)
+- [ ] **Rate Limiting**: 토큰 검증 실패 시 브루트포스 공격 방지
+- [ ] **토큰 블랙리스트**: 필터 레벨에서 Redis 블랙리스트 확인 로직 추가
+- [ ] **쿠키 보안 설정**: 환경별 secure/sameSite 설정 동적 구성
+
+#### 성능 및 안정성 (Performance & Reliability)  
+- [ ] **Redis 연결 관리**: Circuit Breaker 패턴 적용으로 Redis 장애 시 fallback 처리
+- [ ] **토큰 파싱 최적화**: Claims 파싱 로직 성능 개선 및 메모리 누수 방지
+- [ ] **데이터베이스 호출 최적화**: 토큰 검증 과정에서 불필요한 DB 조회 최소화
+- [ ] **동시성 처리**: 로그아웃 과정에서 Redis operations 원자성 보장
+
+#### 코드 품질 개선 (Code Quality)
+- [ ] **예외 처리 일관성**: 커스텀 예외 클래스 활용한 일관된 에러 처리 패턴 적용
+- [ ] **환경 설정 관리**: JWT 관련 설정값들의 환경별 동적 구성 개선
+- [ ] **상관관계 ID**: 에러 추적을 위한 correlation ID 시스템 도입
+- [ ] **토큰 생명주기**: access/refresh 토큰 rotation 정책 및 자동화 개선
+
+#### 모니터링 및 디버깅 (Monitoring)
+- [ ] **감사 로깅**: 보안 이벤트에 대한 체계적인 audit log 시스템 구축  
+- [ ] **메트릭 수집**: 토큰 발급/검증/갱신 성공률 및 성능 메트릭 수집
+- [ ] **토큰 상태 조회**: 개발/디버깅용 토큰 introspection API 추가
+- [ ] **알림 시스템**: 비정상적인 토큰 패턴 감지 시 알림 기능
+
 ### UI/UX 이슈
 - [ ] **강의 상세 페이지 레이아웃**: 영상 목록과 리뷰 섹션 간 겹침 현상 (구조적 해결 적용됨, 추가 테스트 필요)
 - [ ] **반응형 디자인**: 모바일/태블릿에서 버튼 배치 및 간격 최적화 필요

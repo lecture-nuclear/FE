@@ -201,6 +201,28 @@ const sendWatchTimeData = async () => {
   }
 }
 
+// 강의 입장 기록
+const enterLecture = async () => {
+  try {
+    const memberId = userStore.getMemberId
+    await axiosInstance.post(`/v1/last-view/member/${memberId}/lecture/${lectureId.value}/enter`)
+    console.log('🏫 강의 입장 기록 완료')
+  } catch (error) {
+    console.error('❌ 강의 입장 기록 실패:', error)
+  }
+}
+
+// 강의 퇴장 기록
+const exitLecture = async () => {
+  try {
+    const memberId = userStore.getMemberId
+    await axiosInstance.post(`/v1/last-view/member/${memberId}/lecture/${lectureId.value}/exit`)
+    console.log('🚪 강의 퇴장 기록 완료')
+  } catch (error) {
+    console.error('❌ 강의 퇴장 기록 실패:', error)
+  }
+}
+
 const initializePlayer = async () => {
   try {
     if (!videoUrl.value) {
@@ -209,8 +231,9 @@ const initializePlayer = async () => {
       return
     }
 
-    // 마지막 시청 위치 조회 (로그인된 사용자만)
+    // 강의 입장 기록 (로그인된 사용자만)
     if (userStore.isLoggedIn) {
+      await enterLecture()
       await fetchLastViewPosition()
     }
 
@@ -306,8 +329,11 @@ const initializePlayer = async () => {
 // 이벤트 리스너 등록
 const handleVisibilityChange = () => {
   if (document.hidden) {
-    console.log('📊 페이지가 숨겨짐 - 시청 시간 전송')
+    console.log('📊 페이지가 숨겨짐 - 시청 시간 전송 및 강의 퇴장')
     sendWatchTimeData()
+    if (userStore.isLoggedIn) {
+      exitLecture()
+    }
   } else {
     console.log('📊 페이지가 다시 보임 - 시청 시간 추적 재시작')
     lastUpdateTime.value = Date.now()
@@ -315,14 +341,20 @@ const handleVisibilityChange = () => {
 }
 
 const handleBeforeUnload = () => {
-  console.log('📊 페이지 떠남 - 시청 시간 전송')
+  console.log('📊 페이지 떠남 - 시청 시간 전송 및 강의 퇴장')
   sendWatchTimeData()
+  if (userStore.isLoggedIn) {
+    exitLecture()
+  }
 }
 
 // 강의로 돌아가기 버튼 클릭 핸들러
 const handleBackToLecture = async () => {
-  console.log('📊 강의로 돌아가기 - 시청 시간 전송')
+  console.log('📊 강의로 돌아가기 - 시청 시간 전송 및 강의 퇴장')
   await sendWatchTimeData()
+  if (userStore.isLoggedIn) {
+    await exitLecture()
+  }
   router.push(`/lectures/${lectureId.value}`)
 }
 
@@ -339,6 +371,11 @@ onUnmounted(() => {
   stopBackupInterval()
   sendWatchTimeData()
   
+  // 강의 퇴장 기록
+  if (userStore.isLoggedIn) {
+    exitLecture()
+  }
+  
   if (player.value) {
     player.value.destroy()
   }
@@ -350,10 +387,16 @@ onUnmounted(() => {
 
 onBeforeUnmount(() => {
   sendWatchTimeData()
+  if (userStore.isLoggedIn) {
+    exitLecture()
+  }
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
   await sendWatchTimeData()
+  if (userStore.isLoggedIn) {
+    await exitLecture()
+  }
   next()
 })
 
@@ -361,6 +404,7 @@ onBeforeRouteUpdate(async (to, from, next) => {
   // 다른 비디오로 이동할 때 현재 비디오의 시간 전송
   if (to.params.videoId !== from.params.videoId) {
     await sendWatchTimeData()
+    // 같은 강의 내에서 다른 비디오로 이동하는 경우는 퇴장하지 않음
   }
   next()
 })

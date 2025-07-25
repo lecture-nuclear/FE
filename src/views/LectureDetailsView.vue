@@ -131,8 +131,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter, RouterLink, onBeforeRouteLeave } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import axiosInstance from '@/utils/axiosInstance'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
@@ -177,8 +177,6 @@ const fetchLectureDetails = async () => {
       if (userStore.isLoggedIn && userStore.id !== null) {
         await fetchPurchaseStatus(lectureId)
         await fetchTotalWatchTime(lectureId)
-        // 강의 페이지 입장 기록
-        await enterLecture(lectureId)
       }
     } else {
       errorMessage.value = '강의 정보를 불러오는데 실패했습니다: 응답 형식이 올바르지 않습니다.'
@@ -238,25 +236,6 @@ const fetchTotalWatchTime = async (lectureId) => {
   }
 }
 
-const enterLecture = async (lectureId) => {
-  try {
-    const memberId = userStore.getMemberId
-    await axiosInstance.post(`/v1/last-view/member/${memberId}/lecture/${lectureId}/enter`)
-    console.log('강의 입장 기록 완료')
-  } catch (error) {
-    console.error('강의 입장 기록 실패:', error)
-  }
-}
-
-const exitLecture = async (lectureId) => {
-  try {
-    const memberId = userStore.getMemberId
-    await axiosInstance.post(`/v1/last-view/member/${memberId}/lecture/${lectureId}/exit`)
-    console.log('강의 퇴장 기록 완료')
-  } catch (error) {
-    console.error('강의 퇴장 기록 실패:', error)
-  }
-}
 
 const handleReviewSubmitted = () => {
   // 리뷰가 작성되면 리뷰 목록을 새로고침
@@ -296,8 +275,47 @@ const handleEnrollLecture = async () => {
   }
 }
 
-const handleTakeLecture = () => {
-  alert(`${lectureDetails.value.title} 강의를 수강합니다! (이동 로직 추가 필요)`)
+const handleTakeLecture = async () => {
+  if (!lectureDetails.value || !userStore.isLoggedIn) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+
+  try {
+    // 최근 시청한 비디오 조회
+    const memberId = userStore.getMemberId
+    const response = await axiosInstance.get(`/v1/last-view/member/${memberId}/lecture/${lectureDetails.value.id}/recent-video`)
+    
+    if (response.data && response.data.data) {
+      // 최근 시청한 비디오가 있는 경우
+      const recentVideo = response.data.data
+      const video = lectureDetails.value.videos.find(v => v.id === recentVideo.videoId)
+      
+      if (video) {
+        console.log('최근 시청한 비디오로 이동:', recentVideo)
+        handleWatchVideo(video, video.id)
+      } else {
+        // 비디오를 찾을 수 없는 경우 첫 번째 비디오로
+        handleFirstVideo()
+      }
+    } else {
+      // 시청 기록이 없는 경우 첫 번째 비디오로
+      handleFirstVideo()
+    }
+  } catch (error) {
+    console.error('최근 시청 비디오 조회 실패:', error)
+    // 에러 시 첫 번째 비디오로 fallback
+    handleFirstVideo()
+  }
+}
+
+const handleFirstVideo = () => {
+  if (lectureDetails.value.videos && lectureDetails.value.videos.length > 0) {
+    const firstVideo = lectureDetails.value.videos[0]
+    handleWatchVideo(firstVideo, 0)
+  } else {
+    alert('강의에 영상이 없습니다.')
+  }
 }
 
 const handleUnpurchasedVideoClick = () => {
@@ -430,43 +448,8 @@ const formatWatchTime = (timeInMillis) => {
   }
 }
 
-const handleBeforeUnload = () => {
-  if (userStore.isLoggedIn && lectureDetails.value) {
-    exitLecture(lectureDetails.value.id)
-  }
-}
-
-const handleVisibilityChange = () => {
-  if (document.hidden && userStore.isLoggedIn && lectureDetails.value) {
-    exitLecture(lectureDetails.value.id)
-  }
-}
-
 onMounted(() => {
   fetchLectureDetails()
-  
-  // 브라우저 종료/새로고침 시 퇴장 기록
-  window.addEventListener('beforeunload', handleBeforeUnload)
-  // 탭 전환 시 퇴장 기록
-  document.addEventListener('visibilitychange', handleVisibilityChange)
-})
-
-onUnmounted(() => {
-  if (userStore.isLoggedIn && lectureDetails.value) {
-    exitLecture(lectureDetails.value.id)
-  }
-  
-  // 이벤트 리스너 제거
-  window.removeEventListener('beforeunload', handleBeforeUnload)
-  document.removeEventListener('visibilitychange', handleVisibilityChange)
-})
-
-// 라우터 네비게이션 가드
-onBeforeRouteLeave(async (to, from, next) => {
-  if (userStore.isLoggedIn && lectureDetails.value) {
-    await exitLecture(lectureDetails.value.id)
-  }
-  next()
 })
 </script>
 

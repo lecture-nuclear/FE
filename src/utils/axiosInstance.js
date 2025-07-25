@@ -1,6 +1,5 @@
 // src/utils/axiosInstance.js
 import axios from 'axios'
-import { useUserStore } from '@/stores/userStore'
 import router from '@/router'
 
 const axiosInstance = axios.create({
@@ -13,6 +12,18 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false
 let failedQueue = []
+
+// 순환 의존성 해결을 위한 콜백 함수들
+let userStoreCallbacks = {
+  loginSuccess: null,
+  logout: null,
+}
+
+// userStore에서 콜백 함수를 설정하는 함수
+export const setUserStoreCallbacks = (callbacks) => {
+  userStoreCallbacks.loginSuccess = callbacks.loginSuccess
+  userStoreCallbacks.logout = callbacks.logout
+}
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
@@ -30,7 +41,6 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-    const userStore = useUserStore()
 
     // 네트워크 에러 처리
     if (!error.response) {
@@ -71,12 +81,14 @@ axiosInstance.interceptors.response.use(
         if (refreshResponse.status === 200 && refreshResponse.data.data) {
           const userData = refreshResponse.data.data
 
-          // userStore 업데이트
-          userStore.loginSuccess({
-            name: userData.name || '사용자',
-            email: userData.email || '',
-            id: userData.id || null,
-          })
+          // userStore 업데이트 (콜백 함수 사용)
+          if (userStoreCallbacks.loginSuccess) {
+            userStoreCallbacks.loginSuccess({
+              name: userData.name || '사용자',
+              email: userData.email || '',
+              id: userData.id || null,
+            })
+          }
 
           console.log('✅ 토큰 갱신 성공')
 
@@ -94,8 +106,10 @@ axiosInstance.interceptors.response.use(
         // 대기 중인 요청들 모두 실패 처리
         processQueue(refreshError)
 
-        // 로그아웃 처리
-        userStore.logout()
+        // 로그아웃 처리 (콜백 함수 사용)
+        if (userStoreCallbacks.logout) {
+          userStoreCallbacks.logout()
+        }
 
         // 현재 경로가 로그인 페이지가 아닌 경우에만 리다이렉트
         if (router.currentRoute.value.path !== '/') {

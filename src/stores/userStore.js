@@ -1,6 +1,6 @@
 // src/stores/userStore.js
 import { defineStore } from 'pinia'
-import axiosInstance from '@/utils/axiosInstance'
+import axiosInstance, { setUserStoreCallbacks } from '@/utils/axiosInstance'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -10,8 +10,19 @@ export const useUserStore = defineStore('user', {
     id: null, // memberId 역할을 하는 id를 null로 초기화
     isLoaded: false, // 사용자 정보 로드 완료 여부 추가
     loadingPromise: null, // 중복 로딩 방지를 위한 Promise 저장
+    isInitialized: false, // 콜백 함수 설정 완료 여부
   }),
   actions: {
+    // axiosInstance에 콜백 함수 설정 (순환 의존성 해결)
+    initializeAxiosCallbacks() {
+      if (!this.isInitialized) {
+        setUserStoreCallbacks({
+          loginSuccess: (userData) => this.loginSuccess(userData),
+          logout: () => this.logout()
+        })
+        this.isInitialized = true
+      }
+    },
     loginSuccess(userData) {
       this.isLoggedIn = true
       this.name = userData.name || '사용자'
@@ -26,6 +37,7 @@ export const useUserStore = defineStore('user', {
       this.id = null
       this.isLoaded = false // 로그아웃 시 정보 로드 상태 초기화
       this.loadingPromise = null // 로딩 Promise도 초기화
+      // isInitialized는 유지 (콜백 함수는 계속 사용)
     },
     checkSuccess(data) {
       console.log('data', data)
@@ -39,6 +51,9 @@ export const useUserStore = defineStore('user', {
      * 이 함수는 Promise를 반환하여 외부에서 로딩 완료를 기다릴 수 있게 합니다.
      */
     async checkLoginStatus() {
+      // 콜백 함수 초기화 (순환 의존성 해결)
+      this.initializeAxiosCallbacks()
+      
       // 이미 로딩 중인 Promise가 있다면 해당 Promise를 반환하여 중복 호출 방지
       if (this.loadingPromise) {
         return this.loadingPromise
