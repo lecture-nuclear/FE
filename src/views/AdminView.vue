@@ -3,7 +3,6 @@
   <div class="admin-page">
     <div class="admin-header">
       <h1>관리자 페이지 ⚙️</h1>
-      <p>시스템 관리 및 설정을 위한 페이지입니다.</p>
     </div>
 
     <!-- 메인 컨텐츠 영역 -->
@@ -11,24 +10,24 @@
       <!-- 왼쪽 사이드바 탭 네비게이션 -->
       <div class="admin-sidebar">
         <nav class="sidebar-nav">
-          <button 
-            @click="activeTab = 'users'" 
+          <button
+            @click="activeTab = 'users'"
             :class="{ active: activeTab === 'users' }"
             class="sidebar-tab"
           >
             <span class="tab-icon">👥</span>
             <span class="tab-text">사용자 관리</span>
           </button>
-          <button 
-            @click="activeTab = 'upload'" 
+          <button
+            @click="activeTab = 'upload'"
             :class="{ active: activeTab === 'upload' }"
             class="sidebar-tab"
           >
             <span class="tab-icon">📚</span>
             <span class="tab-text">강의 업로드</span>
           </button>
-          <button 
-            @click="activeTab = 'home'" 
+          <button
+            @click="activeTab = 'home'"
             :class="{ active: activeTab === 'home' }"
             class="sidebar-tab"
           >
@@ -42,13 +41,13 @@
       <div class="admin-content">
         <!-- 사용자 관리 탭 -->
         <UserManagement v-if="activeTab === 'users'" />
-        
+
         <!-- 강의 업로드 탭 -->
         <div v-if="activeTab === 'upload'" class="upload-section">
           <div class="upload-notice">
             <h2>📚 강의 업로드</h2>
             <p>새로운 강의를 업로드하고 관리할 수 있습니다.</p>
-            
+
             <div class="upload-actions">
               <router-link to="/admin/upload-course" class="upload-link-btn">
                 ➕ 새 강의 업로드
@@ -56,13 +55,13 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 홈화면 꾸미기 탭 -->
         <div v-if="activeTab === 'home'" class="home-section">
           <div class="home-notice">
             <h2>🏠 홈화면 꾸미기</h2>
             <p>메인 페이지의 레이아웃과 콘텐츠를 관리할 수 있습니다.</p>
-            
+
             <div class="home-content">
               <div class="feature-placeholder">
                 <div class="placeholder-icon">🚧</div>
@@ -101,7 +100,7 @@ onMounted(async () => {
   try {
     // 로그인 상태 확인 후 관리자 검사
     await userStore.checkLoginStatus()
-    
+
     if (!userStore.isLoggedIn || !isAdmin()) {
       alert('관리자만 접근할 수 있습니다.')
       router.push('/')
@@ -340,7 +339,7 @@ onMounted(async () => {
 }
 
 .feature-list li::before {
-  content: "✨";
+  content: '✨';
   margin-right: 8px;
 }
 
@@ -349,12 +348,12 @@ onMounted(async () => {
   .admin-main {
     gap: 20px;
   }
-  
+
   .admin-sidebar {
     width: 240px;
     min-width: 240px;
   }
-  
+
   .sidebar-tab {
     padding: 14px 20px;
     font-size: 15px;
@@ -365,32 +364,32 @@ onMounted(async () => {
   .admin-page {
     padding: 20px;
   }
-  
+
   .admin-header h1 {
     font-size: 30px;
   }
-  
+
   .admin-header p {
     font-size: 16px;
   }
-  
+
   .admin-main {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .admin-sidebar {
     width: 100%;
     min-width: auto;
-    order: 2;
+    order: 1;
   }
-  
+
   .sidebar-nav {
     flex-direction: row;
     overflow-x: auto;
     gap: 0;
   }
-  
+
   .sidebar-tab {
     min-width: 160px;
     padding: 12px 20px;
@@ -399,45 +398,45 @@ onMounted(async () => {
     border-bottom: 4px solid transparent;
     white-space: nowrap;
   }
-  
+
   .sidebar-tab:hover {
     border-left-color: transparent;
     border-bottom-color: #ddd;
   }
-  
+
   .sidebar-tab.active {
     border-left-color: transparent;
     border-bottom-color: #3498db;
   }
-  
+
   .admin-content {
-    order: 1;
+    order: 2;
   }
-  
+
   .upload-section,
   .home-section {
     padding: 30px 20px;
   }
-  
+
   .upload-notice h2,
   .home-notice h2 {
     font-size: 24px;
   }
-  
+
   .upload-notice p,
   .home-notice p {
     font-size: 16px;
   }
-  
+
   .upload-link-btn {
     padding: 14px 24px;
     font-size: 16px;
   }
-  
+
   .feature-placeholder {
     padding: 40px 20px;
   }
-  
+
   .feature-list {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -448,31 +447,31 @@ onMounted(async () => {
   .admin-page {
     padding: 15px;
   }
-  
+
   .sidebar-tab {
     min-width: 140px;
     padding: 10px 16px;
     font-size: 13px;
   }
-  
+
   .tab-icon {
     font-size: 18px;
   }
-  
+
   .upload-notice h2,
   .home-notice h2 {
     font-size: 22px;
   }
-  
+
   .upload-link-btn {
     padding: 12px 20px;
     font-size: 15px;
   }
-  
+
   .placeholder-icon {
     font-size: 48px;
   }
-  
+
   .feature-placeholder h3 {
     font-size: 20px;
   }
