@@ -27,6 +27,14 @@
             <span class="tab-icon">📚</span>
             <span class="tab-text">강의 업로드</span>
           </button>
+          <button 
+            @click="activeTab = 'home'" 
+            :class="{ active: activeTab === 'home' }"
+            class="sidebar-tab"
+          >
+            <span class="tab-icon">🏠</span>
+            <span class="tab-text">홈화면 꾸미기</span>
+          </button>
         </nav>
       </div>
 
@@ -45,6 +53,28 @@
               <router-link to="/admin/upload-course" class="upload-link-btn">
                 ➕ 새 강의 업로드
               </router-link>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 홈화면 꾸미기 탭 -->
+        <div v-if="activeTab === 'home'" class="home-section">
+          <div class="home-notice">
+            <h2>🏠 홈화면 꾸미기</h2>
+            <p>메인 페이지의 레이아웃과 콘텐츠를 관리할 수 있습니다.</p>
+            
+            <div class="home-content">
+              <div class="feature-placeholder">
+                <div class="placeholder-icon">🚧</div>
+                <h3>개발 예정</h3>
+                <p>홈화면 커스터마이징 기능이 곧 추가됩니다.</p>
+                <ul class="feature-list">
+                  <li>배너 이미지 관리</li>
+                  <li>추천 강의 섹션 설정</li>
+                  <li>공지사항 관리</li>
+                  <li>레이아웃 테마 변경</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -232,6 +262,88 @@ onMounted(async () => {
   box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
 }
 
+/* 홈화면 꾸미기 섹션 */
+.home-section {
+  padding: 40px;
+}
+
+.home-notice {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.home-notice h2 {
+  font-size: 28px;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.home-notice p {
+  font-size: 18px;
+  color: #7f8c8d;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.home-content {
+  margin-top: 40px;
+}
+
+.feature-placeholder {
+  background-color: #f8f9fa;
+  border: 2px dashed #e1e8ed;
+  border-radius: 12px;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.feature-placeholder h3 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.feature-placeholder p {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 30px;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.feature-list li {
+  background-color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 500;
+  position: relative;
+}
+
+.feature-list li::before {
+  content: "✨";
+  margin-right: 8px;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
   .admin-main {
@@ -302,21 +414,33 @@ onMounted(async () => {
     order: 1;
   }
   
-  .upload-section {
+  .upload-section,
+  .home-section {
     padding: 30px 20px;
   }
   
-  .upload-notice h2 {
+  .upload-notice h2,
+  .home-notice h2 {
     font-size: 24px;
   }
   
-  .upload-notice p {
+  .upload-notice p,
+  .home-notice p {
     font-size: 16px;
   }
   
   .upload-link-btn {
     padding: 14px 24px;
     font-size: 16px;
+  }
+  
+  .feature-placeholder {
+    padding: 40px 20px;
+  }
+  
+  .feature-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
@@ -335,13 +459,22 @@ onMounted(async () => {
     font-size: 18px;
   }
   
-  .upload-notice h2 {
+  .upload-notice h2,
+  .home-notice h2 {
     font-size: 22px;
   }
   
   .upload-link-btn {
     padding: 12px 20px;
     font-size: 15px;
+  }
+  
+  .placeholder-icon {
+    font-size: 48px;
+  }
+  
+  .feature-placeholder h3 {
+    font-size: 20px;
   }
 }
 </style>

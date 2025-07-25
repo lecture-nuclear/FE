@@ -276,3 +276,23 @@ PortOne.requestPayment({
 - [ ] **LastView 시스템**: 시청 위치 조회 API 완전 구현 및 테스트
 - [ ] **에러 처리**: API 실패 시 사용자 친화적 메시지 개선
 - [ ] **성능 최적화**: 대용량 비디오 파일 로딩 시간 단축 방안
+
+### 데이터베이스 성능 최적화 (Database Performance)
+- [ ] **Member 테이블 인덱스**: 사용자 목록 정렬 최적화를 위한 인덱스 추가
+  - `CREATE INDEX idx_member_created_at ON member(created_at)` - 가입일 정렬용
+  - `CREATE INDEX idx_member_name ON member(name)` - 이름 정렬용  
+  - `CREATE INDEX idx_member_email ON member(email)` - 이메일 정렬용
+  - `CREATE INDEX idx_member_name_email ON member(name, email)` - 복합 검색용
+- [ ] **LastView 테이블 인덱스**: 시청 기록 조회 성능 향상
+  - `CREATE INDEX idx_lastview_member_video ON last_view(member_id, video_id)` - 개별 시청 기록 조회용
+  - `CREATE INDEX idx_lastview_member_updated ON last_view(member_id, updated_at)` - 최근 시청 목록용
+- [ ] **Lecture 테이블 인덱스**: 강의 목록 및 검색 최적화
+  - `CREATE INDEX idx_lecture_created_at ON lecture(created_at)` - 최신순 정렬용
+  - `CREATE INDEX idx_lecture_title ON lecture(title)` - 제목 검색용
+  - `CREATE FULLTEXT INDEX idx_lecture_title_description ON lecture(title, description)` - 전체 텍스트 검색용
+- [ ] **ShoppingCart 테이블 인덱스**: 장바구니 조회 성능 향상
+  - `CREATE INDEX idx_cart_member ON shopping_cart(member_id)` - 사용자별 장바구니 조회용
+- [ ] **Enrollment 테이블 인덱스**: 수강 등록 및 상태 확인 최적화
+  - `CREATE INDEX idx_enrollment_member ON enrollment(member_id)` - 사용자별 수강 목록용
+  - `CREATE INDEX idx_enrollment_lecture ON enrollment(lecture_id)` - 강의별 수강생 목록용
+  - `CREATE INDEX idx_enrollment_member_lecture ON enrollment(member_id, lecture_id)` - 개별 수강 상태 확인용

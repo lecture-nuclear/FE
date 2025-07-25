@@ -106,6 +106,13 @@ onBeforeUnmount(() => {
   color: #2c3e50;
   text-decoration: none;
   white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+}
+
+.header-left .logo:hover {
+  background-color: #f8f9fa;
 }
 
 /* 🚩 로고 이미지 스타일 */
@@ -130,12 +137,15 @@ nav {
   color: #555;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s ease;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .nav-link:hover {
-  color: #007bff;
+  color: #2c3e50;
+  background-color: #f8f9fa;
 }
 
 /* 햄버거 메뉴 아이콘 스타일 */
@@ -205,6 +215,12 @@ nav {
     width: 100%;
     border-bottom: 1px solid #eee;
     font-size: 17px;
+    border-radius: 0;
+  }
+  
+  nav .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #2c3e50;
   }
   nav .nav-link:last-child {
     border-bottom: none;

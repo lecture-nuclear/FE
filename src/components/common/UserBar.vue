@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 .user-name-wrapper:hover {
-  background-color: #e9ecef;
+  background-color: #f8f9fa;
 }
 
 /* 사용자 드롭다운 메뉴 스타일 */
@@ -335,7 +335,7 @@ onBeforeUnmount(() => {
   z-index: 100;
 }
 .cart-container:hover {
-  background-color: #e9ecef;
+  background-color: #f8f9fa;
 }
 .cart-badge {
   background-color: #dc3545;
