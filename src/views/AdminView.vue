@@ -46,7 +46,6 @@
         <div v-if="activeTab === 'upload'" class="upload-section">
           <div class="upload-notice">
             <h2>📚 강의 업로드</h2>
-            <p>새로운 강의를 업로드하고 관리할 수 있습니다.</p>
 
             <div class="upload-actions">
               <router-link to="/admin/upload-course" class="upload-link-btn">
@@ -60,8 +59,6 @@
         <div v-if="activeTab === 'home'" class="home-section">
           <div class="home-notice">
             <h2>🏠 홈화면 꾸미기</h2>
-            <p>메인 페이지의 레이아웃과 콘텐츠를 관리할 수 있습니다.</p>
-
             <div class="home-content">
               <div class="feature-placeholder">
                 <div class="placeholder-icon">🚧</div>
