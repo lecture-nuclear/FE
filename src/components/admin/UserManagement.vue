@@ -3,7 +3,6 @@
   <div class="user-management">
     <div class="management-header">
       <h2>👥 사용자 관리</h2>
-      <p>등록된 모든 사용자를 조회하고 관리할 수 있습니다.</p>
     </div>
 
     <!-- 검색 및 정렬 영역 -->
@@ -15,11 +14,11 @@
           placeholder="사용자명 또는 이메일로 검색..."
           class="search-input"
           @keyup.enter="handleSearch"
-        >
+        />
         <button @click="handleSearch" class="search-btn">🔍 검색</button>
         <button @click="clearSearch" class="clear-btn">초기화</button>
       </div>
-      
+
       <!-- 정렬 옵션 -->
       <div class="sort-section">
         <div class="sort-controls">
@@ -30,13 +29,18 @@
             <option value="email">이메일</option>
             <option value="id">ID</option>
           </select>
-          
+
           <label for="sortDirection">정렬 방향:</label>
-          <select id="sortDirection" v-model="sortDirection" @change="handleSortChange" class="sort-select">
+          <select
+            id="sortDirection"
+            v-model="sortDirection"
+            @change="handleSortChange"
+            class="sort-select"
+          >
             <option value="desc">내림차순</option>
             <option value="asc">오름차순</option>
           </select>
-          
+
           <button @click="refreshUsers" class="refresh-btn">🔄 새로고침</button>
         </div>
       </div>
@@ -59,7 +63,7 @@
       <div class="table-info">
         <span class="user-count">총 {{ filteredUsers.length }}명의 사용자</span>
       </div>
-      
+
       <div class="table-wrapper">
         <table class="users-table">
           <thead>
@@ -83,9 +87,7 @@
               <td class="user-date">{{ formatDate(user.createdAt) }}</td>
               <td class="user-date">{{ formatDate(user.updatedAt) }}</td>
               <td class="user-actions">
-                <button @click="viewUserDetail(user)" class="detail-btn">
-                  📋 상세보기
-                </button>
+                <button @click="viewUserDetail(user)" class="detail-btn">📋 상세보기</button>
               </td>
             </tr>
           </tbody>
@@ -102,11 +104,7 @@
     </div>
 
     <!-- 사용자 상세 모달 -->
-    <UserDetailModal
-      v-if="showDetailModal"
-      :user="selectedUser"
-      @close="closeDetailModal"
-    />
+    <UserDetailModal v-if="showDetailModal" :user="selectedUser" @close="closeDetailModal" />
   </div>
 </template>
 
@@ -128,12 +126,13 @@ const sortDirection = ref('desc')
 // 필터링된 사용자 목록
 const filteredUsers = computed(() => {
   if (!searchKeyword.value) return users.value
-  
+
   const keyword = searchKeyword.value.toLowerCase()
-  return users.value.filter(user => 
-    user.name.toLowerCase().includes(keyword) ||
-    user.email.toLowerCase().includes(keyword) ||
-    user.userId.toLowerCase().includes(keyword)
+  return users.value.filter(
+    (user) =>
+      user.name.toLowerCase().includes(keyword) ||
+      user.email.toLowerCase().includes(keyword) ||
+      user.userId.toLowerCase().includes(keyword),
   )
 })
 
@@ -171,7 +170,7 @@ const formatDate = (dateString) => {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
@@ -306,7 +305,8 @@ onMounted(() => {
   border-color: #3498db;
 }
 
-.search-btn, .clear-btn {
+.search-btn,
+.clear-btn {
   padding: 12px 20px;
   border: none;
   border-radius: 8px;
@@ -350,8 +350,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container {
@@ -495,39 +499,39 @@ onMounted(() => {
   .user-management {
     padding: 15px;
   }
-  
+
   .search-bar {
     flex-direction: column;
   }
-  
+
   .sort-controls {
     flex-wrap: wrap;
     gap: 8px;
     padding: 12px 16px;
   }
-  
+
   .sort-select {
     padding: 6px 10px;
     font-size: 13px;
   }
-  
+
   .refresh-btn {
     padding: 6px 12px;
     font-size: 13px;
   }
-  
+
   .users-table th,
   .users-table td {
     padding: 12px 8px;
     font-size: 13px;
   }
-  
+
   .user-name {
     flex-direction: row;
     align-items: center;
     gap: 8px;
   }
-  
+
   .user-id-badge {
     font-size: 11px;
   }
@@ -537,13 +541,13 @@ onMounted(() => {
   .management-header h2 {
     font-size: 24px;
   }
-  
+
   .users-table th,
   .users-table td {
     padding: 10px 6px;
     font-size: 12px;
   }
-  
+
   .detail-btn {
     padding: 4px 8px;
     font-size: 11px;
