@@ -7,19 +7,18 @@
         </div>
         <div v-if="showUserDropdown" class="user-dropdown">
           <div class="dropdown-item user-info-header">
-            <div>
+            <div class="user-header-content">
               <span class="user-info-name">{{ userStore.name }}</span>
-              <div class="user-info-actions">
-                <a href="#" @click.prevent="showProfile">프로필 보기</a>
-                <a href="#" @click.prevent="logout">로그아웃</a>
-              </div>
+              <button class="logout-btn" @click="logout" title="로그아웃">
+                <img src="@/assets/logout-svgrepo-com.svg" alt="로그아웃" class="logout-icon" />
+              </button>
             </div>
           </div>
           <div class="dropdown-section">
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
             </div>
-            <div class="dropdown-item">설정</div>
+            <div class="dropdown-item" @click="showSettings">설정</div>
           </div>
         </div>
       </template>
@@ -147,10 +146,10 @@ const logout = async () => {
   }
 }
 
-// 프로필 보기 (임시)
-const showProfile = () => {
-  alert('프로필 페이지로 이동합니다.')
+// 설정 페이지로 이동
+const showSettings = () => {
   showUserDropdown.value = false
+  router.push('/settings')
 }
 
 
@@ -258,22 +257,43 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
+.user-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 .user-info-header .user-info-name {
   font-size: 18px;
-  display: block;
+  color: #333;
+  font-weight: 600;
 }
-.user-info-header .user-info-actions {
+
+.logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
   display: flex;
-  gap: 10px;
-  margin-top: 5px;
+  align-items: center;
+  justify-content: center;
 }
-.user-info-header .user-info-actions a {
-  color: #a0a0a0;
-  font-size: 13px;
-  text-decoration: none;
+
+.logout-btn:hover {
+  background-color: #f5f5f5;
 }
-.user-info-header .user-info-actions a:hover {
-  text-decoration: underline;
+
+.logout-icon {
+  width: 18px;
+  height: 18px;
+  transition: filter 0.2s ease;
+}
+
+.logout-btn:hover .logout-icon {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(1352%) hue-rotate(336deg) brightness(93%) contrast(96%);
 }
 
 .user-dropdown .dropdown-section {

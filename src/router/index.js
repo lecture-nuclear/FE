@@ -10,6 +10,7 @@ import VideoPlayerView from '@/views/VideoPlayerView.vue'
 import PaymentView from '@/views/PaymentView.vue'
 import CartView from '@/views/CartView.vue'
 import AdminView from '@/views/AdminView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
@@ -85,6 +86,12 @@ const router = createRouter({
       path: '/cart',
       name: 'Cart',
       component: CartView,
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: SettingsView,
+      meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
     },
     {
       path: '/:catchAll(.*)',

@@ -1,13 +1,17 @@
 <template>
   <div id="app">
     <AppHeader />
-    <RouterView />
+    <main class="main-content">
+      <RouterView />
+    </main>
+    <AppFooter />
   </div>
 </template>
 
 <script setup>
 import { RouterView } from 'vue-router'
 import AppHeader from '@/components/common/AppHeader.vue'
+import AppFooter from '@/components/common/AppFooter.vue'
 </script>
 
 <style>
@@ -24,16 +28,12 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* 🚩 #app 컨테이너가 100% 너비를 차지하는지 확인 */
   width: 100%;
   box-sizing: border-box;
 }
 
-/* RouterView가 나머지 공간을 차지하도록 설정 (선택 사항) */
-/* RouterView를 감싸는 별도의 컨테이너를 두는 것이 좋음 */
-/*
-.router-view-container {
-  flex-grow: 1;
+.main-content {
+  flex: 1;
+  width: 100%;
 }
-*/
 </style>
