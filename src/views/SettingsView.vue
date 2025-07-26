@@ -54,10 +54,6 @@
           </div>
           <div class="user-info">
             <div class="info-item">
-              <label>사용자 ID</label>
-              <span>{{ userStore.userId }}</span>
-            </div>
-            <div class="info-item">
               <label>닉네임</label>
               <span>{{ userStore.name }}</span>
             </div>
@@ -122,12 +118,12 @@ const activeTab = computed({
   },
   set(newTab) {
     if (validTabs.includes(newTab)) {
-      router.push({ 
-        path: route.path, 
-        query: { ...route.query, tab: newTab }
+      router.push({
+        path: route.path,
+        query: { ...route.query, tab: newTab },
       })
     }
-  }
+  },
 })
 </script>
 
