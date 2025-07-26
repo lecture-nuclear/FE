@@ -135,14 +135,28 @@ const closeLoginModal = () => {
 // 로그아웃 처리
 const logout = async () => {
   try {
-    await axiosInstance.post('/auth/logout')
+    // 먼저 로컬 상태를 정리 (토큰이 만료되어도 로그아웃은 성공해야 함)
+    userStore.logout()
+    showUserDropdown.value = false
+    
+    // 백엔드에 로그아웃 요청 (실패해도 로그아웃 진행)
+    try {
+      await axiosInstance.post('/auth/logout')
+      console.log('서버 로그아웃 완료')
+    } catch (logoutError) {
+      // 토큰 만료 등의 이유로 로그아웃 API가 실패해도 무시
+      console.warn('서버 로그아웃 API 실패 (무시됨):', logoutError.message)
+    }
+    
+    alert('로그아웃 되었습니다.')
+    router.push('/')
+  } catch (error) {
+    // 예상치 못한 에러 발생 시에도 로그아웃 진행
+    console.error('로그아웃 처리 중 예상치 못한 에러:', error)
     userStore.logout()
     showUserDropdown.value = false
     alert('로그아웃 되었습니다.')
     router.push('/')
-  } catch (error) {
-    console.error('로그아웃 실패:', error)
-    alert('로그아웃에 실패했습니다.')
   }
 }
 

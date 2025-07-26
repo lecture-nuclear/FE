@@ -95,14 +95,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
 import { paymentService } from '@/utils/payment'
 import PaymentResult from '@/components/payment/PaymentResult.vue'
+import axiosInstance from '@/utils/axiosInstance'
 
 const router = useRouter()
+const route = useRoute()
 const paymentStore = usePaymentStore()
 const cartStore = useCartStore()
 const userStore = useUserStore()
@@ -113,12 +115,47 @@ const isProcessing = ref(false)
 const showResultModal = ref(false)
 const paymentResult = ref(null)
 
-const cartItems = computed(() => cartStore.items)
-const totalAmount = computed(() => cartStore.cartTotalPrice)
+// Direct purchase mode state
+const isDirectPurchase = ref(false)
+const directLecture = ref(null)
+
+const cartItems = computed(() => {
+  if (isDirectPurchase.value && directLecture.value) {
+    return [directLecture.value]
+  }
+  return cartStore.items
+})
+
+const totalAmount = computed(() => {
+  if (isDirectPurchase.value && directLecture.value) {
+    return directLecture.value.price || 0
+  }
+  return cartStore.cartTotalPrice
+})
 const isPaymentSuccessful = computed(() => paymentStore.isPaymentSuccessful)
 
 const formatPrice = (price) => {
   return paymentService.formatPrice(price)
+}
+
+// Fetch lecture data for direct purchase
+const fetchLectureData = async (lectureId) => {
+  try {
+    const response = await axiosInstance.get(`/v1/curriculum/lectures/${lectureId}`)
+    if (response.data && response.data.data) {
+      const lecture = response.data.data
+      return {
+        id: lecture.id,
+        title: lecture.title,
+        price: lecture.price || 0,
+        image: lecture.thumbnailUrl || null
+      }
+    }
+    throw new Error('강의 정보를 불러올 수 없습니다.')
+  } catch (error) {
+    console.error('강의 정보 조회 실패:', error)
+    throw error
+  }
 }
 
 const processPayment = async () => {
@@ -180,12 +217,24 @@ const initializePayment = async () => {
       return
     }
 
-    // 장바구니 정보 로드
-    await cartStore.loadCartFromBackend()
+    // Check if this is a direct purchase
+    const isDirect = route.query.direct === 'true'
+    const lectureId = route.query.lectureId
     
-    if (cartItems.value.length === 0) {
-      errorMessage.value = '결제할 상품이 없습니다.'
-      return
+    if (isDirect && lectureId) {
+      // Direct purchase mode
+      isDirectPurchase.value = true
+      directLecture.value = await fetchLectureData(lectureId)
+    } else {
+      // Cart-based purchase mode
+      isDirectPurchase.value = false
+      // 장바구니 정보 로드
+      await cartStore.loadCartFromBackend()
+      
+      if (cartItems.value.length === 0) {
+        errorMessage.value = '결제할 상품이 없습니다.'
+        return
+      }
     }
 
   } catch (error) {

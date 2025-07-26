@@ -33,6 +33,22 @@
         </div>
 
         <div class="form-group">
+          <label for="price">강의 가격 *</label>
+          <input
+            type="number"
+            id="price"
+            v-model.number="courseData.price"
+            placeholder="강의 가격을 입력하세요 (원)"
+            min="0"
+            step="1000"
+            required
+          />
+          <div class="price-info">
+            <small>0원으로 설정하면 무료 강의가 됩니다.</small>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="thumbnail">썸네일 이미지 *</label>
           <input
             type="file"
@@ -121,6 +137,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { validateImageFile } from '@/services/homeService'
 
 const router = useRouter()
 
@@ -128,6 +145,7 @@ const router = useRouter()
 const courseData = reactive({
   title: '',
   description: '',
+  price: 0,
   thumbnail: null,
   thumbnailUrl: null
 })
@@ -145,6 +163,14 @@ let videoCounter = 0
 const handleThumbnailChange = async (event) => {
   const file = event.target.files[0]
   if (file) {
+    // 파일 검증
+    const validation = validateImageFile(file)
+    if (!validation.isValid) {
+      alert(validation.error)
+      event.target.value = '' // 파일 입력 초기화
+      return
+    }
+    
     courseData.thumbnail = file
     
     // 미리보기 생성
@@ -173,7 +199,18 @@ const uploadThumbnail = async (file) => {
     })
     
     if (!response.ok) {
-      throw new Error('썸네일 업로드 실패')
+      // 백엔드 에러 응답 파싱 시도
+      let errorMessage = '썸네일 업로드에 실패했습니다.'
+      try {
+        const errorResult = await response.json()
+        if (errorResult.message) {
+          errorMessage = errorResult.message
+        }
+      } catch {
+        // JSON 파싱 실패 시 상태 코드 포함한 기본 메시지
+        errorMessage = `썸네일 업로드에 실패했습니다. (${response.status})`
+      }
+      throw new Error(errorMessage)
     }
     
     const result = await response.json()
@@ -182,7 +219,7 @@ const uploadThumbnail = async (file) => {
     console.log('썸네일 업로드 성공:', result)
   } catch (error) {
     console.error('썸네일 업로드 실패:', error)
-    alert('썸네일 업로드에 실패했습니다.')
+    alert(error.message)
   } finally {
     thumbnailUploading.value = false
   }
@@ -271,6 +308,7 @@ const handleSubmit = async () => {
       title: courseData.title,
       thumbnailUrl: courseData.thumbnailUrl,
       description: courseData.description,
+      price: courseData.price,
       videos: videos.value.map(video => ({
         title: video.title,
         link: video.videoUrl
@@ -311,6 +349,7 @@ const handleSubmit = async () => {
 const resetForm = () => {
   courseData.title = ''
   courseData.description = ''
+  courseData.price = 0
   courseData.thumbnail = null
   courseData.thumbnailUrl = null
   thumbnailPreview.value = null
@@ -488,6 +527,15 @@ addVideo()
   font-size: 14px;
   color: #666;
   font-style: italic;
+}
+
+.price-info {
+  margin-top: 5px;
+}
+
+.price-info small {
+  color: #666;
+  font-size: 12px;
 }
 
 .form-actions {

@@ -239,30 +239,15 @@ const handleEnrollLecture = async () => {
     alert('강의를 구매하려면 로그인해야 합니다.')
     return
   }
-
-  try {
-    const response = await axiosInstance.post('/v1/enroll', {
-      memberId: userStore.id,
-      lectureId: lectureDetails.value.id,
-    })
-    if (response.status === 200 || response.status === 201) {
-      alert(`${lectureDetails.value.title} 강의 구매가 완료되었습니다!`)
-      isPurchased.value = true
-      lastViewedAt.value = null
-      router.push('/my-courses')
-    } else {
-      alert('강의 구매에 실패했습니다. 다시 시도해주세요.')
+  
+  // 결제 페이지로 이동 (직접 구매 모드)
+  router.push({
+    path: '/payment',
+    query: {
+      direct: 'true',
+      lectureId: lectureDetails.value.id.toString()
     }
-  } catch (error) {
-    console.error('강의 구매 실패:', error)
-    if (error.response && error.response.status === 409) {
-      alert('이미 구매한 강의입니다.')
-      isPurchased.value = true
-      fetchPurchaseStatus(lectureDetails.value.id)
-    } else {
-      alert('강의 구매 중 오류가 발생했습니다.')
-    }
-  }
+  })
 }
 
 const handleTakeLecture = async () => {

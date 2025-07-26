@@ -54,7 +54,8 @@ axiosInstance.interceptors.response.use(
       error.response.status === 401 &&
       !originalRequest._retry &&
       originalRequest.url !== '/auth/login' &&
-      originalRequest.url !== '/auth/refresh'
+      originalRequest.url !== '/auth/refresh' &&
+      originalRequest.url !== '/auth/logout'
     ) {
       // 무한 재시도 방지
       originalRequest._retry = true
