@@ -87,20 +87,12 @@
               <p class="login-prompt-text">로그인 후 강의 구매/수강 가능</p>
             </template>
 
-            <button 
-              v-if="!isPurchased" 
-              @click="handleAddToCart" 
-              class="btn-add-cart"
-            >
+            <button v-if="!isPurchased" @click="handleAddToCart" class="btn-add-cart">
               장바구니 담기
             </button>
 
             <!-- 관리자 전용 삭제 버튼 -->
-            <button 
-              v-if="isAdmin()"
-              @click="handleDeleteLecture" 
-              class="btn-delete-lecture"
-            >
+            <button v-if="isAdmin()" @click="handleDeleteLecture" class="btn-delete-lecture">
               강의 삭제
             </button>
           </div>
@@ -109,16 +101,13 @@
         <!-- 리뷰 섹션 -->
         <div class="review-sections">
           <!-- 리뷰 작성 섹션 -->
-          <ReviewWriteComponent 
-            :lectureId="lectureDetails.id" 
+          <ReviewWriteComponent
+            :lectureId="lectureDetails.id"
             @reviewSubmitted="handleReviewSubmitted"
           />
 
           <!-- 리뷰 조회 섹션 -->
-          <ReviewListComponent 
-            :lectureId="lectureDetails.id" 
-            ref="reviewListRef"
-          />
+          <ReviewListComponent :lectureId="lectureDetails.id" ref="reviewListRef" />
         </div>
       </div>
     </div>
@@ -223,8 +212,10 @@ const fetchPurchaseStatus = async (lectureId) => {
 const fetchTotalWatchTime = async (lectureId) => {
   try {
     const memberId = userStore.getMemberId
-    const response = await axiosInstance.get(`/v1/last-view/member/${memberId}/lecture/${lectureId}/total-watch-time`)
-    
+    const response = await axiosInstance.get(
+      `/v1/last-view/member/${memberId}/lecture/${lectureId}/total-watch-time`,
+    )
+
     if (response.data && response.data.data !== undefined) {
       totalWatchTime.value = response.data.data
     } else {
@@ -235,7 +226,6 @@ const fetchTotalWatchTime = async (lectureId) => {
     totalWatchTime.value = 0
   }
 }
-
 
 const handleReviewSubmitted = () => {
   // 리뷰가 작성되면 리뷰 목록을 새로고침
@@ -284,13 +274,15 @@ const handleTakeLecture = async () => {
   try {
     // 최근 시청한 비디오 조회
     const memberId = userStore.getMemberId
-    const response = await axiosInstance.get(`/v1/last-view/member/${memberId}/lecture/${lectureDetails.value.id}/recent-video`)
-    
+    const response = await axiosInstance.get(
+      `/v1/last-view/member/${memberId}/lecture/${lectureDetails.value.id}/recent-video`,
+    )
+
     if (response.data && response.data.data) {
       // 최근 시청한 비디오가 있는 경우
       const recentVideo = response.data.data
-      const video = lectureDetails.value.videos.find(v => v.id === recentVideo.videoId)
-      
+      const video = lectureDetails.value.videos.find((v) => v.id === recentVideo.videoId)
+
       if (video) {
         console.log('최근 시청한 비디오로 이동:', recentVideo)
         handleWatchVideo(video, video.id)
@@ -324,16 +316,16 @@ const handleUnpurchasedVideoClick = () => {
 
 const handleWatchVideo = (video, index) => {
   const videoId = video.id || index
-  
+
   // 바로 VideoPlayerView로 이동
   router.push({
     name: 'VideoPlayer',
     params: { lectureId: lectureDetails.value.id, videoId: videoId },
-    query: { 
-      url: video.link, 
+    query: {
+      url: video.link,
       title: video.title,
-      lectureTitle: lectureDetails.value.title
-    }
+      lectureTitle: lectureDetails.value.title,
+    },
   })
 }
 
@@ -390,14 +382,18 @@ const handleDeleteLecture = async () => {
   }
 
   // 삭제 확인 대화상자
-  const confirmDelete = confirm(`정말로 "${lectureDetails.value.title}" 강의를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)
+  const confirmDelete = confirm(
+    `정말로 "${lectureDetails.value.title}" 강의를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`,
+  )
   if (!confirmDelete) {
     return
   }
 
   try {
-    const response = await axiosInstance.delete(`/v1/curriculum/lectures/${lectureDetails.value.id}`)
-    
+    const response = await axiosInstance.delete(
+      `/v1/curriculum/lectures/${lectureDetails.value.id}`,
+    )
+
     if (response.status === 200) {
       alert(`${lectureDetails.value.title} 강의가 성공적으로 삭제되었습니다.`)
       router.push('/courses') // 강의 목록 페이지로 이동
@@ -433,12 +429,12 @@ const formatWatchTime = (timeInMillis) => {
   if (!timeInMillis || timeInMillis === 0) {
     return '0분'
   }
-  
+
   const totalSeconds = Math.floor(timeInMillis / 1000)
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
-  
+
   if (hours > 0) {
     return `${hours}시간 ${minutes}분 ${seconds}초`
   } else if (minutes > 0) {
@@ -740,17 +736,6 @@ onMounted(() => {
 @media (max-width: 1200px) {
   .lecture-detail-page {
     padding: 30px;
-  }
-}
-
-@media (max-width: 992px) {
-  .content-and-sidebar-wrapper {
-    flex-direction: column-reverse;
-    gap: 20px;
-  }
-  .main-lecture-content,
-  .lecture-thumbnail-full {
-    max-width: 100%;
   }
 }
 
