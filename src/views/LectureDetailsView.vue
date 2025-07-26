@@ -120,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import axiosInstance from '@/utils/axiosInstance'
 import { useCartStore } from '@/stores/cartStore'
@@ -443,6 +443,39 @@ const formatWatchTime = (timeInMillis) => {
     return `${seconds}초`
   }
 }
+
+// Re-check purchase status when needed
+const recheckPurchaseStatus = async () => {
+  if (lectureDetails.value && userStore.isLoggedIn && userStore.id) {
+    console.log('Re-checking purchase status after authentication update')
+    await fetchPurchaseStatus(lectureDetails.value.id)
+    await fetchTotalWatchTime(lectureDetails.value.id)
+  }
+}
+
+// Watch for authentication state changes (token refresh)
+watch(() => userStore.isLoggedIn, async (newValue) => {
+  // If user just logged in or authentication state changed
+  if (newValue && lectureDetails.value) {
+    await recheckPurchaseStatus()
+  }
+})
+
+// Watch for user ID changes (after token refresh, user ID might be updated)
+watch(() => userStore.id, async (newId, oldId) => {
+  // If user ID changed and we have lecture details
+  if (newId && newId !== oldId && lectureDetails.value) {
+    await recheckPurchaseStatus()
+  }
+})
+
+// Watch for user store loaded state (important for token refresh scenarios)
+watch(() => userStore.isUserLoaded, async (isLoaded) => {
+  // When user data is freshly loaded (including after token refresh)
+  if (isLoaded && lectureDetails.value && userStore.isLoggedIn) {
+    await recheckPurchaseStatus()
+  }
+})
 
 onMounted(() => {
   fetchLectureDetails()
