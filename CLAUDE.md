@@ -86,20 +86,19 @@ PUT /v1/last-view
 
 ### Payment System Integration
 
-**PortOne V2 결제 시스템:**
-- SDK loaded via CDN in `index.html`
-- Environment variables: `VITE_PORTONE_STORE_ID`, `VITE_PORTONE_CHANNEL_KEY`
-- Flow: Cart → Payment Page → PortOne → Verification → Completion
+**카카오페이 직접 연동:**
+- 카카오페이 API 직접 호출
+- Flow: Cart → Payment Page → KakaoPay → Verification → Completion
 
 **Key Components:**
-- `src/utils/payment.js`: PortOne SDK wrapper
+- `src/utils/kakaoPayService.js`: 카카오페이 API 연동
 - `src/stores/paymentStore.js`: Payment state management
 - `src/views/PaymentView.vue`: Main payment interface
 - `src/components/payment/`: Payment forms and result displays
 
 **API Endpoints:**
-- `POST /v1/orders`: Order creation
-- `POST /v1/payments/verify`: Payment verification
+- `POST /v1/payments/ready`: 카카오페이 결제 준비
+- `POST /v1/payments/approve`: 카카오페이 결제 승인
 - `GET /v1/orders/history/{memberId}`: Order history
 - `POST /v1/orders/cancel`: Order cancellation
 
