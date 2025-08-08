@@ -36,6 +36,10 @@ const router = useRouter()
 const route = useRoute()
 const paymentStore = usePaymentStore()
 
+// 팝업 환경 체크를 즉시 수행 - 다른 모든 로직보다 우선
+const isPopup = window.opener && !window.opener.closed
+console.log('PaymentCancel - 즉시 팝업 환경 체크:', isPopup)
+
 const cancelReason = ref('')
 
 const retryPayment = () => {
@@ -63,24 +67,42 @@ const goToHome = () => {
 }
 
 const processPaymentCancel = () => {
+  console.log('PaymentCancel - processPaymentCancel 시작, 팝업 환경:', isPopup)
+
+  // 팝업 환경이면 즉시 처리 후 종료
+  if (isPopup) {
+    try {
+      // URL에서 취소 사유 확인
+      const reason = route.query.reason || route.query.error
+      const cancelReasonText = reason ? decodeURIComponent(reason) : '사용자가 결제를 취소했습니다.'
+
+      console.log('PaymentCancel - 팝업에서 취소 메시지 전송:', cancelReasonText)
+      window.opener.postMessage({
+        type: 'PAYMENT_CANCELLED',
+        reason: cancelReasonText,
+        redirectUrl: '/cart',
+        message: '결제가 취소되었습니다.'
+      }, window.location.origin)
+    } catch (error) {
+      console.error('PaymentCancel - 팝업에서 오류 발생:', error)
+      window.opener.postMessage({
+        type: 'PAYMENT_CANCELLED',
+        reason: '결제 취소 처리 중 오류가 발생했습니다.',
+        redirectUrl: '/cart',
+        message: '결제가 취소되었습니다.'
+      }, window.location.origin)
+    }
+    
+    window.close()
+    return // 팝업이면 여기서 완전히 종료
+  }
+
+  // 일반 환경에서만 실행되는 로직
   try {
     // URL에서 취소 사유 확인
     const reason = route.query.reason || route.query.error
     if (reason) {
       cancelReason.value = decodeURIComponent(reason)
-    }
-
-    // 팝업 환경인지 확인
-    if (window.opener && !window.opener.closed) {
-      // 부모 창으로 결제 취소 메시지 전송
-      window.opener.postMessage({
-        type: 'PAYMENT_CANCELLED',
-        reason: cancelReason.value || '사용자가 결제를 취소했습니다.'
-      }, window.location.origin)
-      
-      // 팝업 닫기
-      window.close()
-      return
     }
 
     // 결제 상태 업데이트

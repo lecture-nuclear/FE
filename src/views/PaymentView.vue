@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { useCartStore } from '@/stores/cartStore'
@@ -248,6 +248,36 @@ const initializePayment = async () => {
     loading.value = false
   }
 }
+
+// 결제 완료/실패/취소 시 리다이렉트 처리
+watch(() => paymentStore.redirectUrl, (newUrl, oldUrl) => {
+  console.log('PaymentView - redirectUrl 변경 감지:', { old: oldUrl, new: newUrl })
+  if (newUrl) {
+    const status = paymentStore.paymentStatus
+    console.log(`결제 ${status} - 리다이렉트 실행:`, newUrl)
+    
+    // 성공 시에만 장바구니 정리
+    if (status === 'success') {
+      cartStore.clearCart()
+      console.log('장바구니 정리 완료')
+    }
+    
+    // 지정된 URL로 리다이렉트
+    router.push(newUrl)
+    
+    // redirectUrl 초기화 (중복 실행 방지)
+    paymentStore.redirectUrl = null
+  }
+})
+
+// 팝업 상태 변화 감지
+watch(() => paymentStore.paymentStatus, (newStatus) => {
+  console.log('PaymentView - paymentStatus 변경:', newStatus)
+})
+
+watch(() => paymentStore.isPopupOpen, (isOpen) => {
+  console.log('PaymentView - popupOpen 상태:', isOpen)
+})
 
 onMounted(() => {
   initializePayment()
