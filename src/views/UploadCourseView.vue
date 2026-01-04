@@ -138,6 +138,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { validateImageFile } from '@/services/homeService'
+import axiosInstance from '@/utils/axiosInstance'
 
 const router = useRouter()
 
@@ -193,33 +194,19 @@ const uploadThumbnail = async (file) => {
     const formData = new FormData()
     formData.append('file', file)
     
-    const response = await fetch('http://localhost:8080/api/upload/thumbnail', {
-      method: 'POST',
-      body: formData
+    const response = await axiosInstance.post('/upload/thumbnail', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
     
-    if (!response.ok) {
-      // 백엔드 에러 응답 파싱 시도
-      let errorMessage = '썸네일 업로드에 실패했습니다.'
-      try {
-        const errorResult = await response.json()
-        if (errorResult.message) {
-          errorMessage = errorResult.message
-        }
-      } catch {
-        // JSON 파싱 실패 시 상태 코드 포함한 기본 메시지
-        errorMessage = `썸네일 업로드에 실패했습니다. (${response.status})`
-      }
-      throw new Error(errorMessage)
-    }
+    courseData.thumbnailUrl = response.data.data.fileUrl
     
-    const result = await response.json()
-    courseData.thumbnailUrl = result.data.fileUrl
-    
-    console.log('썸네일 업로드 성공:', result)
+    console.log('썸네일 업로드 성공:', response.data)
   } catch (error) {
     console.error('썸네일 업로드 실패:', error)
-    alert(error.message)
+    const errorMessage = error.response?.data?.message || '썸네일 업로드에 실패했습니다.'
+    alert(errorMessage)
   } finally {
     thumbnailUploading.value = false
   }
@@ -259,27 +246,20 @@ const uploadVideo = async (file, index) => {
   
   try {
     const fileName = encodeURIComponent(file.name)
-    const url = `http://localhost:8080/api/upload/video?fileName=${fileName}`
     
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await axiosInstance.post(`/upload/video?fileName=${fileName}`, file, {
       headers: {
         'Content-Type': 'application/octet-stream'
-      },
-      body: file
+      }
     })
     
-    if (!response.ok) {
-      throw new Error('비디오 업로드 실패')
-    }
+    videos.value[index].videoUrl = response.data.data.fileUrl
     
-    const result = await response.json()
-    videos.value[index].videoUrl = result.data.fileUrl
-    
-    console.log('비디오 업로드 성공:', result)
+    console.log('비디오 업로드 성공:', response.data)
   } catch (error) {
     console.error('비디오 업로드 실패:', error)
-    alert('비디오 업로드에 실패했습니다.')
+    const errorMessage = error.response?.data?.message || '비디오 업로드에 실패했습니다.'
+    alert(errorMessage)
   } finally {
     videoUploading.value[index] = false
   }
@@ -318,20 +298,9 @@ const handleSubmit = async () => {
     console.log('Sending course data:', requestData)
     
     // 강의 업로드 API 호출
-    const response = await fetch('http://localhost:8080/api/v1/curriculum/lecture', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
-    })
+    const response = await axiosInstance.post('/v1/curriculum/lecture', requestData)
     
-    if (!response.ok) {
-      throw new Error('강의 업로드 실패')
-    }
-    
-    const result = await response.json()
-    console.log('강의 업로드 성공:', result)
+    console.log('강의 업로드 성공:', response.data)
     
     alert('강의 업로드가 완료되었습니다!')
     

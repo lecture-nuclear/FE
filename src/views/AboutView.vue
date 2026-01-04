@@ -30,7 +30,7 @@ const errorMessage = ref('') // 에러 메시지 저장 변수
 
 onMounted(async () => {
   try {
-    // 🚩 백엔드 GET 요청: baseURL이 'http://localhost:8080/api'이므로, '/v1/about'으로 요청
+    // 🚩 백엔드 GET 요청: axiosInstance 사용, '/v1/about'으로 요청
     const response = await axiosInstance.get('/v1/about')
 
     // 응답 데이터 구조에 맞춰 content 필드 접근
