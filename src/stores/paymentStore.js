@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axiosInstance from '@/utils/axiosInstance'
-import { kakaoPayService } from '@/utils/kakaoPayService'
+import { paymentService } from '@/utils/payment'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 
@@ -8,15 +8,10 @@ export const usePaymentStore = defineStore('payment', {
   state: () => ({
     isProcessing: false,
     currentOrder: null,
-    currentPayment: null, // 카카오페이 결제 정보
     paymentResult: null,
     orderHistory: [],
     error: null,
-    paymentStatus: null, // 'pending', 'success', 'failed', 'cancelled'
-    // 팝업 관련 상태
-    popupWindow: null,
-    popupMonitor: null,
-    isPopupOpen: false,
+    paymentStatus: null // 'pending', 'success', 'failed', 'cancelled'
   }),
 
   getters: {
@@ -29,14 +24,14 @@ export const usePaymentStore = defineStore('payment', {
     },
     formattedTotalAmount: (state) => {
       if (!state.currentOrder) return '0원'
-      return kakaoPayService.formatPrice(state.currentOrder.totalAmount) + '원'
-    },
+      return paymentService.formatPrice(state.currentOrder.totalAmount) + '원'
+    }
   },
 
   actions: {
-    async prepareKakaoPayment(orderItems) {
+    async createOrder(orderItems) {
       const userStore = useUserStore()
-
+      
       if (!userStore.isLoggedIn || !userStore.getMemberId) {
         throw new Error('로그인이 필요합니다.')
       }
@@ -45,81 +40,75 @@ export const usePaymentStore = defineStore('payment', {
         this.isProcessing = true
         this.error = null
 
+        const orderId = paymentService.generateOrderId()
         const totalAmount = orderItems.reduce((sum, item) => sum + item.price, 0)
-        const itemName =
-          orderItems.length === 1
-            ? orderItems[0].title
-            : `${orderItems[0].title} 외 ${orderItems.length - 1}건`
 
-        const paymentData = {
-          memberId: userStore.getMemberId,
-          lectureIds: orderItems.map((item) => item.id),
-          itemName,
+        const orderData = {
+          orderId,
+          orderName: orderItems.length === 1 
+            ? orderItems[0].title 
+            : `${orderItems[0].title} 외 ${orderItems.length - 1}건`,
           totalAmount,
+          currency: 'KRW',
+          customer: {
+            id: userStore.getMemberId,
+            name: userStore.name,
+            email: userStore.email,
+            phone: userStore.phone || ''
+          },
+          products: orderItems,
+          createdAt: new Date().toISOString()
         }
 
-        // 결제 데이터 유효성 검사
-        kakaoPayService.validatePaymentData(paymentData)
+        // 백엔드에 주문 생성 요청
+        await axiosInstance.post('/v1/orders', {
+          orderId: orderData.orderId,
+          memberId: userStore.getMemberId,
+          items: orderItems.map(item => ({
+            lectureId: item.id,
+            title: item.title,
+            price: item.price
+          })),
+          totalAmount: orderData.totalAmount
+        })
 
-        console.log('카카오페이 결제 준비 요청 데이터:', paymentData)
+        this.currentOrder = orderData
+        this.paymentStatus = 'pending'
 
-        // 카카오페이 결제 준비 요청
-        const result = await kakaoPayService.preparePayment(paymentData)
-
-        console.log('카카오페이 결제 준비 응답:', result)
-
-        if (result.success) {
-          this.currentPayment = result.data
-          this.paymentStatus = 'pending'
-
-          // 현재 주문 정보 저장 (paymentId 포함)
-          this.currentOrder = {
-            orderItems,
-            totalAmount,
-            itemName,
-            memberId: userStore.getMemberId,
-            paymentId: result.data.paymentId, // 백엔드에서 받은 실제 paymentId 저장
-          }
-
-          console.log('결제 준비 완료 - 응답 데이터:', result.data)
-          return result.data
-        } else {
-          throw new Error(result.error)
-        }
+        return orderData
       } catch (error) {
-        this.error = error.message || '결제 준비에 실패했습니다.'
-        this.paymentStatus = 'failed'
+        this.error = error.message || '주문 생성에 실패했습니다.'
         throw error
       } finally {
         this.isProcessing = false
       }
     },
 
-    async approveKakaoPayment(paymentId, pgToken) {
+    async processPayment() {
+      if (!this.currentOrder) {
+        throw new Error('결제할 주문이 없습니다.')
+      }
+
       try {
         this.isProcessing = true
         this.error = null
 
-        // 카카오페이 결제 승인 요청
-        const result = await kakaoPayService.approvePayment(paymentId, pgToken)
+        // 결제 데이터 유효성 검사
+        paymentService.validatePaymentData(this.currentOrder)
 
-        if (result.success) {
-          this.paymentResult = result.data
-          this.paymentStatus = 'success'
+        // PortOne 결제 요청
+        const paymentResult = await paymentService.requestPayment(this.currentOrder)
 
-          // 결제 성공 시 장바구니 비우기
-          const cartStore = useCartStore()
-          cartStore.clearCart()
-
-          // 주문 히스토리에 추가
-          this.addToOrderHistory(this.currentOrder, result.data)
-
-          return result
+        if (paymentResult.success) {
+          this.paymentResult = paymentResult.data
+          await this.verifyPayment(paymentResult.data.paymentId)
         } else {
-          throw new Error(result.error)
+          throw new Error(paymentResult.error)
         }
+
+        return paymentResult
       } catch (error) {
-        this.error = error.message || '결제 승인에 실패했습니다.'
+        this.error = error.message || '결제 처리에 실패했습니다.'
         this.paymentStatus = 'failed'
         throw error
       } finally {
@@ -127,19 +116,39 @@ export const usePaymentStore = defineStore('payment', {
       }
     },
 
-    async cancelKakaoPayment() {
+    async verifyPayment(paymentId) {
       try {
-        this.paymentStatus = 'cancelled'
-        this.error = '사용자가 결제를 취소했습니다.'
-        this.clearCurrentOrder()
+        const userStore = useUserStore()
+        
+        const response = await axiosInstance.post('/v1/payments/verify', {
+          paymentId,
+          orderId: this.currentOrder.orderId,
+          memberId: userStore.getMemberId
+        })
+
+        if (response.data.success) {
+          this.paymentStatus = 'success'
+          
+          // 결제 성공 시 장바구니 비우기
+          const cartStore = useCartStore()
+          cartStore.clearCart()
+          
+          // 주문 히스토리에 추가
+          this.addToOrderHistory(this.currentOrder, this.paymentResult)
+          
+        } else {
+          throw new Error('결제 검증에 실패했습니다.')
+        }
       } catch (error) {
-        console.error('결제 취소 처리 중 오류:', error)
+        this.paymentStatus = 'failed'
+        this.error = error.message || '결제 검증에 실패했습니다.'
+        throw error
       }
     },
 
     async loadOrderHistory() {
       const userStore = useUserStore()
-
+      
       if (!userStore.isLoggedIn || !userStore.getMemberId) {
         return
       }
@@ -158,15 +167,14 @@ export const usePaymentStore = defineStore('payment', {
         ...order,
         paymentResult,
         completedAt: new Date().toISOString(),
-        status: 'completed',
+        status: 'completed'
       }
-
+      
       this.orderHistory.unshift(historyItem)
     },
 
     clearCurrentOrder() {
       this.currentOrder = null
-      this.currentPayment = null
       this.paymentResult = null
       this.paymentStatus = null
       this.error = null
@@ -180,134 +188,30 @@ export const usePaymentStore = defineStore('payment', {
       this.paymentStatus = status
     },
 
-    // 카카오페이 빠른 결제를 위한 헬퍼 메서드
-    async quickKakaoPayment(cartItems) {
-      try {
-        const paymentData = await this.prepareKakaoPayment(cartItems)
-
-        console.log('paymentDATA ', paymentData)
-
-        // 카카오페이 결제창으로 리다이렉트
-        // 카카오페이 API 응답 필드명 확인: next_redirect_pc_url, nextRedirectPcUrl 등 가능
-        const redirectUrl =
-          paymentData?.next_redirect_pc_url ||
-          paymentData?.nextRedirectPcUrl ||
-          paymentData?.pc_url ||
-          paymentData?.redirectUrl
-
-        if (paymentData && redirectUrl) {
-          // 백엔드에서 받은 실제 paymentId 사용 (가짜 ID 생성 제거)
-          if (!paymentData.paymentId) {
-            throw new Error('백엔드에서 paymentId를 받지 못했습니다.')
-          }
-
-          // 결제 정보를 세션 스토리지에 저장
-          sessionStorage.setItem(
-            'kakao_payment_data',
-            JSON.stringify({
-              paymentId: paymentData.paymentId, // 백엔드에서 받은 실제 ID 사용
-              orderItems: cartItems,
-              totalAmount: cartItems.reduce((sum, item) => sum + item.price, 0),
-            }),
-          )
-
-          console.log('카카오페이 팝업 URL:', redirectUrl)
-          
-          // 팝업으로 카카오페이 결제창 열기
-          this.popupWindow = kakaoPayService.openKakaoPayPopup(redirectUrl)
-          this.isPopupOpen = true
-
-          // 팝업 모니터링 시작
-          this.popupMonitor = kakaoPayService.monitorPopup(
-            this.popupWindow,
-            this.handlePopupClosed.bind(this),
-            this.handlePopupMessage.bind(this)
-          )
-
-          return { success: true, popupOpened: true }
-        } else {
-          console.error('카카오페이 응답 데이터:', paymentData)
-          throw new Error('카카오페이 결제 URL을 받지 못했습니다.')
+    async cancelPayment() {
+      if (this.currentOrder && this.currentOrder.orderId) {
+        try {
+          await axiosInstance.post('/v1/orders/cancel', {
+            orderId: this.currentOrder.orderId
+          })
+        } catch (error) {
+          console.error('주문 취소 실패:', error)
         }
+      }
+      
+      this.paymentStatus = 'cancelled'
+      this.clearCurrentOrder()
+    },
+
+    // 빠른 결제를 위한 헬퍼 메서드
+    async quickPayment(cartItems) {
+      try {
+        await this.createOrder(cartItems)
+        return await this.processPayment()
       } catch (error) {
         this.error = error.message
         throw error
       }
-    },
-
-    // 세션에서 결제 정보 복원
-    restorePaymentFromSession() {
-      try {
-        const paymentData = sessionStorage.getItem('kakao_payment_data')
-        if (paymentData) {
-          const parsed = JSON.parse(paymentData)
-          this.currentOrder = {
-            orderItems: parsed.orderItems,
-            totalAmount: parsed.totalAmount,
-            paymentId: parsed.paymentId,
-          }
-          return parsed
-        }
-        return null
-      } catch (error) {
-        console.error('세션에서 결제 정보 복원 실패:', error)
-        return null
-      }
-    },
-
-    // 세션 정리
-    clearPaymentSession() {
-      sessionStorage.removeItem('kakao_payment_data')
-      sessionStorage.removeItem('kakao_pay_return_url')
-    },
-
-    // 팝업 관련 메서드들
-    handlePopupClosed() {
-      console.log('카카오페이 팝업이 닫혔습니다.')
-      this.isPopupOpen = false
-      this.popupWindow = null
-      
-      // 팝업 모니터링 정리
-      if (this.popupMonitor) {
-        this.popupMonitor()
-        this.popupMonitor = null
-      }
-
-      // 결제가 완료되지 않은 상태에서 팝업이 닫혔다면 취소로 처리
-      if (this.paymentStatus === 'pending') {
-        this.cancelKakaoPayment()
-      }
-    },
-
-    handlePopupMessage(data) {
-      console.log('팝업으로부터 메시지 수신:', data)
-      
-      if (data.type === 'PAYMENT_SUCCESS') {
-        this.paymentResult = data.result
-        this.paymentStatus = 'success'
-        this.closePopup()
-      } else if (data.type === 'PAYMENT_FAILED') {
-        this.error = data.error
-        this.paymentStatus = 'failed'
-        this.closePopup()
-      } else if (data.type === 'PAYMENT_CANCELLED') {
-        this.cancelKakaoPayment()
-        this.closePopup()
-      }
-    },
-
-    closePopup() {
-      if (this.popupWindow && !this.popupWindow.closed) {
-        this.popupWindow.close()
-      }
-      this.handlePopupClosed()
-    },
-
-    // 강제로 팝업 닫기 (타임아웃 등)
-    forceClosePopup() {
-      this.closePopup()
-      this.error = '결제 시간이 초과되었습니다.'
-      this.paymentStatus = 'failed'
-    },
-  },
+    }
+  }
 })

@@ -12,9 +12,6 @@ import CartView from '@/views/CartView.vue'
 import AdminView from '@/views/AdminView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
-import PaymentSuccess from '@/components/payment/PaymentSuccess.vue'
-import PaymentCancel from '@/components/payment/PaymentCancel.vue'
-import PaymentFail from '@/components/payment/PaymentFail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -84,24 +81,6 @@ const router = createRouter({
       name: 'Payment',
       component: PaymentView,
       meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
-    },
-    {
-      path: '/payment/success',
-      name: 'PaymentSuccess',
-      component: PaymentSuccess,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/payment/cancel',
-      name: 'PaymentCancel',
-      component: PaymentCancel,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/payment/fail',
-      name: 'PaymentFail',
-      component: PaymentFail,
-      meta: { requiresAuth: true },
     },
     {
       path: '/cart',

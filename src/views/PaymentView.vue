@@ -14,16 +14,6 @@
       오류: {{ errorMessage }}
     </div>
 
-    <!-- 팝업 결제 진행 중 안내 -->
-    <div v-else-if="paymentStore.isPopupOpen" class="popup-notice">
-      <div class="notice-content">
-        <div class="spinner"></div>
-        <h3>결제 진행 중</h3>
-        <p>별도 창에서 카카오페이 결제를 진행해주세요.</p>
-        <p class="sub-text">팝업 창이 보이지 않으면 브라우저 설정을 확인해주세요.</p>
-      </div>
-    </div>
-
     <div v-else class="payment-content">
       <!-- 주문 요약 섹션 -->
       <div class="order-summary-section">
@@ -79,18 +69,27 @@
           <button 
             @click="processPayment" 
             :disabled="isProcessing || cartItems.length === 0"
-            class="payment-button kakao-pay-button"
+            class="payment-button"
           >
-            <span v-if="isProcessing">카카오페이 결제 준비 중...</span>
-            <span v-else>
-              <i class="kakao-icon">💳</i>
-              카카오페이로 {{ formatPrice(totalAmount) }}원 결제
-            </span>
+            <span v-if="isProcessing">결제 처리 중...</span>
+            <span v-else>{{ formatPrice(totalAmount) }}원 결제하기</span>
           </button>
         </div>
       </div>
     </div>
 
+    <!-- 결제 결과 모달 -->
+    <div v-if="showResultModal" class="payment-result-modal">
+      <div class="modal-overlay" @click="closeResultModal"></div>
+      <div class="modal-content">
+        <PaymentResult 
+          :result="paymentResult"
+          :is-success="isPaymentSuccessful"
+          @close="closeResultModal"
+          @go-to-courses="goToCourses"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -100,7 +99,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
-import { kakaoPayService } from '@/utils/kakaoPayService'
+import { paymentService } from '@/utils/payment'
+import PaymentResult from '@/components/payment/PaymentResult.vue'
 import axiosInstance from '@/utils/axiosInstance'
 
 const router = useRouter()
@@ -112,6 +112,8 @@ const userStore = useUserStore()
 const loading = ref(true)
 const errorMessage = ref('')
 const isProcessing = ref(false)
+const showResultModal = ref(false)
+const paymentResult = ref(null)
 
 // Direct purchase mode state
 const isDirectPurchase = ref(false)
@@ -130,9 +132,10 @@ const totalAmount = computed(() => {
   }
   return cartStore.cartTotalPrice
 })
+const isPaymentSuccessful = computed(() => paymentStore.isPaymentSuccessful)
 
 const formatPrice = (price) => {
-  return kakaoPayService.formatPrice(price)
+  return paymentService.formatPrice(price)
 }
 
 // Fetch lecture data for direct purchase
@@ -170,40 +173,33 @@ const processPayment = async () => {
     isProcessing.value = true
     errorMessage.value = ''
 
-    console.log('결제 시작 - 장바구니 아이템:', cartItems.value)
-    
-    // 카카오페이 팝업 결제 처리
-    const result = await paymentStore.quickKakaoPayment(cartItems.value)
-    
-    console.log('결제 처리 결과:', result)
-    
-    if (result.popupOpened) {
-      console.log('카카오페이 팝업 열림')
-      // 팝업이 성공적으로 열렸으면 사용자에게 알림
-      errorMessage.value = ''
-      
-      // 15분 타임아웃 설정
-      setTimeout(() => {
-        if (paymentStore.isPopupOpen && paymentStore.paymentStatus === 'pending') {
-          paymentStore.forceClosePopup()
-          errorMessage.value = '결제 시간이 초과되었습니다. 다시 시도해주세요.'
-        }
-      }, 15 * 60 * 1000) // 15분
-    }
+    const result = await paymentStore.quickPayment(cartItems.value)
+    paymentResult.value = result
+    showResultModal.value = true
 
   } catch (error) {
     console.error('결제 처리 오류:', error)
-    
-    if (error.message.includes('팝업이 차단')) {
-      errorMessage.value = '팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.'
-    } else {
-      errorMessage.value = error.message || '결제 처리 중 오류가 발생했습니다.'
-    }
+    errorMessage.value = error.message || '결제 처리 중 오류가 발생했습니다.'
+    paymentResult.value = { success: false, error: error.message }
+    showResultModal.value = true
   } finally {
     isProcessing.value = false
   }
 }
 
+const closeResultModal = () => {
+  showResultModal.value = false
+  paymentResult.value = null
+  
+  if (isPaymentSuccessful.value) {
+    router.push('/courses')
+  }
+}
+
+const goToCourses = () => {
+  closeResultModal()
+  router.push('/courses')
+}
 
 const goBack = () => {
   router.back()
@@ -442,31 +438,13 @@ onMounted(() => {
 }
 
 .payment-button {
-  background-color: #fee500;
-  color: #3c1e1e;
-  min-width: 250px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  background-color: #dc2626;
+  color: white;
+  min-width: 200px;
 }
 
 .payment-button:hover:not(:disabled) {
-  background-color: #fdd835;
-}
-
-.kakao-pay-button {
-  background-color: #fee500;
-  border: 2px solid #ffeb3b;
-}
-
-.kakao-pay-button:hover:not(:disabled) {
-  background-color: #fdd835;
-  border-color: #fbc02d;
-}
-
-.kakao-icon {
-  font-size: 1.2rem;
+  background-color: #b91c1c;
 }
 
 .payment-button:disabled {
@@ -474,53 +452,36 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.popup-notice {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
-  padding: 40px 20px;
+.payment-result-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
 }
 
-.notice-content {
-  text-align: center;
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: white;
   border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 2px solid #fee500;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #fee500;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.notice-content h3 {
-  color: #333;
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-}
-
-.notice-content p {
-  color: #666;
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-
-.sub-text {
-  font-size: 0.9rem !important;
-  color: #999 !important;
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 @media (max-width: 768px) {
