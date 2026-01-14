@@ -61,10 +61,6 @@ const router = useRouter()
 const route = useRoute()
 const paymentStore = usePaymentStore()
 
-// 팝업 환경 체크를 즉시 수행 - 다른 모든 로직보다 우선
-const isPopup = window.opener && !window.opener.closed
-console.log('PaymentFail - 즉시 팝업 환경 체크:', isPopup)
-
 const errorDetails = ref(null)
 
 const formatDate = (dateString) => {
@@ -115,44 +111,6 @@ const goToHome = () => {
 }
 
 const processPaymentFail = () => {
-  console.log('PaymentFail - processPaymentFail 시작, 팝업 환경:', isPopup)
-
-  // 팝업 환경이면 즉시 처리 후 종료
-  if (isPopup) {
-    try {
-      // URL에서 오류 정보 추출
-      const error = route.query.error
-      const errorCode = route.query.error_code
-      const errorMessage = route.query.error_msg || route.query.message
-
-      const errorInfo = {
-        code: errorCode || 'PAYMENT_ERROR',
-        message: errorMessage || error || '결제 처리 중 오류가 발생했습니다.',
-        timestamp: new Date().toISOString()
-      }
-
-      console.log('PaymentFail - 팝업에서 실패 메시지 전송:', errorInfo)
-      window.opener.postMessage({
-        type: 'PAYMENT_FAILED',
-        error: errorInfo.message,
-        redirectUrl: '/payment',
-        message: '결제가 실패했습니다. 다시 시도해주세요.'
-      }, window.location.origin)
-    } catch (err) {
-      console.error('PaymentFail - 팝업에서 오류 발생:', err)
-      window.opener.postMessage({
-        type: 'PAYMENT_FAILED',
-        error: '결제 실패 처리 중 오류가 발생했습니다.',
-        redirectUrl: '/payment',
-        message: '결제가 실패했습니다. 다시 시도해주세요.'
-      }, window.location.origin)
-    }
-    
-    window.close()
-    return // 팝업이면 여기서 완전히 종료
-  }
-
-  // 일반 환경에서만 실행되는 로직
   try {
     // URL에서 오류 정보 추출
     const error = route.query.error
@@ -165,6 +123,19 @@ const processPaymentFail = () => {
         message: errorMessage || error || '결제 처리 중 오류가 발생했습니다.',
         timestamp: new Date().toISOString()
       }
+    }
+
+    // 팝업 환경인지 확인
+    if (window.opener && !window.opener.closed) {
+      // 부모 창으로 결제 실패 메시지 전송
+      window.opener.postMessage({
+        type: 'PAYMENT_FAILED',
+        error: errorDetails.value?.message || '결제에 실패했습니다.'
+      }, window.location.origin)
+      
+      // 팝업 닫기
+      window.close()
+      return
     }
 
     // 결제 상태 업데이트

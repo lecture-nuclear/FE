@@ -17,7 +17,6 @@ export const usePaymentStore = defineStore('payment', {
     popupWindow: null,
     popupMonitor: null,
     isPopupOpen: false,
-    redirectUrl: null, // 결제 성공 후 리다이렉트할 URL
   }),
 
   getters: {
@@ -171,7 +170,6 @@ export const usePaymentStore = defineStore('payment', {
       this.paymentResult = null
       this.paymentStatus = null
       this.error = null
-      this.redirectUrl = null // 리다이렉트 URL도 초기화
     },
 
     clearError() {
@@ -282,28 +280,18 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     handlePopupMessage(data) {
-      console.log('PaymentStore - 팝업 메시지 수신:', data)
+      console.log('팝업으로부터 메시지 수신:', data)
       
       if (data.type === 'PAYMENT_SUCCESS') {
-        console.log('PaymentStore - 결제 성공 처리 시작')
         this.paymentResult = data.result
         this.paymentStatus = 'success'
-        this.redirectUrl = data.redirectUrl
-        console.log('PaymentStore - redirectUrl 설정:', this.redirectUrl)
         this.closePopup()
-        console.log('PaymentStore - 결제 성공 처리 완료')
       } else if (data.type === 'PAYMENT_FAILED') {
-        console.log('PaymentStore - 결제 실패 처리')
         this.error = data.error
         this.paymentStatus = 'failed'
-        this.redirectUrl = data.redirectUrl // 실패 시에도 리다이렉트 URL 저장
-        console.log('PaymentStore - 실패 redirectUrl 설정:', this.redirectUrl)
         this.closePopup()
       } else if (data.type === 'PAYMENT_CANCELLED') {
-        console.log('PaymentStore - 결제 취소 처리')
         this.cancelKakaoPayment()
-        this.redirectUrl = data.redirectUrl // 취소 시에도 리다이렉트 URL 저장
-        console.log('PaymentStore - 취소 redirectUrl 설정:', this.redirectUrl)
         this.closePopup()
       }
     },

@@ -86,25 +86,18 @@ PUT /v1/last-view
 
 ### Payment System Integration
 
-**카카오페이 팝업 결제:**
-- 팝업 기반 결제로 페이지 이탈 없음
-- `postMessage` API를 통한 부모↔팝업 창 안전 통신
-- Flow: Cart → Payment Page → KakaoPay Popup → Auto Close → Completion
+**카카오페이 직접 연동:**
+- 카카오페이 API 직접 호출
+- Flow: Cart → Payment Page → KakaoPay → Verification → Completion
 
 **Key Components:**
-- `src/utils/kakaoPayService.js`: 카카오페이 API + 팝업 처리 통합
-- `src/stores/paymentStore.js`: 팝업 상태 및 모니터링 관리  
-- `src/components/payment/PaymentSuccess.vue`: 팝업 결과 처리
-- `src/components/payment/PaymentFail.vue`: 팝업 실패 처리
-- `src/components/payment/PaymentCancel.vue`: 팝업 취소 처리
-
-**팝업 처리 방식:**
-- `openKakaoPayPopup()`: 팝업 창 열기 및 차단 감지
-- `monitorPopup()`: 팝업 상태 모니터링 (1초 간격)
-- 결제 완료/실패/취소 시 부모창으로 메시지 전송 후 자동 닫기
+- `src/utils/kakaoPayService.js`: 카카오페이 API 연동
+- `src/stores/paymentStore.js`: Payment state management
+- `src/views/PaymentView.vue`: Main payment interface
+- `src/components/payment/`: Payment forms and result displays
 
 **API Endpoints:**
-- `POST /v1/payments/ready`: 카카오페이 결제 준비 (paymentId 콜백 URL 포함)
+- `POST /v1/payments/ready`: 카카오페이 결제 준비
 - `POST /v1/payments/approve`: 카카오페이 결제 승인
 - `GET /v1/orders/history/{memberId}`: Order history
 - `POST /v1/orders/cancel`: Order cancellation

@@ -46,10 +46,6 @@ const router = useRouter()
 const route = useRoute()
 const paymentStore = usePaymentStore()
 
-// 팝업 환경 체크를 즉시 수행 - 다른 모든 로직보다 우선
-const isPopup = window.opener && !window.opener.closed
-console.log('PaymentSuccess - 즉시 팝업 환경 체크:', isPopup)
-
 const paymentResult = ref(null)
 const loading = ref(true)
 const error = ref('')
@@ -72,110 +68,39 @@ const goToHome = () => {
 }
 
 const processPaymentSuccess = async () => {
-  console.log('PaymentSuccess - processPaymentSuccess 시작, 팝업 환경:', isPopup)
-
-  // 팝업 환경이면 즉시 처리 후 종료
-  if (isPopup) {
-    try {
-      const pgToken = route.query.pg_token
-      const paymentId = route.query.payment_id
-      
-      if (!pgToken) {
-        console.log('PaymentSuccess - 팝업에서 토큰 없음으로 실패 메시지 전송')
-        window.opener.postMessage({
-          type: 'PAYMENT_FAILED',
-          error: '결제 토큰이 없습니다.',
-          redirectUrl: '/payment',
-          message: '결제 처리 중 오류가 발생했습니다.'
-        }, window.location.origin)
-        window.close()
-        return
-      }
-
-      // URL에서 paymentId를 받았다면 세션에 저장
-      if (paymentId) {
-        sessionStorage.setItem('current_payment_id', paymentId)
-      }
-
-      // 세션에서 결제 정보 복원
-      const sessionData = paymentStore.restorePaymentFromSession()
-      const finalPaymentId = paymentId || sessionData?.paymentId
-      
-      if (!finalPaymentId) {
-        console.log('PaymentSuccess - 팝업에서 결제 ID 없음으로 실패 메시지 전송')
-        window.opener.postMessage({
-          type: 'PAYMENT_FAILED',
-          error: '결제 ID를 찾을 수 없습니다.',
-          redirectUrl: '/payment',
-          message: '결제 처리 중 오류가 발생했습니다.'
-        }, window.location.origin)
-        window.close()
-        return
-      }
-
-      // 백엔드에서 받은 실제 paymentId로 결제 승인 처리
-      const result = await paymentStore.approveKakaoPayment(finalPaymentId, pgToken)
-      
-      if (result.success) {
-        console.log('PaymentSuccess - 팝업에서 성공 메시지 전송')
-        window.opener.postMessage({
-          type: 'PAYMENT_SUCCESS',
-          result: result.data,
-          redirectUrl: '/my-courses',
-          message: '결제가 성공적으로 완료되었습니다.'
-        }, window.location.origin)
-      } else {
-        console.log('PaymentSuccess - 팝업에서 승인 실패로 실패 메시지 전송')
-        window.opener.postMessage({
-          type: 'PAYMENT_FAILED',
-          error: result.error || '결제 승인에 실패했습니다.',
-          redirectUrl: '/payment',
-          message: '결제 처리 중 오류가 발생했습니다.'
-        }, window.location.origin)
-      }
-    } catch (err) {
-      console.error('PaymentSuccess - 팝업에서 오류 발생:', err)
-      console.log('PaymentSuccess - 팝업에서 예외 발생으로 실패 메시지 전송')
-      window.opener.postMessage({
-        type: 'PAYMENT_FAILED',
-        error: err.message,
-        redirectUrl: '/payment',
-        message: '결제 처리 중 오류가 발생했습니다.'
-      }, window.location.origin)
-    }
-    
-    window.close()
-    return // 팝업이면 여기서 완전히 종료
-  }
-
-  // 일반 환경에서만 실행되는 로직
   try {
     const pgToken = route.query.pg_token
-    const paymentId = route.query.payment_id
     
     if (!pgToken) {
       throw new Error('결제 토큰이 없습니다.')
     }
 
-    // URL에서 paymentId를 받았다면 세션에 저장
-    if (paymentId) {
-      sessionStorage.setItem('current_payment_id', paymentId)
-    }
-
     // 세션에서 결제 정보 복원
     const sessionData = paymentStore.restorePaymentFromSession()
-    const finalPaymentId = paymentId || sessionData?.paymentId
-    
-    if (!finalPaymentId) {
-      throw new Error('결제 ID를 찾을 수 없습니다.')
+    if (!sessionData || !sessionData.paymentId) {
+      throw new Error('결제 정보를 찾을 수 없습니다.')
     }
 
     // 백엔드에서 받은 실제 paymentId로 결제 승인 처리
-    const result = await paymentStore.approveKakaoPayment(finalPaymentId, pgToken)
+    const result = await paymentStore.approveKakaoPayment(sessionData.paymentId, pgToken)
     
     if (result.success) {
       paymentResult.value = result.data
       paymentStore.setPaymentStatus('success')
+      
+      // 팝업 환경인지 확인
+      if (window.opener && !window.opener.closed) {
+        // 부모 창으로 결제 성공 메시지 전송
+        window.opener.postMessage({
+          type: 'PAYMENT_SUCCESS',
+          result: result.data
+        }, window.location.origin)
+        
+        // 팝업 닫기
+        window.close()
+        return
+      }
+      
       // 세션 정리
       paymentStore.clearPaymentSession()
     } else {
@@ -186,7 +111,20 @@ const processPaymentSuccess = async () => {
     error.value = err.message
     paymentStore.setPaymentStatus('failed')
     
-    // 오류 발생 시 실패 페이지로 리다이렉트 (일반 환경에서만)
+    // 팝업 환경인지 확인
+    if (window.opener && !window.opener.closed) {
+      // 부모 창으로 결제 실패 메시지 전송
+      window.opener.postMessage({
+        type: 'PAYMENT_FAILED',
+        error: err.message
+      }, window.location.origin)
+      
+      // 팝업 닫기
+      window.close()
+      return
+    }
+    
+    // 오류 발생 시 실패 페이지로 리다이렉트
     setTimeout(() => {
       router.replace('/payment/fail?error=' + encodeURIComponent(err.message))
     }, 3000)
