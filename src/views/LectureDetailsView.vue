@@ -240,7 +240,58 @@ const handleEnrollLecture = async () => {
     return
   }
   
-  alert('결제 기능은 현재 개발 중입니다.')
+  if (!lectureDetails.value) {
+    alert('강의 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+    return
+  }
+
+  try {
+    const confirmPurchase = confirm(
+      `"${lectureDetails.value.title}" 강의를 구매하시겠습니까?\n\n가격: ${
+        lectureDetails.value.price ? lectureDetails.value.price.toLocaleString() + '원' : '무료'
+      }`
+    )
+    
+    if (!confirmPurchase) {
+      return
+    }
+
+    // Enrollment API 호출
+    const response = await axiosInstance.post('/v1/enroll', {
+      memberId: userStore.getMemberId,
+      lectureId: lectureDetails.value.id,
+    })
+
+    if (response.status === 201 || response.status === 200) {
+      alert(`${lectureDetails.value.title} 강의 구매가 완료되었습니다!`)
+      
+      // 구매 상태 다시 확인
+      await fetchPurchaseStatus(lectureDetails.value.id)
+      await fetchTotalWatchTime(lectureDetails.value.id)
+      
+      // 장바구니에서 해당 강의 제거
+      cartStore.removeItem(lectureDetails.value.id)
+    } else {
+      alert('강의 구매에 실패했습니다. 다시 시도해주세요.')
+    }
+  } catch (error) {
+    console.error('강의 구매 실패:', error)
+    if (error.response) {
+      if (error.response.status === 409) {
+        alert('이미 구매한 강의입니다.')
+      } else if (error.response.status === 400) {
+        alert(`구매 실패: ${error.response.data.message || '요청이 잘못되었습니다.'}`)
+      } else if (error.response.status === 401 || error.response.status === 418) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+      } else {
+        alert(`구매 중 오류가 발생했습니다: ${error.response.status}`)
+      }
+    } else if (error.request) {
+      alert('네트워크 오류: 서버에 연결할 수 없습니다.')
+    } else {
+      alert('알 수 없는 오류가 발생했습니다.')
+    }
+  }
 }
 
 const handleTakeLecture = async () => {

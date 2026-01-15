@@ -34,6 +34,7 @@
               <span>총 결제금액:</span>
               <span class="total-price">{{ cartStore.totalPrice.toLocaleString() }}원</span>
             </div>
+            <button @click="purchaseAllItems" class="purchase-all-btn">전체 구매하기</button>
           </div>
         </div>
       </div>
@@ -51,11 +52,10 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
+import axiosInstance from '@/utils/axiosInstance'
 
-const router = useRouter()
 const cartStore = useCartStore()
 const userStore = useUserStore()
 
@@ -63,6 +63,64 @@ const removeItem = (itemId) => {
   cartStore.removeItem(itemId)
 }
 
+const purchaseAllItems = async () => {
+  if (!userStore.isLoggedIn) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+
+  if (cartStore.itemCount === 0) {
+    alert('장바구니에 강의가 없습니다.')
+    return
+  }
+
+  const confirmPurchase = confirm(
+    `장바구니의 모든 강의를 구매하시겠습니까?\n\n총 ${cartStore.itemCount}개 강의\n총 금액: ${cartStore.totalPrice.toLocaleString()}원`
+  )
+  
+  if (!confirmPurchase) {
+    return
+  }
+
+  try {
+    const purchasePromises = cartStore.items.map(item => 
+      axiosInstance.post('/v1/enroll', {
+        memberId: userStore.getMemberId,
+        lectureId: item.id,
+      })
+    )
+
+    const results = await Promise.allSettled(purchasePromises)
+    
+    let successCount = 0
+    let failCount = 0
+    const failedItems = []
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && (result.value.status === 201 || result.value.status === 200)) {
+        successCount++
+      } else {
+        failCount++
+        failedItems.push(cartStore.items[index].title)
+      }
+    })
+
+    if (successCount > 0) {
+      alert(`${successCount}개 강의 구매가 완료되었습니다!${failCount > 0 ? `\n실패: ${failCount}개` : ''}`)
+      
+      // 성공한 항목들을 장바구니에서 제거
+      cartStore.clearCart()
+      cartStore.loadCartFromBackend() // 최신 장바구니 상태 로드
+    } else {
+      alert('모든 강의 구매에 실패했습니다.')
+      console.error('Purchase failures:', failedItems)
+    }
+    
+  } catch (error) {
+    console.error('일괄 구매 중 오류:', error)
+    alert('구매 처리 중 오류가 발생했습니다.')
+  }
+}
 
 onMounted(() => {
   cartStore.loadCartFromBackend()
@@ -207,6 +265,24 @@ onMounted(() => {
 .total-price {
   color: #007bff;
   font-size: 1.4rem;
+}
+
+.purchase-all-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.purchase-all-btn:hover {
+  background-color: #218838;
 }
 
 
