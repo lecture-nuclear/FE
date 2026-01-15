@@ -240,14 +240,7 @@ const handleEnrollLecture = async () => {
     return
   }
   
-  // 결제 페이지로 이동 (직접 구매 모드)
-  router.push({
-    path: '/payment',
-    query: {
-      direct: 'true',
-      lectureId: lectureDetails.value.id.toString()
-    }
-  })
+  alert('결제 기능은 현재 개발 중입니다.')
 }
 
 const handleTakeLecture = async () => {

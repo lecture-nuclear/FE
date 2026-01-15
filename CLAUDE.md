@@ -36,15 +36,13 @@ This is a Vue 3 e-learning platform built with:
 **State Management:**
 - `userStore.js`: Authentication, user profile, login/logout
 - `cartStore.js`: Shopping cart with backend integration
-- `paymentStore.js`: Payment processing and order management
 - All stores use Pinia with Composition API pattern
 
 **Component Structure:**
-- `views/`: Main page components (SettingsView, AdminView, PaymentView 등)
+- `views/`: Main page components (SettingsView, AdminView 등)
 - `components/common/`: AppHeader, UserBar, AppFooter - shared UI components
 - `components/settings/`: User settings forms (nickname, password, account deletion)
 - `components/admin/`: Admin dashboard components
-- `components/payment/`: Payment form and result components
 - `components/home/`: Homepage content components
 
 ### Critical Implementation Details
@@ -84,27 +82,8 @@ PUT /v1/last-view
 - Response: Standard API response with success confirmation
 ```
 
-### Payment System Integration
-
-**PortOne V2 결제 시스템:**
-- SDK loaded via CDN in `index.html`
-- Environment variables: `VITE_PORTONE_STORE_ID`, `VITE_PORTONE_CHANNEL_KEY`
-- Flow: Cart → Payment Page → PortOne → Verification → Completion
-
-**Key Components:**
-- `src/utils/payment.js`: PortOne SDK wrapper
-- `src/stores/paymentStore.js`: Payment state management
-- `src/views/PaymentView.vue`: Main payment interface
-- `src/components/payment/`: Payment forms and result displays
-
-**API Endpoints:**
-- `POST /v1/orders`: Order creation
-- `POST /v1/payments/verify`: Payment verification
-- `GET /v1/orders/history/{memberId}`: Order history
-- `POST /v1/orders/cancel`: Order cancellation
-
 ### Component Naming
-- Views: `*View.vue` (e.g., SettingsView, AdminView, PaymentView)
+- Views: `*View.vue` (e.g., SettingsView, AdminView)
 - Reusable components: descriptive names (LectureItem, UserBar)
 - Modals: `*Modal.vue` suffix
 

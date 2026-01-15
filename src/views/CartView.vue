@@ -34,7 +34,6 @@
               <span>총 결제금액:</span>
               <span class="total-price">{{ cartStore.totalPrice.toLocaleString() }}원</span>
             </div>
-            <button @click="goToPayment" class="checkout-btn">결제하기</button>
           </div>
         </div>
       </div>
@@ -64,13 +63,6 @@ const removeItem = (itemId) => {
   cartStore.removeItem(itemId)
 }
 
-const goToPayment = () => {
-  if (!userStore.isLoggedIn) {
-    alert('로그인이 필요합니다.')
-    return
-  }
-  router.push('/payment')
-}
 
 onMounted(() => {
   cartStore.loadCartFromBackend()
@@ -217,23 +209,6 @@ onMounted(() => {
   font-size: 1.4rem;
 }
 
-.checkout-btn {
-  width: 100%;
-  padding: 16px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
-}
-
-.checkout-btn:hover {
-  background-color: #218838;
-}
 
 .empty-cart {
   display: flex;

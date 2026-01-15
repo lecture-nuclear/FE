@@ -51,7 +51,6 @@
         </div>
         <div class="cart-actions">
           <router-link to="/cart" class="btn-cart-view">장바구니 보기</router-link>
-          <button class="btn-checkout" @click="goToPayment">결제</button>
         </div>
       </template>
       <template v-else>
@@ -172,22 +171,6 @@ const removeCartItem = (itemId) => {
   cartStore.removeItem(itemId)
 }
 
-// 결제 페이지로 이동
-const goToPayment = () => {
-  if (cartStore.itemCount === 0) {
-    alert('장바구니에 상품이 없습니다.')
-    return
-  }
-  
-  if (!userStore.isLoggedIn) {
-    alert('로그인이 필요합니다.')
-    openLoginModal()
-    return
-  }
-  
-  showCartDropdown.value = false
-  router.push('/payment')
-}
 
 // 드롭다운 외부 클릭 시 닫기
 const handleClickOutside = (event) => {
@@ -455,8 +438,7 @@ onBeforeUnmount(() => {
   margin-top: 15px;
 }
 
-.btn-cart-view,
-.btn-checkout {
+.btn-cart-view {
   flex-grow: 1;
   padding: 10px 15px;
   border-radius: 5px;
@@ -475,15 +457,5 @@ onBeforeUnmount(() => {
 }
 .btn-cart-view:hover {
   background-color: #e0e0e0;
-}
-
-.btn-checkout {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  transition: background-color 0.2s ease;
-}
-.btn-checkout:hover {
-  background-color: #218838;
 }
 </style>
