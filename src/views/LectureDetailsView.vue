@@ -24,9 +24,9 @@
         <div class="content-and-sidebar-wrapper">
           <!-- 🚩 데스크톱에서 메인 콘텐츠가 왼쪽에 오도록 먼저 배치 -->
           <div class="main-lecture-content">
-            <div v-if="lectureDetails.thumbnailUrl" class="lecture-thumbnail-full">
+            <div v-if="thumbnailSrc" class="lecture-thumbnail-full">
               <img
-                :src="lectureDetails.thumbnailUrl"
+                :src="thumbnailSrc"
                 :alt="lectureDetails.title"
                 class="thumbnail-img-full"
               />
@@ -120,9 +120,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
-import axiosInstance from '@/utils/axiosInstance'
+import axiosInstance, { getFileUrl } from '@/utils/axiosInstance'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
 import { isAdmin } from '@/utils/auth'
@@ -142,6 +142,11 @@ const isPurchased = ref(false)
 const lastViewedAt = ref(null)
 const totalWatchTime = ref(0)
 const reviewListRef = ref(null)
+
+// 썸네일 URL 계산 (상대 경로 → 절대 경로 변환)
+const thumbnailSrc = computed(() => {
+  return getFileUrl(lectureDetails.value?.thumbnailUrl) || ''
+})
 
 const fetchLectureDetails = async () => {
   loading.value = true

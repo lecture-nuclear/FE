@@ -10,7 +10,7 @@
         <div class="cart-items">
           <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
             <img
-              :src="item.image || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
+              :src="getFileUrl(item.image) || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
               alt="강의 썸네일"
               class="item-image"
             />
@@ -54,7 +54,7 @@
 import { onMounted } from 'vue'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
-import axiosInstance from '@/utils/axiosInstance'
+import axiosInstance, { getFileUrl } from '@/utils/axiosInstance'
 
 const cartStore = useCartStore()
 const userStore = useUserStore()

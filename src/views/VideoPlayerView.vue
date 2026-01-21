@@ -28,7 +28,7 @@
 
         <!-- 일반 비디오 파일인 경우 -->
         <video v-else id="player" playsinline controls :data-poster="posterImage">
-          <source :src="videoUrl" :type="videoType" />
+          <source :src="videoSrcUrl" :type="videoType" />
           Your browser does not support the video tag.
         </video>
       </div>
@@ -44,11 +44,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
-import axiosInstance from '@/utils/axiosInstance'
+import axiosInstance, { getFileUrl } from '@/utils/axiosInstance'
 import { useUserStore } from '@/stores/userStore'
 
 const route = useRoute()
@@ -72,6 +72,17 @@ const isSendingData = ref(false)
 const lectureId = ref(route.params.lectureId)
 const videoIndex = ref(parseInt(route.params.videoIndex))
 const videoUrl = ref(route.query.url)
+// 비디오 소스 URL (상대 경로 → 절대 경로 변환, YouTube가 아닌 경우)
+const videoSrcUrl = computed(() => {
+  if (!videoUrl.value) return ''
+  // YouTube URL인 경우 그대로 반환
+  const youtubeRegex = /(?:youtube\.com|youtu\.be)/
+  if (youtubeRegex.test(videoUrl.value)) {
+    return videoUrl.value
+  }
+  // 일반 비디오 파일인 경우 getFileUrl로 변환
+  return getFileUrl(videoUrl.value)
+})
 const videoTitle = ref(route.query.title || '영상')
 const lectureTitle = ref(route.query.lectureTitle || '강의')
 const videoDescription = ref('')

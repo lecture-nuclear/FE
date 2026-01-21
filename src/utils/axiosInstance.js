@@ -2,8 +2,25 @@
 import axios from 'axios'
 import router from '@/router'
 
+// API Base URL 추출 (파일 URL 생성에 사용)
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
+/**
+ * 상대 경로를 절대 파일 URL로 변환
+ * @param {string} relativePath - BE에서 반환한 상대 경로 (예: /files/thumbnails/image.jpg)
+ * @returns {string} 절대 URL (예: http://localhost:8080/api/files/thumbnails/image.jpg)
+ */
+export const getFileUrl = (relativePath) => {
+  if (!relativePath) return ''
+  // 이미 절대 URL인 경우 그대로 반환 (기존 데이터 호환)
+  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+    return relativePath
+  }
+  return `${API_BASE_URL}${relativePath}`
+}
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

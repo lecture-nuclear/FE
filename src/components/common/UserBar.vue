@@ -36,7 +36,7 @@
       <template v-if="cartStore.itemCount > 0">
         <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
           <img
-            :src="item.image || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
+            :src="getFileUrl(item.image) || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
             alt="상품 이미지"
             class="cart-item-image"
           />
@@ -69,7 +69,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 import { isAdmin } from '@/utils/auth'
-import axiosInstance from '@/utils/axiosInstance'
+import axiosInstance, { getFileUrl } from '@/utils/axiosInstance'
 import LoginModal from '@/components/modals/LoginModal.vue'
 
 const userStore = useUserStore()

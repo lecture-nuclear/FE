@@ -2,7 +2,7 @@
   <div class="lecture-item-card">
     <div class="lecture-thumbnail">
       <img
-        :src="lecture.thumbnailUrl || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
+        :src="thumbnailSrc"
         :alt="lecture.title"
         class="thumbnail-img"
       />
@@ -29,7 +29,8 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, computed } from 'vue'
+import { getFileUrl } from '@/utils/axiosInstance'
 
 // 부모 컴포넌트로부터 lecture 객체와 enrolled 여부를 props로 받습니다.
 const props = defineProps({
@@ -72,6 +73,11 @@ const addToCart = () => {
 const cancelEnroll = () => {
   emit('cancelEnroll', props.lecture)
 }
+
+// 썸네일 URL 계산 (상대 경로 → 절대 경로 변환)
+const thumbnailSrc = computed(() => {
+  return getFileUrl(props.lecture.thumbnailUrl) || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'
+})
 </script>
 
 <style scoped>
