@@ -18,8 +18,10 @@
           :key="lecture.id"
           :lecture="lecture"
           :noCartButton="true"
+          :showCancelButton="true"
           @viewDetails="handleViewDetails"
           @addToCart="handleAddToCartComposables"
+          @cancelEnroll="handleCancelEnroll"
         />
       </div>
       <div v-else class="no-lectures-message">아직 수강 중인 강의가 없습니다.</div>
@@ -73,6 +75,21 @@ const fetchMyLectures = async () => {
 const handleViewDetails = (lectureId) => {
   console.log('내 강의 상세 보기 클릭:', lectureId)
   router.push(`/lectures/${lectureId}`)
+}
+
+const handleCancelEnroll = async (lecture) => {
+  if (!confirm('정말로 이 강의의 수강을 취소하시겠습니까?')) return
+
+  try {
+    await axiosInstance.delete('/v1/enroll', {
+      data: { memberId: userStore.getMemberId, lectureId: lecture.id }
+    })
+    myLectures.value = myLectures.value.filter(l => l.id !== lecture.id)
+    alert('수강이 취소되었습니다.')
+  } catch (error) {
+    console.error('수강 취소 실패:', error)
+    alert('수강 취소에 실패했습니다: ' + (error.response?.data?.message || error.message))
+  }
 }
 
 // `handleAddToCartComposables`는 CoursesView와 동일하게 사용합니다.

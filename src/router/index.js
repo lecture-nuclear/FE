@@ -10,6 +10,7 @@ import VideoPlayerView from '@/views/VideoPlayerView.vue'
 import CartView from '@/views/CartView.vue'
 import AdminView from '@/views/AdminView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import OrderHistoryView from '@/views/OrderHistoryView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
@@ -84,6 +85,12 @@ const router = createRouter({
       path: '/settings',
       name: 'Settings',
       component: SettingsView,
+      meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
+    },
+    {
+      path: '/orders',
+      name: 'OrderHistory',
+      component: OrderHistoryView,
       meta: { requiresAuth: true }, // 로그인한 사용자만 접근 가능
     },
     {

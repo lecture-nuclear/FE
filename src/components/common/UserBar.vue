@@ -18,6 +18,7 @@
             <div class="dropdown-item notification-item">
               알림 <span class="notification-badge">0</span>
             </div>
+            <div class="dropdown-item" @click="showOrders">주문 내역</div>
             <div class="dropdown-item" @click="showSettings">설정</div>
           </div>
         </div>
@@ -163,6 +164,12 @@ const logout = async () => {
 const showSettings = () => {
   showUserDropdown.value = false
   router.push('/settings')
+}
+
+// 주문 내역 페이지로 이동
+const showOrders = () => {
+  showUserDropdown.value = false
+  router.push('/orders')
 }
 
 

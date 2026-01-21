@@ -20,7 +20,8 @@
       </div>
       <div class="lecture-actions">
         <button @click="viewDetails" class="btn-details">상세 보기</button>
-        <button v-if="!noCartButton" @click="addToCart" class="btn-add-cart">장바구니 담기</button>
+        <button v-if="showCancelButton" @click="cancelEnroll" class="btn-cancel">수강 취소</button>
+        <button v-else-if="!noCartButton" @click="addToCart" class="btn-add-cart">장바구니 담기</button>
         <button v-else class="btn-enrolled" disabled>수강 중</button>
       </div>
     </div>
@@ -48,10 +49,14 @@ const props = defineProps({
     type: Boolean,
     default: false, // 기본값은 수강하지 않은 상태
   },
+  showCancelButton: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // 부모 컴포넌트로 이벤트를 발생시킵니다.
-const emit = defineEmits(['viewDetails', 'addToCart'])
+const emit = defineEmits(['viewDetails', 'addToCart', 'cancelEnroll'])
 
 // '상세 보기' 버튼 클릭 시 이벤트 발생
 const viewDetails = () => {
@@ -61,6 +66,11 @@ const viewDetails = () => {
 // '장바구니 담기' 버튼 클릭 시 이벤트 발생
 const addToCart = () => {
   emit('addToCart', props.lecture) // lecture 객체 전체를 전달
+}
+
+// '수강 취소' 버튼 클릭 시 이벤트 발생
+const cancelEnroll = () => {
+  emit('cancelEnroll', props.lecture)
 }
 </script>
 
@@ -161,8 +171,8 @@ const addToCart = () => {
 
 .btn-details,
 .btn-add-cart,
-.btn-enrolled {
-  /* btn-enrolled 스타일 추가 */
+.btn-enrolled,
+.btn-cancel {
   flex: 1;
   padding: 10px 15px;
   border: none;
@@ -198,5 +208,15 @@ const addToCart = () => {
   color: white;
   cursor: default; /* 마우스 오버 시 커서 변경 안 함 */
   opacity: 0.8;
+}
+
+/* 수강 취소 버튼 스타일 */
+.btn-cancel {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #c82333;
 }
 </style>
