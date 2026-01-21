@@ -71,12 +71,14 @@ axiosInstance.interceptors.response.use(
     }
 
     // 401 Unauthorized 에러 감지 및 refresh token 시도
+    // auth 관련 엔드포인트는 토큰 갱신 시도하지 않음
     if (
       error.response.status === 401 &&
       !originalRequest._retry &&
       originalRequest.url !== '/auth/login' &&
       originalRequest.url !== '/auth/refresh' &&
-      originalRequest.url !== '/auth/logout'
+      originalRequest.url !== '/auth/logout' &&
+      originalRequest.url !== '/auth/status'
     ) {
       // 무한 재시도 방지
       originalRequest._retry = true
