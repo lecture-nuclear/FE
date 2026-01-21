@@ -309,12 +309,31 @@ const initializePlayer = async () => {
         console.log('영상 일시정지')
         isPlaying.value = false
         stopWatchTimeInterval()
+        // 일시정지 시 즉시 저장
+        sendWatchTimeData()
+      })
+
+      player.value.on('ended', () => {
+        console.log('영상 종료')
+        isPlaying.value = false
+        stopWatchTimeInterval()
+        // 영상 종료 시 즉시 저장
+        sendWatchTimeData()
       })
 
       player.value.on('seeking', () => {
         updateWatchTime()
         if (player.value && typeof player.value.currentTime === 'number') {
           currentPosition.value = Math.floor(player.value.currentTime * 1000)
+        }
+      })
+
+      player.value.on('seeked', () => {
+        // 사용자가 탐색을 완료하면 현재 위치 저장
+        if (player.value && typeof player.value.currentTime === 'number') {
+          currentPosition.value = Math.floor(player.value.currentTime * 1000)
+          console.log('📍 탐색 완료 - 위치 저장:', currentPosition.value, 'ms')
+          sendWatchTimeData()
         }
       })
     }, 100)
@@ -416,8 +435,21 @@ watch(
     if (oldVideoId && newVideoId !== oldVideoId) {
       console.log('📊 비디오 변경 감지 - 이전 비디오 시간 전송')
       await sendWatchTimeData()
+
+      // 새 비디오의 마지막 시청 위치 조회
+      await fetchLastViewPosition()
+
       // 새 비디오 시간 추적 시작
+      totalWatchTime.value = 0
+      currentPosition.value = 0
       startWatchTimeTracking()
+
+      // 플레이어가 있으면 새 마지막 시청 위치로 이동
+      if (player.value && lastViewPosition.value > 0) {
+        const seekPosition = lastViewPosition.value / 1000
+        console.log(`📍 새 비디오 마지막 시청 위치로 이동: ${seekPosition}초`)
+        player.value.currentTime = seekPosition
+      }
     }
   }
 )
