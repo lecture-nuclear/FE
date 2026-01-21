@@ -47,7 +47,7 @@
             <button @click="uploadImage" class="btn-upload">업로드</button>
           </div>
           <div v-if="localSection.img" class="image-preview">
-            <img :src="localSection.img" alt="미리보기" />
+            <img :src="previewImageUrl" alt="미리보기" />
           </div>
         </div>
         
@@ -249,8 +249,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { uploadHomeImage, validateImageFile } from '@/services/homeService'
+import { getFileUrl } from '@/utils/axiosInstance'
 
 const props = defineProps({
   section: {
@@ -269,6 +270,9 @@ const emit = defineEmits(['update', 'delete', 'move-up', 'move-down'])
 const localSection = reactive({ ...props.section })
 const newLectureId = ref('')
 const fileInput = ref(null)
+
+// 이미지 미리보기 URL (상대경로 → 절대경로 변환)
+const previewImageUrl = computed(() => getFileUrl(localSection.img))
 
 // props 변경 시 로컬 데이터 동기화
 watch(() => props.section, (newSection) => {

@@ -1,8 +1,8 @@
 <!-- src/components/home/HomeBannerImage.vue -->
 <template>
-  <div 
-    class="home-banner" 
-    :style="{ backgroundImage: `url(${img})` }"
+  <div
+    class="home-banner"
+    :style="{ backgroundImage: `url(${imageUrl})` }"
     :class="{ clickable: !!link }"
     @click="handleClick"
   >
@@ -13,12 +13,13 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, computed } from 'vue'
+import { getFileUrl } from '@/utils/axiosInstance'
 
 const props = defineProps({
-  img: { 
-    type: String, 
-    required: true 
+  img: {
+    type: String,
+    required: true
   },
   text: { 
     type: String, 
@@ -35,6 +36,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['navigate'])
+
+// 이미지 URL 변환 (상대경로 → 절대경로)
+const imageUrl = computed(() => getFileUrl(props.img))
 
 const handleClick = () => {
   if (props.link) {

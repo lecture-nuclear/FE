@@ -3,8 +3,8 @@
   <div class="home-carousel">
     <div class="carousel-container">
       <div class="carousel-track" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-        <div 
-          v-for="(item, index) in imgs"
+        <div
+          v-for="(item, index) in processedImgs"
           :key="index"
           class="carousel-slide"
           @click="handleSlideClick(item.link)"
@@ -47,7 +47,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { getFileUrl } from '@/utils/axiosInstance'
 
 const props = defineProps({
   imgs: { 
@@ -73,6 +74,14 @@ const emit = defineEmits(['navigate'])
 
 const currentIndex = ref(0)
 let interval = null
+
+// 이미지 URL 변환 (상대경로 → 절대경로)
+const processedImgs = computed(() => {
+  return props.imgs.map(item => ({
+    ...item,
+    img: getFileUrl(item.img)
+  }))
+})
 
 const nextSlide = () => {
   currentIndex.value = (currentIndex.value + 1) % props.imgs.length
