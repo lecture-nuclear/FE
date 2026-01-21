@@ -1,26 +1,28 @@
 <!-- src/components/admin/home/SectionTypeModal.vue -->
 <template>
-  <div class="modal-overlay" @click="$emit('close')">
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h3>섹션 타입 선택</h3>
-        <button @click="$emit('close')" class="close-btn">×</button>
-      </div>
-      
-      <div class="section-types">
-        <div 
-          v-for="type in sectionTypes" 
-          :key="type.key"
-          class="type-card"
-          @click="selectType(type.key)"
-        >
-          <div class="type-icon">{{ type.icon }}</div>
-          <h4>{{ type.name }}</h4>
-          <p>{{ type.description }}</p>
+  <Teleport to="body">
+    <div class="modal-overlay" @click="$emit('close')">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>섹션 타입 선택</h3>
+          <button @click="$emit('close')" class="close-btn">×</button>
+        </div>
+
+        <div class="section-types">
+          <div
+            v-for="type in sectionTypes"
+            :key="type.key"
+            class="type-card"
+            @click="selectType(type.key)"
+          >
+            <div class="type-icon">{{ type.icon }}</div>
+            <h4>{{ type.name }}</h4>
+            <p>{{ type.description }}</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -64,7 +66,8 @@ const selectType = (type) => {
 }
 </script>
 
-<style scoped>
+<style>
+/* Teleport 사용 시 scoped 제거 필요 */
 .modal-overlay {
   position: fixed;
   top: 0;
