@@ -100,23 +100,30 @@ const renderedContent = computed(() => {
 const loadHomeContent = async () => {
   try {
     const response = await getHomeContentForAdmin()
-    
+
     // 서버 응답 파싱
-    let parsedData
-    if (typeof response.data.home === 'string') {
-      parsedData = JSON.parse(response.data.home)
-    } else {
-      parsedData = response.data
+    // BE에서 @JsonRawValue로 반환하므로 response.data.home은 객체일 수 있음
+    // 구조: { data: { home: { home: [...] }, version: "1.0" } }
+    let homeArray = []
+
+    const homeData = response.data.home
+    if (typeof homeData === 'string') {
+      // JSON 문자열인 경우
+      const parsed = JSON.parse(homeData)
+      homeArray = Array.isArray(parsed) ? parsed : (parsed.home || [])
+    } else if (homeData && typeof homeData === 'object') {
+      // 객체인 경우 (중첩 구조 처리)
+      homeArray = Array.isArray(homeData) ? homeData : (homeData.home || [])
     }
-    
-    homeContent.home = parsedData.home || []
-    
+
+    homeContent.home = homeArray
+
     // 원본 콘텐츠 저장 (변경 사항 감지용)
     originalContent.value = JSON.stringify(homeContent.home)
     hasUnsavedChanges.value = false
-    
-    console.log('관리자용 홈 콘텐츠 로드 완료:', parsedData)
-    
+
+    console.log('관리자용 홈 콘텐츠 로드 완료:', homeContent.home)
+
   } catch (error) {
     console.error('홈 콘텐츠 로드 실패:', error)
     alert('홈 콘텐츠를 불러오는데 실패했습니다.')

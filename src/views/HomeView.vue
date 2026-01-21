@@ -17,28 +17,32 @@ const loadHomeContent = async () => {
   try {
     isLoading.value = true
     error.value = null
-    
+
     const response = await getHomeContent()
-    
+
     // 서버 응답에서 home 데이터 파싱
-    let parsedData
-    if (typeof response.data.home === 'string') {
-      // 서버에서 JSON 문자열로 온 경우
-      parsedData = JSON.parse(response.data.home)
-    } else {
-      // 이미 객체인 경우
-      parsedData = response.data
+    // BE에서 @JsonRawValue로 반환하므로 response.data.home은 객체일 수 있음
+    // 구조: { data: { home: { home: [...] }, version: "1.0" } }
+    let homeArray = []
+
+    const homeResponse = response.data.home
+    if (typeof homeResponse === 'string') {
+      const parsed = JSON.parse(homeResponse)
+      homeArray = Array.isArray(parsed) ? parsed : (parsed.home || [])
+    } else if (homeResponse && typeof homeResponse === 'object') {
+      homeArray = Array.isArray(homeResponse) ? homeResponse : (homeResponse.home || [])
     }
-    
+
+    const parsedData = { home: homeArray }
     homeData.value = parsedData
     renderedContent.value = renderHomeContent(parsedData)
-    
+
     console.log('홈페이지 콘텐츠 로드 완료:', parsedData)
-    
+
   } catch (err) {
     console.error('홈페이지 데이터 로드 실패:', err)
     error.value = '홈페이지 데이터를 불러올 수 없습니다.'
-    
+
     // 기본 데이터로 폴백
     const defaultData = getDefaultHomeData()
     homeData.value = defaultData

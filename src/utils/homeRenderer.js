@@ -152,20 +152,20 @@ const validateSectionByType = (section, sectionNum) => {
 
 /**
  * 기본 홈페이지 데이터 생성
- * @returns {Object} 기본 홈페이지 데이터
+ * @returns {Object} 기본 홈페이지 데이터 (renderHomeContent에서 기대하는 형식)
  */
 export const getDefaultHomeData = () => {
   return {
     home: [
       {
         type: 'image',
-        img: '/home/images/default-banner.jpg',
+        img: '/files/home/default-banner.jpg',
         link: '/courses',
         text: '환영합니다! 새로운 강의를 시작해보세요'
       },
       {
         type: 'markdown',
-        text: '## 🎓 온라인 강의 플랫폼\n\n여러분의 학습 여정을 함께 하겠습니다.'
+        text: '## 온라인 강의 플랫폼\n\n여러분의 학습 여정을 함께 하겠습니다.'
       }
     ]
   }
