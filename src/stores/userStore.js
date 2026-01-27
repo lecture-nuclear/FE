@@ -7,10 +7,11 @@ export const useUserStore = defineStore('user', {
     isLoggedIn: false,
     name: '게스트',
     email: '',
-    id: null, // memberId 역할을 하는 id를 null로 초기화
-    isLoaded: false, // 사용자 정보 로드 완료 여부 추가
-    loadingPromise: null, // 중복 로딩 방지를 위한 Promise 저장
-    isInitialized: false, // 콜백 함수 설정 완료 여부
+    id: null,
+    role: null,
+    isLoaded: false,
+    loadingPromise: null,
+    isInitialized: false,
   }),
   actions: {
     // axiosInstance에 콜백 함수 설정 (순환 의존성 해결)
@@ -27,24 +28,26 @@ export const useUserStore = defineStore('user', {
       this.isLoggedIn = true
       this.name = userData.name || '사용자'
       this.email = userData.email || ''
-      this.id = userData.id || null // id(memberId) 저장
-      this.isLoaded = true // 로그인 성공 시 정보 로드 완료
+      this.id = userData.id || null
+      this.role = userData.role || null
+      this.isLoaded = true
     },
     logout() {
       this.isLoggedIn = false
       this.name = '게스트'
       this.email = ''
       this.id = null
-      this.isLoaded = false // 로그아웃 시 정보 로드 상태 초기화
-      this.loadingPromise = null // 로딩 Promise도 초기화
-      // isInitialized는 유지 (콜백 함수는 계속 사용)
+      this.role = null
+      this.isLoaded = false
+      this.loadingPromise = null
     },
     checkSuccess(data) {
       console.log('data', data)
       this.isLoggedIn = true
-      this.name = data.data.name || '사용자' // 백엔드에서 받은 사용자 이름 사용
-      this.id = data.data.id // memberId 역할을 하는 id 저장
-      this.isLoaded = true // 체크 성공 시 정보 로드 완료
+      this.name = data.data.name || '사용자'
+      this.id = data.data.id
+      this.role = data.data.role || null
+      this.isLoaded = true
     },
     /**
      * 페이지 로드 시 로그인 상태 확인 및 사용자 정보 로드.
