@@ -51,7 +51,12 @@ const handleLogin = async () => {
       // 🚩 로그인 성공 시, 백엔드 응답에서 직접 name과 email을 받아 Pinia 스토어 업데이트
       // 이미지에서 확인한 응답 구조: response.data.data.name, response.data.data.email
       const userData = response.data.data // 'data' 필드 안에 실제 사용자 정보가 있음
-      userStore.loginSuccess({ name: userData.name, email: userData.email, id: userData.id }) // userId도 함께 저장
+      userStore.loginSuccess({
+        name: userData.name,
+        email: userData.email,
+        id: userData.id,
+        role: userData.role,
+      }) // userId, role도 함께 저장
       alert('로그인 성공!')
       closeModal()
     } else {
