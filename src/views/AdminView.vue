@@ -34,6 +34,14 @@
             <span class="tab-icon">🏠</span>
             <span class="tab-text">홈화면 꾸미기</span>
           </button>
+          <button
+            @click="activeTab = 'about'"
+            :class="{ active: activeTab === 'about' }"
+            class="sidebar-tab"
+          >
+            <span class="tab-icon">📄</span>
+            <span class="tab-text">서비스 소개 편집</span>
+          </button>
         </nav>
       </div>
 
@@ -57,6 +65,9 @@
 
         <!-- 홈화면 꾸미기 탭 -->
         <HomeContentManager v-if="activeTab === 'home'" />
+
+        <!-- 서비스 소개 편집 탭 -->
+        <AboutEditor v-if="activeTab === 'about'" />
       </div>
     </div>
   </div>
@@ -69,13 +80,14 @@ import { useUserStore } from '@/stores/userStore'
 import { isAdmin } from '@/utils/auth'
 import UserManagement from '@/components/admin/UserManagement.vue'
 import HomeContentManager from '@/components/admin/home/HomeContentManager.vue'
+import AboutEditor from '@/components/admin/AboutEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
 // 유효한 탭 목록
-const validTabs = ['users', 'upload', 'home']
+const validTabs = ['users', 'upload', 'home', 'about']
 
 // URL 쿼리 파라미터에서 탭 상태 관리
 const activeTab = computed({
