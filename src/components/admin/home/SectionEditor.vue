@@ -239,6 +239,7 @@
     
     <!-- 파일 업로드 input (숨김) -->
     <input 
+      :id="`file-input-${index}`"
       ref="fileInput" 
       type="file" 
       accept="image/*" 
@@ -249,7 +250,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed, nextTick } from 'vue'
 import { uploadHomeImage, validateImageFile } from '@/services/homeService'
 import { getFileUrl } from '@/utils/axiosInstance'
 
@@ -297,8 +298,25 @@ const updateSection = () => {
 }
 
 // 이미지 업로드
-const uploadImage = () => {
-  fileInput.value?.click()
+const uploadImage = async () => {
+  // nextTick을 사용하여 DOM이 완전히 렌더링된 후 실행
+  await nextTick()
+  
+  // ref로 먼저 시도
+  if (fileInput.value) {
+    fileInput.value.click()
+    return
+  }
+  
+  // ref가 없으면 ID로 직접 찾기 (fallback)
+  const input = document.getElementById(`file-input-${props.index}`)
+  if (input) {
+    console.log('ref는 없지만 getElementById로 input 찾음')
+    input.click()
+  } else {
+    console.error('파일 input을 찾을 수 없습니다. fileInput.value:', fileInput.value, 'index:', props.index)
+    alert('파일 업로드 기능을 사용할 수 없습니다. 페이지를 새로고침해주세요.')
+  }
 }
 
 // 파일 업로드 처리
