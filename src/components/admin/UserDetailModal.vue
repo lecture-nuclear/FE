@@ -137,9 +137,8 @@ const getJoinedDaysAgo = (createdAt) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 0;
+  padding: 24px;
   border-bottom: 1px solid #e1e8ed;
-  margin-bottom: 24px;
 }
 
 .modal-header h3 {
@@ -171,12 +170,23 @@ const getJoinedDaysAgo = (createdAt) => {
 }
 
 .modal-content {
-  padding: 0 24px;
+  padding: 24px;
 }
 
-.user-info-section,
+.user-info-section {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+  margin-bottom: 20px;
+}
+
 .timestamp-section {
-  margin-bottom: 32px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+  margin-bottom: 20px;
 }
 
 .info-row {
@@ -227,11 +237,15 @@ const getJoinedDaysAgo = (createdAt) => {
 }
 
 .additional-info {
-  margin-bottom: 32px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+  margin-bottom: 20px;
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 16px;
@@ -247,27 +261,45 @@ const getJoinedDaysAgo = (createdAt) => {
 }
 
 .info-card {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
   border-radius: 8px;
   text-align: center;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.info-card:nth-child(2) {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.2);
+}
+
+.info-card:nth-child(2):hover {
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
 }
 
 .card-title {
-  font-size: 14px;
-  color: #7f8c8d;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 8px;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .card-value {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .card-value.status-active {
-  color: #27ae60;
+  color: #ffffff;
 }
 
 .modal-footer {
@@ -301,7 +333,7 @@ const getJoinedDaysAgo = (createdAt) => {
   }
   
   .modal-header {
-    padding: 20px 20px 0;
+    padding: 20px;
   }
   
   .modal-header h3 {
