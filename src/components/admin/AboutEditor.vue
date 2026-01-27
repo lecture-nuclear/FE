@@ -1,132 +1,323 @@
 <template>
   <div class="about-editor">
-    <div class="editor-header">
-      <h2>📄 서비스 소개 편집</h2>
-      <div class="header-actions">
-        <button @click="loadAbout" class="btn-refresh" :disabled="loading">
-          🔄 새로고침
-        </button>
-        <button @click="saveAbout" class="btn-save" :disabled="saving || !hasChanges">
-          {{ saving ? '저장 중...' : '저장' }}
-        </button>
-      </div>
-    </div>
-
-    <div v-if="hasChanges" class="unsaved-warning">
-      ⚠️ 저장되지 않은 변경사항이 있습니다
-    </div>
-
-    <div class="editor-container">
-      <div class="editor-section">
-        <label for="content-editor">내용 (HTML 지원)</label>
-        <textarea
-          id="content-editor"
-          v-model="localContent"
-          rows="20"
-          placeholder="서비스 소개 내용을 입력하세요. HTML 태그를 사용할 수 있습니다."
-          @input="markChanged"
-        ></textarea>
-        <div class="editor-help">
-          <small>
-            💡 HTML 태그 사용 가능: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;ul&gt;, &lt;li&gt; 등
-          </small>
+    <!-- 리스트 뷰 -->
+    <div v-if="viewMode === 'list'" class="list-view">
+      <div class="editor-header">
+        <h2>📄 서비스 소개 관리</h2>
+        <div class="header-actions">
+          <button @click="openEditor('create')" class="btn-create" title="새로 생성">➕</button>
+          <button @click="openEditor('edit')" class="btn-edit" :disabled="!selectedAbout">
+            수정
+          </button>
+          <button
+            @click="deleteAbout"
+            class="btn-delete"
+            :disabled="!selectedAbout || isSelectedDefault"
+          >
+            삭제
+          </button>
+          <button
+            @click="setAsDefault"
+            class="btn-set-default"
+            :disabled="!selectedAbout || isSelectedDefault"
+          >
+            기본으로 선택
+          </button>
         </div>
       </div>
 
-      <div class="preview-section">
-        <h3>미리보기</h3>
-        <div class="preview-content" v-html="localContent"></div>
+      <div v-if="loading" class="loading-message">⏳ 로딩 중...</div>
+
+      <div v-else-if="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
+
+      <div v-else class="about-list">
+        <div
+          v-for="about in aboutList"
+          :key="about.id"
+          :class="[
+            'about-item',
+            { 'is-default': about.isDefault },
+            { 'is-selected': selectedAbout === about.id },
+          ]"
+          @click="toggleSelection(about.id)"
+        >
+          <div class="about-content" v-html="about.content"></div>
+          <div class="about-meta">
+            <span>생성: {{ formatDate(about.createdAt) }}</span>
+            <span>수정: {{ formatDate(about.updatedAt) }}</span>
+            <span v-if="about.isDefault" class="default-badge">기본</span>
+          </div>
+        </div>
+
+        <div v-if="aboutList.length === 0" class="empty-message">📭 등록된 About이 없습니다.</div>
+      </div>
+
+      <div v-if="totalPages > 1" class="pagination">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 0" class="btn-page">
+          ◀ 이전
+        </button>
+        <span class="page-info">{{ currentPage + 1 }} / {{ totalPages }}</span>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage >= totalPages - 1"
+          class="btn-page"
+        >
+          다음 ▶
+        </button>
       </div>
     </div>
 
-    <div v-if="errorMessage" class="error-message">
-      ❌ {{ errorMessage }}
-    </div>
-    <div v-if="successMessage" class="success-message">
-      ✅ {{ successMessage }}
+    <!-- 에디터 뷰 -->
+    <div v-if="viewMode === 'editor'" class="editor-view">
+      <div class="editor-header">
+        <div class="header-left">
+          <button @click="closeEditor" class="btn-back">◀ 뒤로가기</button>
+          <h2>{{ editorMode === 'create' ? '➕ About 생성' : '✏️ About 편집' }}</h2>
+        </div>
+      </div>
+
+      <div class="editor-container">
+        <div class="editor-section">
+          <label for="content-editor">내용 (HTML 지원)</label>
+          <textarea
+            id="content-editor"
+            v-model="editorContent"
+            rows="20"
+            placeholder="서비스 소개 내용을 입력하세요. HTML 태그를 사용할 수 있습니다."
+          ></textarea>
+          <div class="editor-help">
+            <small>
+              💡 HTML 태그 사용 가능: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;h2&gt;,
+              &lt;h3&gt;, &lt;ul&gt;, &lt;li&gt; 등
+            </small>
+          </div>
+        </div>
+
+        <div class="preview-section">
+          <h3>미리보기</h3>
+          <div class="preview-content" v-html="editorContent"></div>
+        </div>
+      </div>
+
+      <div class="editor-actions">
+        <button
+          @click="saveAndSetDefault"
+          class="btn-save"
+          :disabled="saving || !editorContent.trim()"
+        >
+          {{ saving ? '처리 중...' : '기본으로 설정' }}
+        </button>
+        <button @click="closeEditor" class="btn-cancel" :disabled="saving">취소</button>
+      </div>
+
+      <div v-if="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
+      <div v-if="successMessage" class="success-message">✅ {{ successMessage }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axiosInstance from '@/utils/axiosInstance'
 
-const localContent = ref('')
-const originalContent = ref('')
+// 뷰 모드
+const viewMode = ref('list')
+const editorMode = ref('create')
+
+// 리스트 관련
+const aboutList = ref([])
+const selectedAbout = ref(null)
+const currentPage = ref(0)
+const totalPages = ref(0)
+const totalElements = ref(0)
+const pageSize = ref(10)
+
+// 에디터 관련
+const editorContent = ref('')
+
+// 상태
 const loading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
-const hasChanges = computed(() => localContent.value !== originalContent.value)
+// Computed
+const isSelectedDefault = computed(() => {
+  if (!selectedAbout.value) return false
+  const selected = aboutList.value.find((item) => item.id === selectedAbout.value)
+  return selected?.isDefault || false
+})
 
-const loadAbout = async () => {
+// 리스트 조회
+const loadAboutList = async (page = 0) => {
   loading.value = true
   errorMessage.value = ''
   successMessage.value = ''
 
   try {
-    const response = await axiosInstance.get('/v1/about')
-    
-    if (response.data && response.data.data && response.data.data.content) {
-      localContent.value = response.data.data.content
-      originalContent.value = response.data.data.content
-    } else {
-      errorMessage.value = '서비스 소개 내용을 불러올 수 없습니다.'
+    const response = await axiosInstance.get('/v1/about/list', {
+      params: {
+        page,
+        size: pageSize.value,
+        sort: 'createdAt,DESC',
+      },
+    })
+
+    if (response.data && response.data.data) {
+      aboutList.value = response.data.data.content || []
+      currentPage.value = response.data.data.number || 0
+      totalPages.value = response.data.data.totalPages || 0
+      totalElements.value = response.data.data.totalElements || 0
     }
   } catch (error) {
-    console.error('About 내용 로드 실패:', error)
-    errorMessage.value = '서비스 소개를 불러오는데 실패했습니다.'
+    console.error('About 목록 조회 실패:', error)
+    errorMessage.value = 'About 목록을 불러오는데 실패했습니다.'
   } finally {
     loading.value = false
   }
 }
 
-const saveAbout = async () => {
-  if (!hasChanges.value) return
+// 페이지 이동
+const goToPage = (page) => {
+  if (page >= 0 && page < totalPages.value) {
+    loadAboutList(page)
+  }
+}
+
+// 선택 토글
+const toggleSelection = (id) => {
+  if (selectedAbout.value === id) {
+    selectedAbout.value = null
+  } else {
+    selectedAbout.value = id
+  }
+}
+
+// 에디터 열기
+const openEditor = (mode) => {
+  editorMode.value = mode
+  viewMode.value = 'editor'
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  if (mode === 'create') {
+    editorContent.value = ''
+  } else if (mode === 'edit' && selectedAbout.value) {
+    const selected = aboutList.value.find((item) => item.id === selectedAbout.value)
+    if (selected) {
+      editorContent.value = selected.content
+    }
+  }
+}
+
+// 에디터 닫기
+const closeEditor = () => {
+  viewMode.value = 'list'
+  editorContent.value = ''
+  errorMessage.value = ''
+  successMessage.value = ''
+}
+
+// 저장 및 기본 설정
+const saveAndSetDefault = async () => {
+  if (!editorContent.value.trim()) {
+    errorMessage.value = '내용을 입력해주세요.'
+    return
+  }
 
   saving.value = true
   errorMessage.value = ''
   successMessage.value = ''
 
   try {
-    await axiosInstance.post('/v1/about', {
-      content: localContent.value
+    // 1. About 생성
+    const createResponse = await axiosInstance.post('/v1/about', {
+      content: editorContent.value,
     })
 
-    originalContent.value = localContent.value
-    successMessage.value = '서비스 소개가 성공적으로 저장되었습니다!'
-    
-    setTimeout(() => {
-      successMessage.value = ''
-    }, 3000)
+    if (createResponse.data && createResponse.data.data) {
+      const newAboutId = createResponse.data.data.id
+
+      // 2. 기본으로 설정
+      await axiosInstance.post(`/v1/about/${newAboutId}/set-default`)
+
+      successMessage.value = 'About이 생성되고 기본으로 설정되었습니다!'
+
+      // 3. 리스트 새로고침 및 뷰 전환
+      setTimeout(async () => {
+        await loadAboutList(0)
+        closeEditor()
+      }, 1000)
+    }
   } catch (error) {
-    console.error('About 내용 저장 실패:', error)
-    errorMessage.value = '서비스 소개 저장에 실패했습니다.'
+    console.error('About 저장 실패:', error)
+    errorMessage.value = 'About 저장에 실패했습니다.'
   } finally {
     saving.value = false
   }
 }
 
-const markChanged = () => {
-  successMessage.value = ''
-}
+// 기본으로 설정
+const setAsDefault = async () => {
+  if (!selectedAbout.value) return
 
-const handleBeforeUnload = (event) => {
-  if (hasChanges.value) {
-    event.preventDefault()
-    event.returnValue = ''
+  try {
+    await axiosInstance.post(`/v1/about/${selectedAbout.value}/set-default`)
+    successMessage.value = '기본 About으로 설정되었습니다!'
+
+    setTimeout(() => {
+      successMessage.value = ''
+      loadAboutList(currentPage.value)
+    }, 1500)
+  } catch (error) {
+    console.error('기본 설정 실패:', error)
+    errorMessage.value = '기본 설정에 실패했습니다.'
   }
 }
 
-onMounted(() => {
-  loadAbout()
-  window.addEventListener('beforeunload', handleBeforeUnload)
-})
+// 삭제
+const deleteAbout = async () => {
+  if (!selectedAbout.value || isSelectedDefault.value) return
 
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload)
+  if (!confirm('정말 이 About을 삭제하시겠습니까?')) {
+    return
+  }
+
+  try {
+    await axiosInstance.delete(`/v1/about/${selectedAbout.value}`)
+    successMessage.value = 'About이 삭제되었습니다!'
+
+    selectedAbout.value = null
+
+    setTimeout(() => {
+      successMessage.value = ''
+      loadAboutList(currentPage.value)
+    }, 1500)
+  } catch (error) {
+    console.error('About 삭제 실패:', error)
+    if (error.response?.status === 400) {
+      errorMessage.value = '기본 About는 삭제할 수 없습니다.'
+    } else {
+      errorMessage.value = 'About 삭제에 실패했습니다.'
+    }
+  }
+}
+
+// 날짜 포맷
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+onMounted(() => {
+  loadAboutList(0)
 })
 </script>
 
@@ -136,8 +327,10 @@ onBeforeUnmount(() => {
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  min-height: 600px;
 }
 
+/* 헤더 */
 .editor-header {
   display: flex;
   justify-content: space-between;
@@ -153,13 +346,19 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .header-actions {
   display: flex;
   gap: 10px;
 }
 
-.btn-refresh,
-.btn-save {
+/* 버튼 공통 */
+button {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -169,12 +368,56 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
-.btn-refresh {
+button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-create {
+  background-color: #3498db;
+  color: white;
+  font-size: 18px;
+  padding: 10px 15px;
+}
+
+.btn-create:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.btn-edit {
+  background-color: #f39c12;
+  color: white;
+}
+
+.btn-edit:hover:not(:disabled) {
+  background-color: #e67e22;
+}
+
+.btn-delete {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+.btn-set-default {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-set-default:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.btn-back {
   background-color: #6c757d;
   color: white;
 }
 
-.btn-refresh:hover:not(:disabled) {
+.btn-back:hover {
   background-color: #5a6268;
 }
 
@@ -187,29 +430,108 @@ onBeforeUnmount(() => {
   background-color: #218838;
 }
 
-.btn-refresh:disabled,
-.btn-save:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  opacity: 0.6;
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
 }
 
-.unsaved-warning {
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  color: #856404;
-  padding: 12px 15px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+.btn-cancel:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+/* 리스트 뷰 */
+.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.about-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.about-item {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+}
+
+.about-item:hover {
+  background-color: #e9ecef;
+}
+
+.about-item.is-default {
+  border-color: #28a745;
+}
+
+.about-item.is-selected {
+  box-shadow: inset 0 0 0 2px #dc3545;
+}
+
+.about-content {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.about-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #7f8c8d;
+  padding-top: 10px;
+  border-top: 1px solid #dee2e6;
+}
+
+.default-badge {
+  background-color: #28a745;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.btn-page {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-page:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.page-info {
   font-size: 14px;
   font-weight: 600;
+  color: #2c3e50;
+}
+
+/* 에디터 뷰 */
+.editor-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .editor-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  margin-bottom: 20px;
 }
 
 .editor-section,
@@ -272,6 +594,21 @@ textarea:focus {
   font-style: italic;
 }
 
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* 메시지 */
+.loading-message,
+.empty-message {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
 .error-message,
 .success-message {
   padding: 12px 15px;
@@ -292,6 +629,7 @@ textarea:focus {
   border: 1px solid #c3e6cb;
 }
 
+/* 반응형 */
 @media (max-width: 1024px) {
   .editor-container {
     grid-template-columns: 1fr;
@@ -310,12 +648,17 @@ textarea:focus {
   }
 
   .header-actions {
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
-  .btn-refresh,
-  .btn-save {
-    width: 100%;
+  .header-actions button {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .about-meta {
+    flex-direction: column;
+    gap: 5px;
   }
 }
 </style>
