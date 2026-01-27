@@ -105,12 +105,18 @@
             <div class="carousel-fields">
               <div class="field">
                 <label>이미지 URL</label>
-                <input 
-                  v-model="img.img" 
-                  type="text" 
-                  placeholder="이미지 URL"
-                  @input="updateSection"
-                />
+                <div class="image-input-group">
+                  <input 
+                    v-model="img.img" 
+                    type="text" 
+                    placeholder="이미지 URL"
+                    @input="updateSection"
+                  />
+                  <button @click="uploadCarouselImage(imgIndex)" class="btn-upload">업로드</button>
+                </div>
+                <div v-if="img.img" class="image-preview">
+                  <img :src="getCarouselImageUrl(img.img)" alt="미리보기" />
+                </div>
               </div>
               
               <div class="field">
@@ -271,9 +277,13 @@ const emit = defineEmits(['update', 'delete', 'move-up', 'move-down'])
 const localSection = reactive({ ...props.section })
 const newLectureId = ref('')
 const fileInput = ref(null)
+const currentCarouselImageIndex = ref(null)
 
 // 이미지 미리보기 URL (상대경로 → 절대경로 변환)
 const previewImageUrl = computed(() => getFileUrl(localSection.img))
+
+// 캐러셀 이미지 미리보기 URL
+const getCarouselImageUrl = (imgPath) => getFileUrl(imgPath)
 
 // props 변경 시 로컬 데이터 동기화
 watch(() => props.section, (newSection) => {
@@ -297,18 +307,16 @@ const updateSection = () => {
   emit('update', props.index, { ...localSection })
 }
 
-// 이미지 업로드
+// 배너 이미지 업로드
 const uploadImage = async () => {
-  // nextTick을 사용하여 DOM이 완전히 렌더링된 후 실행
+  currentCarouselImageIndex.value = null
   await nextTick()
   
-  // ref로 먼저 시도
   if (fileInput.value) {
     fileInput.value.click()
     return
   }
   
-  // ref가 없으면 ID로 직접 찾기 (fallback)
   const input = document.getElementById(`file-input-${props.index}`)
   if (input) {
     console.log('ref는 없지만 getElementById로 input 찾음')
@@ -319,12 +327,30 @@ const uploadImage = async () => {
   }
 }
 
+// 캐러셀 이미지 업로드
+const uploadCarouselImage = async (imgIndex) => {
+  currentCarouselImageIndex.value = imgIndex
+  await nextTick()
+  
+  if (fileInput.value) {
+    fileInput.value.click()
+    return
+  }
+  
+  const input = document.getElementById(`file-input-${props.index}`)
+  if (input) {
+    input.click()
+  } else {
+    console.error('파일 input을 찾을 수 없습니다.')
+    alert('파일 업로드 기능을 사용할 수 없습니다. 페이지를 새로고침해주세요.')
+  }
+}
+
 // 파일 업로드 처리
 const handleFileUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
   
-  // 파일 검증
   const validation = validateImageFile(file)
   if (!validation.isValid) {
     alert(validation.error)
@@ -333,10 +359,15 @@ const handleFileUpload = async (event) => {
   
   try {
     const imageUrl = await uploadHomeImage(file)
-    localSection.img = imageUrl
-    updateSection()
     
-    // 파일 input 초기화
+    if (currentCarouselImageIndex.value !== null) {
+      localSection.imgs[currentCarouselImageIndex.value].img = imageUrl
+      currentCarouselImageIndex.value = null
+    } else {
+      localSection.img = imageUrl
+    }
+    
+    updateSection()
     event.target.value = ''
   } catch (error) {
     console.error('이미지 업로드 실패:', error)
@@ -564,9 +595,34 @@ const removeLecture = (index) => {
 }
 
 .carousel-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.carousel-fields .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.carousel-fields .field label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.carousel-fields .field input {
+  padding: 10px 12px;
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.carousel-fields .field input:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .btn-add-item {
