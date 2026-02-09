@@ -145,10 +145,8 @@ const resetForm = () => {
 
 <style scoped>
 .review-write-section {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  padding: 30px;
+  background-color: transparent;
+  padding: 0;
   margin-bottom: 30px;
 }
 

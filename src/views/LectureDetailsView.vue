@@ -524,15 +524,15 @@ onMounted(() => {
 <style scoped>
 .lecture-detail-page {
   padding: 40px;
-  /* max-width: 1200px; */
-  /* 🚩 margin: 0 auto; 줄 삭제 */
+  max-width: 1200px;
+  margin: 0 auto;
   box-sizing: border-box;
   min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
 }
 
 .loading-message,
@@ -570,11 +570,9 @@ onMounted(() => {
 }
 
 .detail-container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  background-color: transparent;
   width: 100%;
-  padding: 30px;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -627,7 +625,6 @@ onMounted(() => {
   gap: 15px;
   align-items: center;
   padding-top: 20px;
-  border-top: 1px solid #eee;
 }
 
 .lecture-thumbnail-full {

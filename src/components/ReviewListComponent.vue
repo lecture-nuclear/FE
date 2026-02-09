@@ -175,10 +175,8 @@ onMounted(() => {
 
 <style scoped>
 .review-list-section {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  padding: 30px;
+  background-color: transparent;
+  padding: 0;
 }
 
 .section-header {
@@ -283,7 +281,7 @@ onMounted(() => {
 }
 
 .review-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa;
 }
 
 .review-header {
