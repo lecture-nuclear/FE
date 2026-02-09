@@ -130,10 +130,12 @@ const activeTab = computed({
 <style scoped>
 .settings-page {
   padding: 30px;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
   min-height: calc(100vh - 100px);
-  background-color: #f9f9f9;
+  background-color: #ffffff;
 }
 
 .settings-header {
@@ -159,9 +161,7 @@ const activeTab = computed({
 .settings-sidebar {
   width: 280px;
   min-width: 280px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  background-color: transparent;
   padding: 20px 0;
   height: fit-content;
 }
@@ -227,9 +227,7 @@ const activeTab = computed({
 /* 오른쪽 메인 콘텐츠 */
 .settings-content {
   flex: 1;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  background-color: transparent;
   min-height: 600px;
 }
 
