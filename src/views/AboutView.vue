@@ -59,18 +59,16 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 100px); /* 헤더 높이 제외하고 화면 중앙에 오도록 */
-  background-color: #f8f8f8;
+  background-color: #ffffff;
   padding: 20px;
   box-sizing: border-box;
 }
 
 .about-container {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  background-color: transparent;
+  padding: 0;
   text-align: center;
-  max-width: 700px;
+  max-width: 1200px;
   width: 100%;
 }
 
