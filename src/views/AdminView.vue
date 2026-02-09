@@ -51,17 +51,7 @@
         <UserManagement v-if="activeTab === 'users'" />
 
         <!-- 강의 업로드 탭 -->
-        <div v-if="activeTab === 'upload'" class="upload-section">
-          <div class="upload-notice">
-            <h2>📚 강의 업로드</h2>
-
-            <div class="upload-actions">
-              <router-link to="/admin/upload-course" class="upload-link-btn">
-                ➕ 새 강의 업로드
-              </router-link>
-            </div>
-          </div>
-        </div>
+        <UploadCourse v-if="activeTab === 'upload'" />
 
         <!-- 홈화면 꾸미기 탭 -->
         <HomeContentManager v-if="activeTab === 'home'" />
@@ -81,6 +71,7 @@ import { isAdmin } from '@/utils/auth'
 import UserManagement from '@/components/admin/UserManagement.vue'
 import HomeContentManager from '@/components/admin/home/HomeContentManager.vue'
 import AboutEditor from '@/components/admin/AboutEditor.vue'
+import UploadCourse from '@/views/UploadCourseView.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -126,10 +117,12 @@ onMounted(async () => {
 <style scoped>
 .admin-page {
   padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
   min-height: calc(100vh - 100px);
-  background-color: #f9f9f9;
+  background-color: #ffffff;
 }
 
 .admin-header {
@@ -160,9 +153,7 @@ onMounted(async () => {
 .admin-sidebar {
   width: 280px;
   min-width: 280px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  background-color: transparent;
   padding: 20px 0;
   height: fit-content;
 }
@@ -216,57 +207,8 @@ onMounted(async () => {
 /* 오른쪽 메인 콘텐츠 */
 .admin-content {
   flex: 1;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  background-color: transparent;
   min-height: 600px;
-}
-
-/* 강의 업로드 섹션 */
-.upload-section {
-  padding: 40px;
-}
-
-.upload-notice {
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.upload-notice h2 {
-  font-size: 28px;
-  color: #2c3e50;
-  margin-bottom: 16px;
-  font-weight: 700;
-}
-
-.upload-notice p {
-  font-size: 18px;
-  color: #7f8c8d;
-  margin-bottom: 32px;
-  line-height: 1.6;
-}
-
-.upload-actions {
-  display: flex;
-  justify-content: center;
-}
-
-.upload-link-btn {
-  display: inline-block;
-  background-color: #27ae60;
-  color: white;
-  padding: 16px 32px;
-  border-radius: 10px;
-  text-decoration: none;
-  font-size: 18px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-}
-
-.upload-link-btn:hover {
-  background-color: #219a52;
 }
 
 /* 반응형 디자인 */

@@ -9,7 +9,7 @@
       <!-- 기본 정보 섹션 -->
       <div class="form-section">
         <h2>기본 정보</h2>
-        
+
         <div class="form-group">
           <label for="title">강의 제목 *</label>
           <input
@@ -58,9 +58,7 @@
             :disabled="thumbnailUploading"
             required
           />
-          <div v-if="thumbnailUploading" class="upload-status">
-            업로드 중...
-          </div>
+          <div v-if="thumbnailUploading" class="upload-status">업로드 중...</div>
           <div v-if="thumbnailPreview" class="thumbnail-preview">
             <img :src="thumbnailPreview" alt="썸네일 미리보기" />
           </div>
@@ -71,9 +69,7 @@
       <div class="form-section">
         <div class="section-header">
           <h2>강의 비디오</h2>
-          <button type="button" @click="addVideo" class="add-video-btn">
-            + 비디오 추가
-          </button>
+          <button type="button" @click="addVideo" class="add-video-btn">+ 비디오 추가</button>
         </div>
 
         <div v-if="videos.length === 0" class="no-videos">
@@ -99,12 +95,8 @@
                 :disabled="videoUploading[index]"
                 required
               />
-              <div v-if="videoUploading[index]" class="upload-status">
-                업로드 중...
-              </div>
-              <div v-if="video.fileName" class="file-info">
-                선택된 파일: {{ video.fileName }}
-              </div>
+              <div v-if="videoUploading[index]" class="upload-status">업로드 중...</div>
+              <div v-if="video.fileName" class="file-info">선택된 파일: {{ video.fileName }}</div>
             </div>
 
             <div class="form-group">
@@ -123,9 +115,7 @@
 
       <!-- 제출 버튼 -->
       <div class="form-actions">
-        <button type="button" @click="resetForm" class="cancel-btn">
-          취소
-        </button>
+        <button type="button" @click="resetForm" class="cancel-btn">취소</button>
         <button type="submit" :disabled="isSubmitting" class="submit-btn">
           {{ isSubmitting ? '업로드 중...' : '강의 업로드' }}
         </button>
@@ -148,7 +138,7 @@ const courseData = reactive({
   description: '',
   price: 0,
   thumbnail: null,
-  thumbnailUrl: null
+  thumbnailUrl: null,
 })
 
 const videos = ref([])
@@ -171,16 +161,16 @@ const handleThumbnailChange = async (event) => {
       event.target.value = '' // 파일 입력 초기화
       return
     }
-    
+
     courseData.thumbnail = file
-    
+
     // 미리보기 생성
     const reader = new FileReader()
     reader.onload = (e) => {
       thumbnailPreview.value = e.target.result
     }
     reader.readAsDataURL(file)
-    
+
     // 썸네일 업로드
     await uploadThumbnail(file)
   }
@@ -189,19 +179,19 @@ const handleThumbnailChange = async (event) => {
 // 썸네일 업로드 함수
 const uploadThumbnail = async (file) => {
   thumbnailUploading.value = true
-  
+
   try {
     const formData = new FormData()
     formData.append('file', file)
-    
+
     const response = await axiosInstance.post('/upload/thumbnail', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     })
-    
+
     courseData.thumbnailUrl = response.data.data.fileUrl
-    
+
     console.log('썸네일 업로드 성공:', response.data)
   } catch (error) {
     console.error('썸네일 업로드 실패:', error)
@@ -219,7 +209,7 @@ const addVideo = () => {
     file: null,
     fileName: '',
     title: '',
-    videoUrl: null
+    videoUrl: null,
   })
 }
 
@@ -234,7 +224,7 @@ const handleVideoFileChange = async (event, index) => {
   if (file) {
     videos.value[index].file = file
     videos.value[index].fileName = file.name
-    
+
     // 비디오 업로드
     await uploadVideo(file, index)
   }
@@ -243,18 +233,18 @@ const handleVideoFileChange = async (event, index) => {
 // 비디오 업로드 함수
 const uploadVideo = async (file, index) => {
   videoUploading.value[index] = true
-  
+
   try {
     const fileName = encodeURIComponent(file.name)
-    
+
     const response = await axiosInstance.post(`/upload/video?fileName=${fileName}`, file, {
       headers: {
-        'Content-Type': 'application/octet-stream'
-      }
+        'Content-Type': 'application/octet-stream',
+      },
     })
-    
+
     videos.value[index].videoUrl = response.data.data.fileUrl
-    
+
     console.log('비디오 업로드 성공:', response.data)
   } catch (error) {
     console.error('비디오 업로드 실패:', error)
@@ -268,42 +258,42 @@ const uploadVideo = async (file, index) => {
 // 폼 제출 처리
 const handleSubmit = async () => {
   isSubmitting.value = true
-  
+
   try {
     // 썸네일 URL이 없으면 업로드 실패
     if (!courseData.thumbnailUrl) {
       alert('썸네일 업로드가 완료되지 않았습니다.')
       return
     }
-    
+
     // 비디오 업로드가 완료되지 않은 것이 있는지 확인
-    const unuploadedVideos = videos.value.filter(video => !video.videoUrl)
+    const unuploadedVideos = videos.value.filter((video) => !video.videoUrl)
     if (unuploadedVideos.length > 0) {
       alert('모든 비디오 업로드가 완료되지 않았습니다.')
       return
     }
-    
+
     // API 요청 데이터 구성
     const requestData = {
       title: courseData.title,
       thumbnailUrl: courseData.thumbnailUrl,
       description: courseData.description,
       price: courseData.price,
-      videos: videos.value.map(video => ({
+      videos: videos.value.map((video) => ({
         title: video.title,
-        link: video.videoUrl
-      }))
+        link: video.videoUrl,
+      })),
     }
-    
+
     console.log('Sending course data:', requestData)
-    
+
     // 강의 업로드 API 호출
     const response = await axiosInstance.post('/v1/curriculum/lecture', requestData)
-    
+
     console.log('강의 업로드 성공:', response.data)
-    
+
     alert('강의 업로드가 완료되었습니다!')
-    
+
     // 업로드 완료 후 강의 목록으로 이동
     router.push('/courses')
   } catch (error) {
@@ -323,7 +313,7 @@ const resetForm = () => {
   courseData.thumbnailUrl = null
   thumbnailPreview.value = null
   videos.value = []
-  
+
   // 파일 input 초기화
   const thumbnailInput = document.getElementById('thumbnail')
   if (thumbnailInput) thumbnailInput.value = ''
@@ -358,10 +348,8 @@ addVideo()
 }
 
 .upload-form {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  background: transparent;
+  padding: 0;
 }
 
 .form-section {
@@ -553,17 +541,17 @@ addVideo()
   .upload-course-container {
     padding: 10px;
   }
-  
+
   .upload-form {
     padding: 20px;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }

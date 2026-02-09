@@ -14,7 +14,12 @@
         <button @click="togglePreview" class="btn-preview">
           {{ previewMode ? '편집 모드' : '미리보기' }}
         </button>
-        <button @click="saveContent" class="btn-save" :disabled="saving" :class="{ 'has-changes': hasUnsavedChanges }">
+        <button
+          @click="saveContent"
+          class="btn-save"
+          :disabled="saving"
+          :class="{ 'has-changes': hasUnsavedChanges }"
+        >
           {{ saving ? '저장 중...' : '저장' }}
         </button>
       </div>
@@ -24,14 +29,14 @@
       <!-- 편집 모드 -->
       <div v-if="!previewMode" class="edit-mode">
         <div class="sections-list">
-          <div 
-            v-for="(section, index) in homeContent.home" 
+          <div
+            v-for="(section, index) in homeContent.home"
             :key="`section-${index}`"
             class="section-editor"
           >
-            <SectionEditor 
+            <SectionEditor
               :section="section"
-              :index="index" 
+              :index="index"
               @update="updateSection"
               @delete="deleteSection"
               @move-up="moveSectionUp"
@@ -39,7 +44,7 @@
             />
           </div>
         </div>
-        
+
         <div v-if="homeContent.home.length === 0" class="empty-sections">
           <p>아직 추가된 섹션이 없습니다.</p>
           <button @click="addSection" class="btn-add-first">첫 번째 섹션 추가</button>
@@ -53,7 +58,7 @@
           <p>실제 홈페이지에서 보이는 모습입니다</p>
         </div>
         <div class="preview-content">
-          <component 
+          <component
             v-for="item in renderedContent"
             :key="item.key"
             :is="item.component"
@@ -65,8 +70,8 @@
     </div>
 
     <!-- 섹션 타입 선택 모달 -->
-    <SectionTypeModal 
-      v-if="showTypeModal" 
+    <SectionTypeModal
+      v-if="showTypeModal"
       @select="addSectionOfType"
       @close="showTypeModal = false"
     />
@@ -88,7 +93,7 @@ const showTypeModal = ref(false)
 const hasUnsavedChanges = ref(false)
 const originalContent = ref(null)
 const homeContent = reactive({
-  home: []
+  home: [],
 })
 
 // 미리보기용 렌더링된 콘텐츠
@@ -110,10 +115,10 @@ const loadHomeContent = async () => {
     if (typeof homeData === 'string') {
       // JSON 문자열인 경우
       const parsed = JSON.parse(homeData)
-      homeArray = Array.isArray(parsed) ? parsed : (parsed.home || [])
+      homeArray = Array.isArray(parsed) ? parsed : parsed.home || []
     } else if (homeData && typeof homeData === 'object') {
       // 객체인 경우 (중첩 구조 처리)
-      homeArray = Array.isArray(homeData) ? homeData : (homeData.home || [])
+      homeArray = Array.isArray(homeData) ? homeData : homeData.home || []
     }
 
     homeContent.home = homeArray
@@ -123,7 +128,6 @@ const loadHomeContent = async () => {
     hasUnsavedChanges.value = false
 
     console.log('관리자용 홈 콘텐츠 로드 완료:', homeContent.home)
-
   } catch (error) {
     console.error('홈 콘텐츠 로드 실패:', error)
     alert('홈 콘텐츠를 불러오는데 실패했습니다.')
@@ -139,24 +143,23 @@ const saveContent = async () => {
       alert('데이터 검증 실패:\\n' + validation.errors.join('\\n'))
       return
     }
-    
+
     // 크기 검증
     const sizeInfo = calculateDataSize(homeContent)
     if (parseFloat(sizeInfo.mb) > 10) {
       alert(`데이터 크기가 너무 큽니다 (${sizeInfo.mb}MB). 10MB 이하로 줄여주세요.`)
       return
     }
-    
+
     saving.value = true
-    
+
     await updateHomeContent(homeContent.home, '1.0')
-    
+
     // 저장 성공 시 원본 콘텐츠 업데이트
     originalContent.value = JSON.stringify(homeContent.home)
     hasUnsavedChanges.value = false
-    
+
     alert('홈페이지 콘텐츠가 성공적으로 저장되었습니다!')
-    
   } catch (error) {
     console.error('홈 콘텐츠 저장 실패:', error)
     alert('홈 콘텐츠 저장에 실패했습니다: ' + (error.response?.data?.message || error.message))
@@ -196,7 +199,7 @@ const createDefaultSection = (type) => {
       type: 'image',
       img: '/home/images/default-banner.jpg',
       text: '새로운 배너 이미지',
-      link: ''
+      link: '',
     },
     carousel: {
       type: 'carousel',
@@ -204,28 +207,28 @@ const createDefaultSection = (type) => {
         {
           img: '/home/images/default-banner.jpg',
           text: '첫 번째 슬라이드',
-          link: ''
-        }
+          link: '',
+        },
       ],
-      time: 5
+      time: 5,
     },
     markdown: {
       type: 'markdown',
-      text: '## 새로운 마크다운 섹션\\n\\n여기에 내용을 작성하세요.'
+      text: '## 새로운 마크다운 섹션\\n\\n여기에 내용을 작성하세요.',
     },
     lectures: {
       type: 'lectures',
-      lectures: []
+      lectures: [],
     },
     button: {
       type: 'button',
       text: '버튼 텍스트',
       link: '',
       style: 'primary',
-      size: 'medium'
-    }
+      size: 'medium',
+    },
   }
-  
+
   return defaults[type] || {}
 }
 
@@ -287,7 +290,9 @@ const handleBeforeUnload = (event) => {
 // Vue Router 네비게이션 가드
 onBeforeRouteLeave((to, from) => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm('저장하지 않은 변경사항이 있습니다. 정말로 페이지를 떠나시겠습니까?')
+    const answer = window.confirm(
+      '저장하지 않은 변경사항이 있습니다. 정말로 페이지를 떠나시겠습니까?',
+    )
     if (!answer) return false
   }
 })
@@ -351,7 +356,8 @@ onBeforeUnmount(() => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -424,7 +430,8 @@ onBeforeUnmount(() => {
 }
 
 @keyframes subtle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -433,9 +440,7 @@ onBeforeUnmount(() => {
 }
 
 .manager-content {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  background-color: transparent;
   min-height: 600px;
 }
 
@@ -516,41 +521,42 @@ onBeforeUnmount(() => {
   .home-content-manager {
     padding: 15px;
   }
-  
+
   .manager-header {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-  
+
   .header-title {
     flex-direction: column;
     align-items: center;
     gap: 10px;
   }
-  
+
   .unsaved-indicator {
     font-size: 11px;
     padding: 3px 8px;
   }
-  
+
   .header-actions {
     flex-wrap: wrap;
     justify-content: center;
   }
-  
+
   .btn-add,
   .btn-preview,
   .btn-save {
     flex: 1;
     min-width: 100px;
   }
-  
+
   .edit-mode {
     padding: 20px;
   }
-  
+
   .preview-header {
     padding: 15px 20px;
   }
-}</style>
+}
+</style>

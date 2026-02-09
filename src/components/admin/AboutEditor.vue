@@ -323,10 +323,8 @@ onMounted(() => {
 
 <style scoped>
 .about-editor {
-  padding: 30px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  padding: 0;
+  background-color: transparent;
   min-height: 600px;
 }
 

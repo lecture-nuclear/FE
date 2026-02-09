@@ -1,5 +1,5 @@
 <template>
-  <div class="p-7 bg-white rounded-xl shadow-md min-h-[600px]">
+  <div class="p-0 min-h-[600px]">
     <!-- 리스트 뷰 -->
     <div v-if="viewMode === 'list'" class="flex flex-col">
       <div class="mb-7 pb-5 border-b-2 border-[#e1e8ed] text-center">
