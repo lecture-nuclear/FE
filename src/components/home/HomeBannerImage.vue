@@ -19,20 +19,20 @@ import { getFileUrl } from '@/utils/axiosInstance'
 const props = defineProps({
   img: {
     type: String,
-    required: true
+    required: true,
   },
-  text: { 
-    type: String, 
-    default: '' 
+  text: {
+    type: String,
+    default: '',
   },
-  link: { 
-    type: String, 
-    default: '' 
+  link: {
+    type: String,
+    default: '',
   },
   sectionIndex: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 })
 
 const emit = defineEmits(['navigate'])
@@ -84,26 +84,16 @@ const handleClick = () => {
   line-height: 1.2;
 }
 
-/* 반응형 디자인 */
+/* 반응형 디자인: 모바일 (< 768px) */
 @media (max-width: 768px) {
-  .home-banner {
-    height: 300px;
-    margin-bottom: 0;
-  }
-  
-  .banner-text h2 {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 480px) {
   .home-banner {
     height: 250px;
     margin-bottom: 0;
     border-radius: 8px;
   }
-  
+
   .banner-text h2 {
     font-size: 1.5rem;
   }
-}</style>
+}
+</style>

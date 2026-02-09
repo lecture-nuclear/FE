@@ -17,7 +17,7 @@
       <!-- 햄버거 메뉴 아이콘 (모바일에서만 보임) -->
       <div
         @click="toggleMobileMenu"
-        class="hidden max-md:flex flex-col justify-around w-7 h-6 cursor-pointer z-[1001] p-1"
+        class="flex flex-col justify-around w-7 h-6 cursor-pointer z-[1001] p-1 md:hidden"
       >
         <div class="w-full h-0.5 bg-gray-600 rounded-sm transition-all duration-300"></div>
         <div class="w-full h-0.5 bg-gray-600 rounded-sm transition-all duration-300"></div>
@@ -27,23 +27,22 @@
       <!-- 네비게이션 링크 (PC에서 보임, 모바일 메뉴에도 포함) -->
       <nav
         :class="[
-          'flex gap-6 max-md:hidden max-md:flex-col max-md:absolute max-md:top-full max-md:right-0 max-md:w-full max-md:bg-gray-50 max-md:shadow-lg max-md:py-5 max-md:rounded-b-lg max-md:opacity-0 max-md:invisible max-md:-translate-y-2.5 transition-all duration-300',
+          'hidden flex-col absolute top-full right-0 w-full bg-gray-50 shadow-lg py-5 rounded-b-lg opacity-0 invisible -translate-y-2.5 transition-all duration-300 md:flex md:flex-row md:gap-6 md:static md:w-auto md:bg-transparent md:shadow-none md:py-0 md:rounded-none md:opacity-100 md:visible md:translate-y-0',
           {
-            'max-md:!flex max-md:!opacity-100 max-md:!visible max-md:!translate-y-0':
-              showMobileMenu,
+            '!flex !opacity-100 !visible !translate-y-0': showMobileMenu,
           },
         ]"
       >
         <router-link
           to="/courses"
           @click="closeMobileMenu"
-          class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none"
+          class="px-5 py-3 text-center w-full border-b border-gray-200 text-[17px] rounded-none text-gray-600 no-underline font-medium transition-all duration-200 hover:text-gray-800 hover:bg-gray-100 md:px-2.5 md:py-1.5 md:w-auto md:border-0 md:rounded-md md:text-lg md:whitespace-nowrap"
           >강의</router-link
         >
         <router-link
           to="/about"
           @click="closeMobileMenu"
-          class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none"
+          class="px-5 py-3 text-center w-full border-b border-gray-200 text-[17px] rounded-none text-gray-600 no-underline font-medium transition-all duration-200 hover:text-gray-800 hover:bg-gray-100 md:px-2.5 md:py-1.5 md:w-auto md:border-0 md:rounded-md md:text-lg md:whitespace-nowrap"
           >About</router-link
         >
         <!-- 로그인한 사용자만 보이는 조건부 메뉴 -->
@@ -53,7 +52,7 @@
             v-if="isAdmin()"
             to="/admin"
             @click="closeMobileMenu"
-            class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none"
+            class="px-5 py-3 text-center w-full border-b border-gray-200 text-[17px] rounded-none text-gray-600 no-underline font-medium transition-all duration-200 hover:text-gray-800 hover:bg-gray-100 md:px-2.5 md:py-1.5 md:w-auto md:border-0 md:rounded-md md:text-lg md:whitespace-nowrap"
           >
             관리⚙️
           </router-link>
@@ -61,7 +60,7 @@
             v-else
             to="/my-courses"
             @click="closeMobileMenu"
-            class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none max-md:last:border-b-0"
+            class="px-5 py-3 text-center w-full text-[17px] rounded-none text-gray-600 no-underline font-medium transition-all duration-200 hover:text-gray-800 hover:bg-gray-100 last:border-b-0 md:px-2.5 md:py-1.5 md:w-auto md:border-0 md:rounded-md md:text-lg md:whitespace-nowrap"
           >
             수강 중 강의
           </router-link>
@@ -110,7 +109,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* 모바일에서 로고 크기 조정 */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .header-left img {
     height: 30px;
   }

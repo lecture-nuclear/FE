@@ -2,6 +2,10 @@
 export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
+    screens: {
+      // 2단계 반응형: 모바일(< 768px) vs 태블릿/데스크탑(≥ 768px)
+      md: '768px',
+    },
     extend: {
       colors: {
         primary: {

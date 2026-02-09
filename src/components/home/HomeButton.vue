@@ -1,8 +1,8 @@
 <!-- src/components/home/HomeButton.vue -->
 <template>
-  <div class="w-full text-center my-10 px-5 max-md:my-7.5 max-md:px-4 max-sm:my-5 max-sm:px-2.5">
+  <div class="w-full text-center my-5 px-4 md:my-10 md:px-5">
     <button
-      class="border-0 rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-md no-underline inline-block text-center whitespace-nowrap hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm max-sm:w-full max-sm:max-w-[300px]"
+      class="border-0 rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-md no-underline inline-block text-center whitespace-nowrap w-full max-w-[300px] hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm md:w-auto md:max-w-none"
       :class="[buttonStyleClass, buttonSizeClass]"
       @click="handleClick"
     >
@@ -54,12 +54,9 @@ const buttonStyleClass = computed(() => {
 
 const buttonSizeClass = computed(() => {
   const sizes = {
-    small:
-      'py-2 px-4 text-sm max-md:py-1.5 max-md:px-3.5 max-md:text-[0.85rem] max-sm:py-2 max-sm:px-4 max-sm:text-xs',
-    medium:
-      'py-3 px-6 text-base max-md:py-2.5 max-md:px-5 max-md:text-[0.95rem] max-sm:py-2.5 max-sm:px-5 max-sm:text-sm',
-    large:
-      'py-4 px-8 text-xl max-md:py-3.5 max-md:px-7 max-md:text-lg max-sm:py-3 max-sm:px-6 max-sm:text-base',
+    small: 'py-1.5 px-3.5 text-xs md:py-2 md:px-4 md:text-sm',
+    medium: 'py-2.5 px-5 text-sm md:py-3 md:px-6 md:text-base',
+    large: 'py-3 px-6 text-base md:py-4 md:px-8 md:text-xl',
   }
   return sizes[props.size] || sizes.medium
 })

@@ -15,27 +15,15 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 이전/다음 버튼 -->
-      <button 
-        v-if="imgs.length > 1"
-        class="carousel-nav prev" 
-        @click="prevSlide"
-      >
-        ❮
-      </button>
-      <button 
-        v-if="imgs.length > 1"
-        class="carousel-nav next" 
-        @click="nextSlide"
-      >
-        ❯
-      </button>
-      
+      <button v-if="imgs.length > 1" class="carousel-nav prev" @click="prevSlide">❮</button>
+      <button v-if="imgs.length > 1" class="carousel-nav next" @click="nextSlide">❯</button>
+
       <!-- 인디케이터 (이미지 위에 표시) -->
       <div v-if="imgs.length > 1" class="carousel-indicators">
-        <button 
-          v-for="(_, index) in imgs" 
+        <button
+          v-for="(_, index) in imgs"
           :key="index"
           class="indicator"
           :class="{ active: currentIndex === index }"
@@ -51,23 +39,23 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { getFileUrl } from '@/utils/axiosInstance'
 
 const props = defineProps({
-  imgs: { 
-    type: Array, 
+  imgs: {
+    type: Array,
     required: true,
-    validator: (value) => value.length > 0 && value.every(item => item.img)
+    validator: (value) => value.length > 0 && value.every((item) => item.img),
   },
-  time: { 
-    type: Number, 
-    default: 5 
+  time: {
+    type: Number,
+    default: 5,
   },
   autoPlay: {
     type: Boolean,
-    default: true
+    default: true,
   },
   sectionIndex: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 })
 
 const emit = defineEmits(['navigate'])
@@ -77,9 +65,9 @@ let interval = null
 
 // 이미지 URL 변환 (상대경로 → 절대경로)
 const processedImgs = computed(() => {
-  return props.imgs.map(item => ({
+  return props.imgs.map((item) => ({
     ...item,
-    img: getFileUrl(item.img)
+    img: getFileUrl(item.img),
   }))
 })
 
@@ -115,7 +103,7 @@ const handleSlideClick = (link) => {
 
 const startAutoSlide = () => {
   if (!props.autoPlay || props.imgs.length <= 1) return
-  
+
   stopAutoSlide()
   interval = setInterval(() => {
     nextSlide()
@@ -130,11 +118,14 @@ const stopAutoSlide = () => {
 }
 
 // props.time 변경 시 자동 슬라이드 재시작
-watch(() => props.time, () => {
-  if (props.autoPlay) {
-    startAutoSlide()
-  }
-})
+watch(
+  () => props.time,
+  () => {
+    if (props.autoPlay) {
+      startAutoSlide()
+    }
+  },
+)
 
 // 컴포넌트 마운트/언마운트 시 자동 슬라이드 관리
 onMounted(() => {
@@ -223,7 +214,6 @@ onUnmounted(() => {
   transform: translateY(-50%) scale(1.1);
 }
 
-
 .carousel-nav.prev {
   left: 20px;
 }
@@ -261,51 +251,38 @@ onUnmounted(() => {
   background-color: #2980b9;
 }
 
-/* 반응형 디자인 */
+/* 반응형 디자인: 모바일 (< 768px) */
 @media (max-width: 768px) {
+  .home-carousel {
+    margin-bottom: 0;
+  }
+
   .carousel-container {
-    height: 300px;
+    height: 250px;
+    border-radius: 8px;
   }
-  
+
   .slide-text h3 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
-  
+
   .carousel-nav {
     width: 40px;
     height: 40px;
     font-size: 1rem;
   }
-  
+
   .carousel-nav.prev {
     left: 15px;
   }
-  
+
   .carousel-nav.next {
     right: 15px;
   }
-}
 
-@media (max-width: 480px) {
-  .home-carousel {
-    margin-bottom: 0;
-  }
-  
-  .carousel-container {
-    height: 250px;
-    border-radius: 8px;
-  }
-  
-  .slide-text h3 {
-    font-size: 1.2rem;
-  }
-  
-  .slide-overlay {
-    padding: 30px 20px 20px;
-  }
-  
   .indicator {
     width: 10px;
     height: 10px;
   }
-}</style>
+}
+</style>
