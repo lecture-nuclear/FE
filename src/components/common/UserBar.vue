@@ -1,61 +1,120 @@
 <template>
-  <div class="user-bar-wrapper" ref="userBarContainerRef">
-    <div class="user-info-container">
+  <div class="flex items-center gap-5 relative" ref="userBarContainerRef">
+    <div class="relative flex items-center z-[100]">
       <template v-if="userStore.isLoggedIn">
-        <div class="user-name-wrapper" @click="toggleUserDropdown">
-          <span class="user-name">{{ userStore.name }}님</span>
+        <div
+          @click="toggleUserDropdown"
+          class="flex items-center cursor-pointer text-gray-600 text-lg px-2.5 py-1.5 rounded-md transition-colors duration-200 whitespace-nowrap hover:bg-gray-100"
+        >
+          <span>{{ userStore.name }}님</span>
         </div>
-        <div v-if="showUserDropdown" class="user-dropdown">
-          <div class="dropdown-item user-info-header">
-            <div class="user-header-content">
-              <span class="user-info-name">{{ userStore.name }}</span>
-              <button class="logout-btn" @click="logout" title="로그아웃">
-                <img src="@/assets/logout-svgrepo-com.svg" alt="로그아웃" class="logout-icon" />
+        <div
+          v-if="showUserDropdown"
+          class="absolute top-[calc(100%+10px)] right-0 bg-white border border-gray-300 rounded-lg shadow-lg min-w-[220px] z-[1000] overflow-hidden p-0"
+        >
+          <div class="px-5 py-3 cursor-pointer text-base text-gray-800 flex items-center gap-2.5">
+            <div class="flex justify-between items-center w-full">
+              <span class="text-lg text-gray-800 font-semibold">{{ userStore.name }}</span>
+              <button
+                @click="logout"
+                title="로그아웃"
+                class="bg-transparent border-0 cursor-pointer p-1.5 rounded transition-all duration-200 flex items-center justify-center hover:bg-gray-100"
+              >
+                <img
+                  src="@/assets/logout-svgrepo-com.svg"
+                  alt="로그아웃"
+                  class="w-4.5 h-4.5 transition-[filter] duration-200 hover:brightness-0 hover:saturate-100 hover:invert-[27%] hover:sepia-[93%] hover:saturate-[1352%] hover:hue-rotate-[336deg] hover:brightness-[93%] hover:contrast-[96%]"
+                />
               </button>
             </div>
           </div>
-          <div class="dropdown-section">
-            <div class="dropdown-item notification-item">
-              알림 <span class="notification-badge">0</span>
+          <div class="py-2.5 border-b border-gray-200 last:border-b-0">
+            <div
+              class="px-5 py-3 cursor-pointer text-base text-gray-800 flex items-center gap-2.5 justify-between hover:bg-gray-100"
+            >
+              알림
+              <span class="bg-red-600 text-white text-xs py-0.5 px-1.5 rounded-full ml-2.5">0</span>
             </div>
-            <div class="dropdown-item" @click="showOrders">주문 내역</div>
-            <div class="dropdown-item" @click="showSettings">설정</div>
+            <div
+              @click="showOrders"
+              class="px-5 py-3 cursor-pointer text-base text-gray-800 flex items-center gap-2.5 hover:bg-gray-100"
+            >
+              주문 내역
+            </div>
+            <div
+              @click="showSettings"
+              class="px-5 py-3 cursor-pointer text-base text-gray-800 flex items-center gap-2.5 hover:bg-gray-100"
+            >
+              설정
+            </div>
           </div>
         </div>
       </template>
       <template v-else>
-        <button @click="openLoginModal" class="login-button">로그인</button>
+        <button
+          @click="openLoginModal"
+          class="bg-blue-600 text-white border-0 px-4 py-2 rounded-md cursor-pointer text-base transition-colors duration-300 whitespace-nowrap hover:bg-blue-700"
+        >
+          로그인
+        </button>
       </template>
     </div>
 
-    <div class="cart-container" @click="toggleCartDropdown">
+    <div
+      @click="toggleCartDropdown"
+      class="relative cursor-pointer text-gray-600 flex items-center px-2.5 py-1.5 rounded-md transition-colors duration-200 z-[100] hover:bg-gray-100"
+    >
       <span>장바구니</span>
-      <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
+      <span
+        v-if="cartStore.itemCount > 0"
+        class="bg-red-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full absolute top-0 right-0 translate-x-[30%] -translate-y-[30%] px-1.5"
+        >{{ cartStore.itemCount }}</span
+      >
     </div>
-    <div v-if="showCartDropdown" class="cart-dropdown">
+    <div
+      v-if="showCartDropdown"
+      class="absolute top-[calc(100%+10px)] right-0 bg-white border border-gray-300 rounded-lg shadow-lg min-w-[320px] max-h-[400px] overflow-y-auto z-[1000] p-4"
+    >
       <template v-if="cartStore.itemCount > 0">
-        <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
+        <div
+          v-for="item in cartStore.items"
+          :key="item.id"
+          class="flex items-center py-2.5 border-b border-gray-200 text-[15px] gap-2.5 last:border-b-0"
+        >
           <img
-            :src="getFileUrl(item.image) || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'"
+            :src="
+              getFileUrl(item.image) || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'
+            "
             alt="상품 이미지"
-            class="cart-item-image"
+            class="w-[50px] h-[50px] rounded object-cover"
           />
-          <div class="item-details">
-            <span class="item-name">{{ item.title }}</span>
-            <span class="item-price">{{ item.price.toLocaleString() }}₩</span>
+          <div class="flex-grow flex flex-col">
+            <span class="font-medium text-gray-800">{{ item.title }}</span>
+            <span class="text-gray-500 text-sm mt-0.5 font-semibold"
+              >{{ item.price.toLocaleString() }}₩</span
+            >
           </div>
-          <button class="remove-item-btn" @click="removeCartItem(item.id)">×</button>
+          <button
+            @click="removeCartItem(item.id)"
+            class="bg-transparent border-0 text-red-600 text-xl cursor-pointer ml-2.5 leading-none"
+          >
+            ×
+          </button>
         </div>
-        <div class="cart-summary">
-          <span class="summary-label">총계:</span>
-          <span class="summary-total">{{ cartStore.totalPrice.toLocaleString() }}₩</span>
+        <div class="flex justify-between text-lg font-bold py-4 border-t border-gray-200 mt-2.5">
+          <span>총계:</span>
+          <span>{{ cartStore.totalPrice.toLocaleString() }}₩</span>
         </div>
-        <div class="cart-actions">
-          <router-link to="/cart" class="btn-cart-view">장바구니 보기</router-link>
+        <div class="flex justify-between gap-2.5 mt-4">
+          <router-link
+            to="/cart"
+            class="flex-grow py-2.5 px-4 rounded-md cursor-pointer text-[15px] text-center no-underline whitespace-nowrap bg-gray-100 text-gray-800 border border-gray-300 transition-colors duration-200 hover:bg-gray-200"
+            >장바구니 보기</router-link
+          >
         </div>
       </template>
       <template v-else>
-        <div class="empty-cart-message">장바구니가 비어있습니다.</div>
+        <div class="text-center py-5 text-gray-500">장바구니가 비어있습니다.</div>
       </template>
     </div>
 
@@ -68,7 +127,6 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
-import { isAdmin } from '@/utils/auth'
 import axiosInstance, { getFileUrl } from '@/utils/axiosInstance'
 import LoginModal from '@/components/modals/LoginModal.vue'
 
@@ -138,7 +196,7 @@ const logout = async () => {
     // 먼저 로컬 상태를 정리 (토큰이 만료되어도 로그아웃은 성공해야 함)
     userStore.logout()
     showUserDropdown.value = false
-    
+
     // 백엔드에 로그아웃 요청 (실패해도 로그아웃 진행)
     try {
       await axiosInstance.post('/auth/logout')
@@ -147,7 +205,7 @@ const logout = async () => {
       // 토큰 만료 등의 이유로 로그아웃 API가 실패해도 무시
       console.warn('서버 로그아웃 API 실패 (무시됨):', logoutError.message)
     }
-    
+
     alert('로그아웃 되었습니다.')
     router.push('/')
   } catch (error) {
@@ -172,12 +230,10 @@ const showOrders = () => {
   router.push('/orders')
 }
 
-
 // 장바구니 아이템 삭제 (예시)
 const removeCartItem = (itemId) => {
   cartStore.removeItem(itemId)
 }
-
 
 // 드롭다운 외부 클릭 시 닫기
 const handleClickOutside = (event) => {
@@ -197,272 +253,3 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
-
-<style scoped>
-/* User Bar Wrapper (전체 User Bar 컨테이너) */
-.user-bar-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  position: relative;
-}
-
-/* 로그인 버튼 */
-.login-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
-}
-.login-button:hover {
-  background-color: #0056b3;
-}
-
-/* 사용자 이름 영역 (로그인 시) */
-.user-info-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  z-index: 100;
-}
-
-.user-name-wrapper {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  color: #555;
-  font-size: 18px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
-}
-.user-name-wrapper:hover {
-  background-color: #f8f9fa;
-}
-
-/* 사용자 드롭다운 메뉴 스타일 */
-.user-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 220px;
-  z-index: 1000;
-  overflow: hidden;
-  padding: 0;
-}
-
-.user-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.user-info-header .user-info-name {
-  font-size: 18px;
-  color: #333;
-  font-weight: 600;
-}
-
-.logout-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logout-btn:hover {
-  background-color: #f5f5f5;
-}
-
-.logout-icon {
-  width: 18px;
-  height: 18px;
-  transition: filter 0.2s ease;
-}
-
-.logout-btn:hover .logout-icon {
-  filter: brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(1352%) hue-rotate(336deg) brightness(93%) contrast(96%);
-}
-
-.user-dropdown .dropdown-section {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-.user-dropdown .dropdown-section:last-child {
-  border-bottom: none;
-}
-
-.user-dropdown .dropdown-item {
-  padding: 12px 20px;
-  cursor: pointer;
-  font-size: 16px;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.user-dropdown .dropdown-item:hover {
-  background-color: #f5f5f5;
-}
-
-.user-dropdown .notification-item {
-  justify-content: space-between;
-}
-.user-dropdown .notification-badge {
-  background-color: #dc3545;
-  color: white;
-  font-size: 12px;
-  padding: 2px 7px;
-  border-radius: 50%;
-  margin-left: 10px;
-}
-
-/* 장바구니 영역 */
-.cart-container {
-  position: relative;
-  cursor: pointer;
-  color: #555;
-  display: flex;
-  align-items: center;
-  padding: 5px 10px;
-  border-radius: 5px;
-  transition: background-color 0.2s ease;
-  z-index: 100;
-}
-.cart-container:hover {
-  background-color: #f8f9fa;
-}
-.cart-badge {
-  background-color: #dc3545;
-  color: white;
-  font-size: 12px;
-  min-width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  position: absolute;
-  top: 0;
-  right: 0;
-  transform: translate(30%, -30%);
-  padding: 0 5px;
-}
-
-/* 장바구니 드롭다운 메뉴 스타일 */
-.cart-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 320px;
-  max-height: 400px;
-  overflow-y: auto;
-  z-index: 1000;
-  padding: 15px;
-}
-
-.cart-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 15px;
-  gap: 10px;
-}
-.cart-item:last-child {
-  border-bottom: none;
-}
-.cart-item-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 4px;
-  object-fit: cover;
-}
-.item-details {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-.item-name {
-  font-weight: 500;
-  color: #333;
-}
-.item-price {
-  color: #777;
-  font-size: 14px;
-  margin-top: 2px;
-  font-weight: 600;
-}
-.remove-item-btn {
-  background: none;
-  border: none;
-  color: #dc3545;
-  font-size: 20px;
-  cursor: pointer;
-  margin-left: 10px;
-  line-height: 1;
-}
-
-.cart-summary {
-  display: flex;
-  justify-content: space-between;
-  font-size: 18px;
-  font-weight: bold;
-  padding: 15px 0;
-  border-top: 1px solid #eee;
-  margin-top: 10px;
-}
-.empty-cart-message {
-  text-align: center;
-  padding: 20px;
-  color: #777;
-}
-
-.cart-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.btn-cart-view {
-  flex-grow: 1;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 15px;
-  text-align: center;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.btn-cart-view {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  transition: background-color 0.2s ease;
-}
-.btn-cart-view:hover {
-  background-color: #e0e0e0;
-}
-</style>
