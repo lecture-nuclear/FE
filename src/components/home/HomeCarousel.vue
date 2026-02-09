@@ -1,34 +1,36 @@
 <!-- src/components/home/HomeCarousel.vue -->
 <template>
-  <div class="home-carousel">
-    <div class="carousel-container">
-      <div class="carousel-track" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-        <div
-          v-for="(item, index) in processedImgs"
-          :key="index"
-          class="carousel-slide"
-          @click="handleSlideClick(item.link)"
-        >
-          <img :src="item.img" :alt="item.text || `슬라이드 ${index + 1}`" />
-          <div v-if="item.text" class="slide-text">
-            <h3>{{ item.text }}</h3>
+  <div class="carousel-wrapper">
+    <div class="home-carousel">
+      <div class="carousel-container">
+        <div class="carousel-track" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+          <div
+            v-for="(item, index) in processedImgs"
+            :key="index"
+            class="carousel-slide"
+            @click="handleSlideClick(item.link)"
+          >
+            <img :src="item.img" :alt="item.text || `슬라이드 ${index + 1}`" />
+            <div v-if="item.text" class="slide-text">
+              <h3>{{ item.text }}</h3>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 이전/다음 버튼 -->
-      <button v-if="imgs.length > 1" class="carousel-nav prev" @click="prevSlide">❮</button>
-      <button v-if="imgs.length > 1" class="carousel-nav next" @click="nextSlide">❯</button>
+        <!-- 이전/다음 버튼 -->
+        <button v-if="imgs.length > 1" class="carousel-nav prev" @click="prevSlide">❮</button>
+        <button v-if="imgs.length > 1" class="carousel-nav next" @click="nextSlide">❯</button>
 
-      <!-- 인디케이터 (이미지 위에 표시) -->
-      <div v-if="imgs.length > 1" class="carousel-indicators">
-        <button
-          v-for="(_, index) in imgs"
-          :key="index"
-          class="indicator"
-          :class="{ active: currentIndex === index }"
-          @click="goToSlide(index)"
-        />
+        <!-- 인디케이터 (이미지 위에 표시) -->
+        <div v-if="imgs.length > 1" class="carousel-indicators">
+          <button
+            v-for="(_, index) in imgs"
+            :key="index"
+            class="indicator"
+            :class="{ active: currentIndex === index }"
+            @click="goToSlide(index)"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -140,6 +142,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.carousel-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
 .home-carousel {
   position: relative;
   width: 100%;
@@ -253,6 +263,10 @@ onUnmounted(() => {
 
 /* 반응형 디자인: 모바일 (< 768px) */
 @media (max-width: 768px) {
+  .carousel-wrapper {
+    padding: 0 15px;
+  }
+
   .home-carousel {
     margin-bottom: 0;
   }

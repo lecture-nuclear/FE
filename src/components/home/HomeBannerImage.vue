@@ -1,13 +1,15 @@
 <!-- src/components/home/HomeBannerImage.vue -->
 <template>
-  <div
-    class="home-banner"
-    :style="{ backgroundImage: `url(${imageUrl})` }"
-    :class="{ clickable: !!link }"
-    @click="handleClick"
-  >
-    <div v-if="text" class="banner-text">
-      <h2>{{ text }}</h2>
+  <div class="banner-container">
+    <div
+      class="home-banner"
+      :style="{ backgroundImage: `url(${imageUrl})` }"
+      :class="{ clickable: !!link }"
+      @click="handleClick"
+    >
+      <div v-if="text" class="banner-text">
+        <h2>{{ text }}</h2>
+      </div>
     </div>
   </div>
 </template>
@@ -48,6 +50,14 @@ const handleClick = () => {
 </script>
 
 <style scoped>
+.banner-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
 .home-banner {
   position: relative;
   width: 100%;
@@ -86,6 +96,10 @@ const handleClick = () => {
 
 /* 반응형 디자인: 모바일 (< 768px) */
 @media (max-width: 768px) {
+  .banner-container {
+    padding: 0 15px;
+  }
+
   .home-banner {
     height: 250px;
     margin-bottom: 0;
