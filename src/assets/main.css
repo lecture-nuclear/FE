@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 전역 레이아웃 변수 */
+:root {
+  --page-max-width: 1400px;
+}
+
 #app {
   padding: 0;
   font-weight: normal;

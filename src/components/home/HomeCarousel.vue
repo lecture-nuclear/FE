@@ -144,7 +144,7 @@ onUnmounted(() => {
 <style scoped>
 .carousel-wrapper {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   padding: 0 20px;
   box-sizing: border-box;

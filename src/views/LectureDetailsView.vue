@@ -524,7 +524,7 @@ onMounted(() => {
 <style scoped>
 .lecture-detail-page {
   padding: 40px;
-  max-width: 1200px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   box-sizing: border-box;
   min-height: calc(100vh - 100px);

@@ -117,7 +117,7 @@ onMounted(async () => {
 <style scoped>
 .admin-page {
   padding: 30px;
-  max-width: 1200px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;

@@ -68,7 +68,7 @@ onMounted(async () => {
   background-color: transparent;
   padding: 0;
   text-align: center;
-  max-width: 1200px;
+  max-width: var(--page-max-width);
   width: 100%;
 }
 
