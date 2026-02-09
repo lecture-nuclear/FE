@@ -1,28 +1,57 @@
 <template>
-  <div class="lecture-item-card">
-    <div class="lecture-thumbnail">
-      <img
-        :src="thumbnailSrc"
-        :alt="lecture.title"
-        class="thumbnail-img"
-      />
+  <div
+    class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col transition-all duration-300 w-full max-w-[320px] m-4 hover:-translate-y-1.5 hover:shadow-xl"
+  >
+    <div class="w-full h-[200px] overflow-hidden">
+      <img :src="thumbnailSrc" :alt="lecture.title" class="w-full h-full object-cover block" />
     </div>
-    <div class="lecture-info">
-      <h3 class="lecture-title">{{ lecture.title }}</h3>
-      <p class="lecture-description">{{ lecture.description }}</p>
-      <div class="lecture-meta">
-        <span class="lecture-price">{{
+    <div class="p-5 flex flex-col flex-grow">
+      <h3
+        class="text-xl font-bold text-gray-800 mb-2.5 leading-snug h-[2.8em] overflow-hidden text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] [display:-webkit-box]"
+      >
+        {{ lecture.title }}
+      </h3>
+      <p
+        class="text-sm text-gray-600 leading-6 mb-4 h-[3em] overflow-hidden text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:3] [display:-webkit-box]"
+      >
+        {{ lecture.description }}
+      </p>
+      <div class="flex justify-between items-center mt-auto pt-4 border-t border-gray-200">
+        <span class="text-lg font-bold text-blue-600">{{
           lecture.price ? lecture.price.toLocaleString() + '₩' : '무료'
         }}</span>
-        <span class="lecture-views"
+        <span class="text-sm text-gray-500"
           >조회수: {{ lecture.viewCount ? lecture.viewCount.toLocaleString() : 0 }}</span
         >
       </div>
-      <div class="lecture-actions">
-        <button @click="viewDetails" class="btn-details">상세 보기</button>
-        <button v-if="showCancelButton" @click="cancelEnroll" class="btn-cancel">수강 취소</button>
-        <button v-else-if="!noCartButton" @click="addToCart" class="btn-add-cart">장바구니 담기</button>
-        <button v-else class="btn-enrolled" disabled>수강 중</button>
+      <div class="flex gap-2.5 mt-5">
+        <button
+          @click="viewDetails"
+          class="flex-1 px-4 py-2.5 border-0 rounded-md cursor-pointer text-[15px] font-semibold transition-colors duration-300 whitespace-nowrap bg-gray-200 text-gray-800 hover:bg-gray-300"
+        >
+          상세 보기
+        </button>
+        <button
+          v-if="showCancelButton"
+          @click="cancelEnroll"
+          class="flex-1 px-4 py-2.5 border-0 rounded-md cursor-pointer text-[15px] font-semibold transition-colors duration-300 whitespace-nowrap bg-red-600 text-white hover:bg-red-700"
+        >
+          수강 취소
+        </button>
+        <button
+          v-else-if="!noCartButton"
+          @click="addToCart"
+          class="flex-1 px-4 py-2.5 border-0 rounded-md cursor-pointer text-[15px] font-semibold transition-colors duration-300 whitespace-nowrap bg-green-600 text-white hover:bg-green-700"
+        >
+          장바구니 담기
+        </button>
+        <button
+          v-else
+          class="flex-1 px-4 py-2.5 border-0 rounded-md cursor-pointer text-[15px] font-semibold transition-colors duration-300 whitespace-nowrap bg-gray-500 text-white cursor-default opacity-80"
+          disabled
+        >
+          수강 중
+        </button>
       </div>
     </div>
   </div>
@@ -76,153 +105,9 @@ const cancelEnroll = () => {
 
 // 썸네일 URL 계산 (상대 경로 → 절대 경로 변환)
 const thumbnailSrc = computed(() => {
-  return getFileUrl(props.lecture.thumbnailUrl) || 'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'
+  return (
+    getFileUrl(props.lecture.thumbnailUrl) ||
+    'https://placehold.co/300x200/4CAF50/FFFFFF?text=Lecture'
+  )
 })
 </script>
-
-<style scoped>
-/* 기존 스타일 유지 */
-.lecture-item-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  width: 100%; /* 부모 컨테이너에 따라 유동적으로 조절 */
-  max-width: 320px; /* 카드 최대 너비 */
-  margin: 15px; /* 카드 간 간격 */
-}
-
-.lecture-item-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.lecture-thumbnail {
-  width: 100%;
-  height: 200px; /* 썸네일 고정 높이 */
-  overflow: hidden;
-}
-
-.thumbnail-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* 이미지가 썸네일에 꽉 차도록 */
-  display: block;
-}
-
-.lecture-info {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1; /* 남은 공간을 채우도록 */
-}
-
-.lecture-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 10px;
-  line-height: 1.4;
-  height: 2.8em; /* 두 줄까지 표시하고 잘라내기 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.lecture-description {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 15px;
-  height: 3em; /* 세 줄까지 표시하고 잘라내기 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-.lecture-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto; /* 하단에 붙도록 */
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.lecture-price {
-  font-size: 18px;
-  font-weight: bold;
-  color: #007bff; /* 파란색 가격 */
-}
-
-.lecture-views {
-  font-size: 14px;
-  color: #888;
-}
-
-.lecture-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn-details,
-.btn-add-cart,
-.btn-enrolled,
-.btn-cancel {
-  flex: 1;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
-}
-
-.btn-details {
-  background-color: #e9ecef;
-  color: #333;
-}
-
-.btn-details:hover {
-  background-color: #dee2e6;
-}
-
-.btn-add-cart {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-add-cart:hover {
-  background-color: #218838;
-}
-
-/* 수강 중 버튼 스타일 */
-.btn-enrolled {
-  background-color: #6c757d; /* 회색 계열 */
-  color: white;
-  cursor: default; /* 마우스 오버 시 커서 변경 안 함 */
-  opacity: 0.8;
-}
-
-/* 수강 취소 버튼 스타일 */
-.btn-cancel {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-cancel:hover {
-  background-color: #c82333;
-}
-</style>

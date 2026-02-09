@@ -1,41 +1,67 @@
 <!-- src/components/common/AppHeader.vue -->
 <template>
-  <header class="app-header">
+  <header
+    class="flex justify-between items-center px-7 py-4 bg-gray-50 border-b border-gray-200 shadow-sm sticky top-0 w-full z-[1000] min-h-[70px]"
+  >
     <div class="header-left">
-      <router-link to="/" class="logo">
-        <img src="@/assets/logo.svg" alt="MyService Logo" class="logo-img" />
+      <router-link
+        to="/"
+        class="flex items-center text-3xl font-extrabold text-gray-800 no-underline whitespace-nowrap px-2.5 py-1.5 rounded-md transition-colors duration-200 hover:bg-gray-100"
+      >
+        <img src="@/assets/logo.svg" alt="MyService Logo" class="h-9 mr-2.5" />
         <span>Lecture</span>
       </router-link>
     </div>
 
-    <div class="header-right">
+    <div class="flex items-center gap-7">
       <!-- 햄버거 메뉴 아이콘 (모바일에서만 보임) -->
-      <div class="hamburger-menu" @click="toggleMobileMenu">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
+      <div
+        @click="toggleMobileMenu"
+        class="hidden max-md:flex flex-col justify-around w-7 h-6 cursor-pointer z-[1001] p-1"
+      >
+        <div class="w-full h-0.5 bg-gray-600 rounded-sm transition-all duration-300"></div>
+        <div class="w-full h-0.5 bg-gray-600 rounded-sm transition-all duration-300"></div>
+        <div class="w-full h-0.5 bg-gray-600 rounded-sm transition-all duration-300"></div>
       </div>
 
       <!-- 네비게이션 링크 (PC에서 보임, 모바일 메뉴에도 포함) -->
-      <nav :class="{ 'nav-open': showMobileMenu }">
-        <router-link to="/courses" class="nav-link" @click="closeMobileMenu">강의</router-link>
-        <router-link to="/about" class="nav-link" @click="closeMobileMenu">About</router-link>
+      <nav
+        :class="[
+          'flex gap-6 max-md:hidden max-md:flex-col max-md:absolute max-md:top-full max-md:right-0 max-md:w-full max-md:bg-gray-50 max-md:shadow-lg max-md:py-5 max-md:rounded-b-lg max-md:opacity-0 max-md:invisible max-md:-translate-y-2.5 transition-all duration-300',
+          {
+            'max-md:!flex max-md:!opacity-100 max-md:!visible max-md:!translate-y-0':
+              showMobileMenu,
+          },
+        ]"
+      >
+        <router-link
+          to="/courses"
+          @click="closeMobileMenu"
+          class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none"
+          >강의</router-link
+        >
+        <router-link
+          to="/about"
+          @click="closeMobileMenu"
+          class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none"
+          >About</router-link
+        >
         <!-- 로그인한 사용자만 보이는 조건부 메뉴 -->
         <template v-if="userStore.isLoggedIn">
           <!-- 관리자는 "관리⚙️" 탭, 일반 사용자는 "수강 중 강의" 탭 -->
-          <router-link 
-            v-if="isAdmin()" 
-            to="/admin" 
-            class="nav-link" 
+          <router-link
+            v-if="isAdmin()"
+            to="/admin"
             @click="closeMobileMenu"
+            class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none"
           >
             관리⚙️
           </router-link>
-          <router-link 
-            v-else 
-            to="/my-courses" 
-            class="nav-link" 
+          <router-link
+            v-else
+            to="/my-courses"
             @click="closeMobileMenu"
+            class="text-lg text-gray-600 no-underline font-medium px-2.5 py-1.5 rounded-md transition-all duration-200 whitespace-nowrap hover:text-gray-800 hover:bg-gray-100 max-md:px-5 max-md:py-3 max-md:text-center max-md:w-full max-md:border-b max-md:border-gray-200 max-md:text-[17px] max-md:rounded-none max-md:last:border-b-0"
           >
             수강 중 강의
           </router-link>
@@ -83,160 +109,16 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 30px;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #eee;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-  min-height: 70px;
-}
-
-.header-left .logo {
-  display: flex; /* 🚩 로고 이미지와 텍스트를 함께 정렬 */
-  align-items: center; /* 🚩 세로 중앙 정렬 */
-  font-size: 28px;
-  font-weight: 800;
-  color: #2c3e50;
-  text-decoration: none;
-  white-space: nowrap;
-  padding: 5px 10px;
-  border-radius: 5px;
-  transition: background-color 0.2s ease;
-}
-
-.header-left .logo:hover {
-  background-color: #f8f9fa;
-}
-
-/* 🚩 로고 이미지 스타일 */
-.logo-img {
-  height: 35px; /* 로고 이미지 높이 */
-  margin-right: 10px; /* 로고 이미지와 텍스트 사이 간격 */
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-}
-
-nav {
-  display: flex;
-  gap: 25px;
-}
-
-.nav-link {
-  font-size: 18px;
-  color: #555;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 5px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.nav-link:hover {
-  color: #2c3e50;
-  background-color: #f8f9fa;
-}
-
-/* 햄버거 메뉴 아이콘 스타일 */
-.hamburger-menu {
-  display: none;
-  flex-direction: column;
-  justify-content: space-around;
-  width: 30px;
-  height: 25px;
-  cursor: pointer;
-  z-index: 1001;
-  padding: 5px;
-}
-
-.hamburger-menu .bar {
-  width: 100%;
-  height: 3px;
-  background-color: #555;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-@media (max-width: 768px) {
-  .app-header {
-    padding: 15px 20px;
-  }
-
-  .header-right {
-    gap: 15px;
-  }
-
-  .hamburger-menu {
-    display: flex;
-  }
-
-  nav {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    width: 100%;
-    background-color: #f8f8f8;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    padding: 20px 0;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition:
-      opacity 0.3s ease,
-      transform 0.3s ease,
-      visibility 0.3s ease;
-  }
-
-  nav.nav-open {
-    display: flex;
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-
-  nav .nav-link {
-    padding: 12px 20px;
-    text-align: center;
-    width: 100%;
-    border-bottom: 1px solid #eee;
-    font-size: 17px;
-    border-radius: 0;
-  }
-  
-  nav .nav-link:hover {
-    background-color: #f8f9fa;
-    color: #2c3e50;
-  }
-  nav .nav-link:last-child {
-    border-bottom: none;
-  }
-}
-
+/* 모바일에서 로고 크기 조정 */
 @media (max-width: 480px) {
-  .header-left .logo {
+  .header-left img {
+    height: 30px;
+  }
+  .header-left a {
     font-size: 24px;
   }
-  .app-header {
+  header {
     padding: 10px 15px;
-  }
-  /* 🚩 모바일에서 로고 이미지 크기 조정 */
-  .logo-img {
-    height: 30px;
   }
 }
 </style>

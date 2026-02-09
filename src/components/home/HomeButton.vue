@@ -1,9 +1,9 @@
 <!-- src/components/home/HomeButton.vue -->
 <template>
-  <div class="home-button">
-    <button 
-      class="action-button"
-      :class="buttonClass"
+  <div class="w-full text-center my-10 px-5 max-md:my-7.5 max-md:px-4 max-sm:my-5 max-sm:px-2.5">
+    <button
+      class="border-0 rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-md no-underline inline-block text-center whitespace-nowrap hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm max-sm:w-full max-sm:max-w-[300px]"
+      :class="[buttonStyleClass, buttonSizeClass]"
       @click="handleClick"
     >
       {{ text }}
@@ -15,196 +15,64 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  text: { 
-    type: String, 
-    required: true 
+  text: {
+    type: String,
+    required: true,
   },
-  link: { 
-    type: String, 
-    default: '' 
+  link: {
+    type: String,
+    default: '',
   },
   style: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'success', 'warning', 'danger'].includes(value)
+    validator: (value) => ['primary', 'secondary', 'success', 'warning', 'danger'].includes(value),
   },
   size: {
     type: String,
     default: 'medium',
-    validator: (value) => ['small', 'medium', 'large'].includes(value)
+    validator: (value) => ['small', 'medium', 'large'].includes(value),
   },
   sectionIndex: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 })
 
 const emit = defineEmits(['navigate'])
 
-const buttonClass = computed(() => {
-  return [
-    `button-${props.style}`,
-    `button-${props.size}`
-  ]
+const buttonStyleClass = computed(() => {
+  const styles = {
+    primary: 'bg-blue-500 text-white hover:bg-blue-600 hover:shadow-blue-500/30',
+    secondary: 'bg-gray-500 text-white hover:bg-gray-600 hover:shadow-gray-500/30',
+    success: 'bg-green-600 text-white hover:bg-green-700 hover:shadow-green-600/30',
+    warning: 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-orange-500/30',
+    danger: 'bg-red-600 text-white hover:bg-red-700 hover:shadow-red-600/30',
+  }
+  return styles[props.style] || styles.primary
+})
+
+const buttonSizeClass = computed(() => {
+  const sizes = {
+    small:
+      'py-2 px-4 text-sm max-md:py-1.5 max-md:px-3.5 max-md:text-[0.85rem] max-sm:py-2 max-sm:px-4 max-sm:text-xs',
+    medium:
+      'py-3 px-6 text-base max-md:py-2.5 max-md:px-5 max-md:text-[0.95rem] max-sm:py-2.5 max-sm:px-5 max-sm:text-sm',
+    large:
+      'py-4 px-8 text-xl max-md:py-3.5 max-md:px-7 max-md:text-lg max-sm:py-3 max-sm:px-6 max-sm:text-base',
+  }
+  return sizes[props.size] || sizes.medium
 })
 
 const handleClick = () => {
   // 페이지 맨 위로 스크롤
   window.scrollTo({
     top: 0,
-    behavior: 'smooth'
+    behavior: 'smooth',
   })
-  
+
   if (props.link) {
     emit('navigate', props.link)
   }
 }
 </script>
-
-<style scoped>
-.home-button {
-  width: 100%;
-  text-align: center;
-  margin: 40px 0;
-  padding: 0 20px;
-}
-
-.action-button {
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.action-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.action-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* 스타일 변형 */
-.button-primary {
-  background-color: #3498db;
-  color: white;
-}
-
-.button-primary:hover {
-  background-color: #2980b9;
-  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
-}
-
-.button-secondary {
-  background-color: #95a5a6;
-  color: white;
-}
-
-.button-secondary:hover {
-  background-color: #7f8c8d;
-  box-shadow: 0 6px 20px rgba(149, 165, 166, 0.3);
-}
-
-.button-success {
-  background-color: #27ae60;
-  color: white;
-}
-
-.button-success:hover {
-  background-color: #219a52;
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
-}
-
-.button-warning {
-  background-color: #f39c12;
-  color: white;
-}
-
-.button-warning:hover {
-  background-color: #d68910;
-  box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
-}
-
-.button-danger {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.button-danger:hover {
-  background-color: #c0392b;
-  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
-}
-
-/* 크기 변형 */
-.button-small {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-}
-
-.button-medium {
-  padding: 12px 24px;
-  font-size: 1rem;
-}
-
-.button-large {
-  padding: 16px 32px;
-  font-size: 1.2rem;
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .home-button {
-    margin: 30px 0;
-    padding: 0 15px;
-  }
-  
-  .button-large {
-    padding: 14px 28px;
-    font-size: 1.1rem;
-  }
-  
-  .button-medium {
-    padding: 10px 20px;
-    font-size: 0.95rem;
-  }
-  
-  .button-small {
-    padding: 6px 14px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .home-button {
-    margin: 20px 0;
-    padding: 0 10px;
-  }
-  
-  .action-button {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .button-large {
-    padding: 12px 24px;
-    font-size: 1rem;
-  }
-  
-  .button-medium {
-    padding: 10px 20px;
-    font-size: 0.9rem;
-  }
-  
-  .button-small {
-    padding: 8px 16px;
-    font-size: 0.8rem;
-  }
-}</style>
