@@ -18,12 +18,12 @@
               <button
                 @click="logout"
                 title="로그아웃"
-                class="bg-transparent border-0 cursor-pointer p-1.5 rounded transition-all duration-200 flex items-center justify-center hover:bg-gray-100"
+                class="bg-transparent border-0 cursor-pointer p-1 rounded transition-all duration-200 flex items-center justify-center hover:bg-gray-100"
               >
                 <img
                   src="@/assets/logout-svgrepo-com.svg"
                   alt="로그아웃"
-                  class="w-4.5 h-4.5 transition-[filter] duration-200 hover:brightness-0 hover:saturate-100 hover:invert-[27%] hover:sepia-[93%] hover:saturate-[1352%] hover:hue-rotate-[336deg] hover:brightness-[93%] hover:contrast-[96%]"
+                  class="w-4 h-4 transition-[filter] duration-200 hover:brightness-0 hover:saturate-100 hover:invert-[27%] hover:sepia-[93%] hover:saturate-[1352%] hover:hue-rotate-[336deg] hover:brightness-[93%] hover:contrast-[96%]"
                 />
               </button>
             </div>
