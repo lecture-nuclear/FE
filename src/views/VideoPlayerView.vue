@@ -1,17 +1,17 @@
 <template>
   <div class="video-player-container">
     <div v-if="loading" class="loading-message">영상을 불러오는 중입니다...</div>
-    
+
     <div v-else-if="errorMessage" class="error-message">
       오류: {{ errorMessage }}
-      <router-link :to="`/lectures/${lectureId}`" class="back-to-lecture">강의로 돌아가기</router-link>
+      <router-link :to="`/lectures/${lectureId}`" class="back-to-lecture"
+        >강의로 돌아가기</router-link
+      >
     </div>
 
     <div v-else class="player-wrapper">
       <div class="video-header">
-        <button @click="handleBackToLecture" class="back-button">
-          ← 강의로 돌아가기
-        </button>
+        <button @click="handleBackToLecture" class="back-button">← 강의로 돌아가기</button>
         <h1 class="video-title">{{ videoTitle }}</h1>
       </div>
 
@@ -140,7 +140,6 @@ const stopBackupInterval = () => {
   }
 }
 
-
 const stopWatchTimeInterval = () => {
   if (watchTimeInterval.value) {
     clearInterval(watchTimeInterval.value)
@@ -157,8 +156,10 @@ const fetchLastViewPosition = async () => {
   }
 
   try {
-    const response = await axiosInstance.get(`/v1/last-view/member/${userStore.getMemberId}/video/${route.params.videoId}`)
-    
+    const response = await axiosInstance.get(
+      `/v1/last-view/member/${userStore.getMemberId}/video/${route.params.videoId}`,
+    )
+
     if (response.data && response.data.data) {
       lastViewPosition.value = response.data.data.lastTimeMillis || 0
       console.log('📍 마지막 시청 위치 조회 성공:', lastViewPosition.value, 'ms')
@@ -186,20 +187,20 @@ const sendWatchTimeData = async () => {
 
   try {
     updateWatchTime()
-    
+
     if (totalWatchTime.value > 0) {
       const requestData = {
         watchTimeMillis: totalWatchTime.value,
         lastTimeMillis: currentPosition.value,
         memberId: userStore.getMemberId,
-        videoId: parseInt(route.params.videoId)
+        videoId: parseInt(route.params.videoId),
       }
-      
+
       console.log('📊 시청 시간 전송:', requestData)
-      
+
       await axiosInstance.put('/v1/last-view', requestData)
       console.log('✅ 시청 시간 전송 완료')
-      
+
       // 전송 후 리셋
       totalWatchTime.value = 0
       sessionStartTime.value = Date.now()
@@ -249,9 +250,10 @@ const initializePlayer = async () => {
     }
 
     // YouTube 링크 체크
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    const youtubeRegex =
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
     const youtubeMatch = videoUrl.value.match(youtubeRegex)
-    
+
     if (youtubeMatch) {
       isYouTubeVideo.value = true
       youtubeId.value = youtubeMatch[1]
@@ -281,30 +283,30 @@ const initializePlayer = async () => {
           'mute',
           'volume',
           'settings',
-          'fullscreen'
+          'fullscreen',
         ],
         settings: ['quality', 'speed'],
         quality: {
           default: 720,
-          options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240]
+          options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240],
         },
         speed: {
           selected: 1,
-          options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
-        }
+          options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+        },
       })
 
       // 플레이어 이벤트 리스너
       player.value.on('ready', () => {
         console.log('플레이어가 준비되었습니다.')
-        
+
         // 마지막 시청 위치로 이동 (0초가 아닌 경우에만)
         if (lastViewPosition.value > 0) {
           const seekPosition = lastViewPosition.value / 1000 // 밀리초를 초로 변환
           console.log(`📍 마지막 시청 위치로 이동: ${seekPosition}초`)
           player.value.currentTime = seekPosition
         }
-        
+
         startWatchTimeTracking()
         startBackupInterval()
       })
@@ -348,7 +350,6 @@ const initializePlayer = async () => {
         }
       })
     }, 100)
-
   } catch (error) {
     console.error('플레이어 초기화 실패:', error)
     errorMessage.value = '영상 플레이어를 초기화하는데 실패했습니다.'
@@ -390,7 +391,7 @@ const handleBackToLecture = async () => {
 
 onMounted(() => {
   initializePlayer()
-  
+
   // 이벤트 리스너 등록
   document.addEventListener('visibilitychange', handleVisibilityChange)
   window.addEventListener('beforeunload', handleBeforeUnload)
@@ -400,16 +401,16 @@ onUnmounted(() => {
   stopWatchTimeInterval()
   stopBackupInterval()
   sendWatchTimeData()
-  
+
   // 강의 퇴장 기록
   if (userStore.isLoggedIn) {
     exitLecture()
   }
-  
+
   if (player.value) {
     player.value.destroy()
   }
-  
+
   // 이벤트 리스너 제거
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   window.removeEventListener('beforeunload', handleBeforeUnload)
@@ -462,7 +463,7 @@ watch(
         player.value.currentTime = seekPosition
       }
     }
-  }
+  },
 )
 </script>
 
@@ -506,7 +507,7 @@ watch(
 }
 
 .player-wrapper {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -578,17 +579,17 @@ watch(
   .video-player-container {
     padding: 10px;
   }
-  
+
   .video-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .video-title {
     font-size: 20px;
   }
-  
+
   .video-info {
     padding: 15px;
   }
