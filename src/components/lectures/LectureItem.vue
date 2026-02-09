@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col transition-all duration-300 w-full max-w-[320px] m-4 hover:-translate-y-1.5 hover:shadow-xl"
+    class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col transition-all duration-300 w-full max-w-[320px] m-4 hover:bg-gray-50"
   >
     <div class="w-full h-[200px] overflow-hidden">
       <img :src="thumbnailSrc" :alt="lecture.title" class="w-full h-full object-cover block" />

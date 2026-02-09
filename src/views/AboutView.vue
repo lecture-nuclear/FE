@@ -116,6 +116,5 @@ h1 {
 
 .back-to-home:hover {
   background-color: #0056b3;
-  transform: translateY(-2px);
 }
 </style>

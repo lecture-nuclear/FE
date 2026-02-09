@@ -3,8 +3,14 @@
   <div class="courses-page">
     <div class="courses-header">
       <h1>{{ searchKeyword ? '강의 검색' : '모든 강의' }}</h1>
-      <p>{{ searchKeyword ? '찾으시는 강의의 제목을 입력해주세요.' : '다양한 분야의 흥미로운 강의들을 만나보세요.' }}</p>
-      
+      <p>
+        {{
+          searchKeyword
+            ? '찾으시는 강의의 제목을 입력해주세요.'
+            : '다양한 분야의 흥미로운 강의들을 만나보세요.'
+        }}
+      </p>
+
       <!-- 검색 입력창 -->
       <div class="search-input-container">
         <input
@@ -49,7 +55,11 @@
         />
       </div>
       <div v-else class="no-lectures-message">
-        {{ searchKeyword ? `'${searchKeyword}'에 대한 검색 결과가 없습니다.` : '아직 등록된 강의가 없습니다.' }}
+        {{
+          searchKeyword
+            ? `'${searchKeyword}'에 대한 검색 결과가 없습니다.`
+            : '아직 등록된 강의가 없습니다.'
+        }}
       </div>
 
       <!-- Pagination Controls -->
@@ -278,7 +288,6 @@ watch(
 .search-button:hover,
 .clear-button:hover {
   background-color: #0056b3;
-  transform: translateY(-2px);
 }
 
 .clear-button {

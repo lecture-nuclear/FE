@@ -97,12 +97,12 @@ const activeTab = computed({
   },
   set(newTab) {
     if (validTabs.includes(newTab)) {
-      router.push({ 
-        path: route.path, 
-        query: { ...route.query, tab: newTab }
+      router.push({
+        path: route.path,
+        query: { ...route.query, tab: newTab },
       })
     }
-  }
+  },
 })
 
 // 관리자가 아닌 경우 접근 차단
@@ -267,10 +267,7 @@ onMounted(async () => {
 
 .upload-link-btn:hover {
   background-color: #219a52;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
 }
-
 
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
@@ -358,7 +355,6 @@ onMounted(async () => {
     padding: 14px 24px;
     font-size: 16px;
   }
-
 }
 
 @media (max-width: 480px) {
@@ -384,6 +380,5 @@ onMounted(async () => {
     padding: 12px 20px;
     font-size: 15px;
   }
-
 }
 </style>

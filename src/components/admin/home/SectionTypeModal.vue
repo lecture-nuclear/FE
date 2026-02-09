@@ -33,32 +33,32 @@ const sectionTypes = [
     key: 'image',
     name: '배너 이미지',
     icon: '🖼️',
-    description: '배경 이미지와 텍스트가 있는 배너 섹션'
+    description: '배경 이미지와 텍스트가 있는 배너 섹션',
   },
   {
     key: 'carousel',
     name: '이미지 캐러셀',
     icon: '🎠',
-    description: '자동으로 넘어가는 이미지 슬라이드'
+    description: '자동으로 넘어가는 이미지 슬라이드',
   },
   {
     key: 'markdown',
     name: '마크다운 텍스트',
     icon: '📝',
-    description: '마크다운으로 작성된 텍스트 콘텐츠'
+    description: '마크다운으로 작성된 텍스트 콘텐츠',
   },
   {
     key: 'lectures',
     name: '추천 강의',
     icon: '🎓',
-    description: '선택된 강의들을 카드 형태로 표시'
+    description: '선택된 강의들을 카드 형태로 표시',
   },
   {
     key: 'button',
     name: '액션 버튼',
     icon: '🔘',
-    description: '특정 페이지로 이동하는 버튼'
-  }
+    description: '특정 페이지로 이동하는 버튼',
+  },
 ]
 
 const selectType = (type) => {
@@ -145,8 +145,6 @@ const selectType = (type) => {
 .type-card:hover {
   border-color: #3498db;
   background-color: #f8f9fa;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
 }
 
 .type-icon {
@@ -174,23 +172,24 @@ const selectType = (type) => {
     width: 95%;
     margin: 20px;
   }
-  
+
   .modal-header {
     padding: 15px 20px;
   }
-  
+
   .section-types {
     grid-template-columns: 1fr;
     padding: 20px;
     gap: 12px;
   }
-  
+
   .type-card {
     padding: 15px;
   }
-  
+
   .type-icon {
     font-size: 2rem;
     margin-bottom: 10px;
   }
-}</style>
+}
+</style>

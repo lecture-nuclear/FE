@@ -25,11 +25,7 @@
           <!-- 🚩 데스크톱에서 메인 콘텐츠가 왼쪽에 오도록 먼저 배치 -->
           <div class="main-lecture-content">
             <div v-if="thumbnailSrc" class="lecture-thumbnail-full">
-              <img
-                :src="thumbnailSrc"
-                :alt="lectureDetails.title"
-                class="thumbnail-img-full"
-              />
+              <img :src="thumbnailSrc" :alt="lectureDetails.title" class="thumbnail-img-full" />
             </div>
 
             <p class="lecture-description">{{ lectureDetails.description }}</p>
@@ -244,7 +240,7 @@ const handleEnrollLecture = async () => {
     alert('강의를 구매하려면 로그인해야 합니다.')
     return
   }
-  
+
   if (!lectureDetails.value) {
     alert('강의 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
     return
@@ -254,9 +250,9 @@ const handleEnrollLecture = async () => {
     const confirmPurchase = confirm(
       `"${lectureDetails.value.title}" 강의를 구매하시겠습니까?\n\n가격: ${
         lectureDetails.value.price ? lectureDetails.value.price.toLocaleString() + '원' : '무료'
-      }`
+      }`,
     )
-    
+
     if (!confirmPurchase) {
       return
     }
@@ -269,11 +265,11 @@ const handleEnrollLecture = async () => {
 
     if (response.status === 201 || response.status === 200) {
       alert(`${lectureDetails.value.title} 강의 구매가 완료되었습니다!`)
-      
+
       // 구매 상태 다시 확인
       await fetchPurchaseStatus(lectureDetails.value.id)
       await fetchTotalWatchTime(lectureDetails.value.id)
-      
+
       // 장바구니에서 해당 강의 제거
       cartStore.removeItem(lectureDetails.value.id)
     } else {
@@ -488,28 +484,37 @@ const recheckPurchaseStatus = async () => {
 }
 
 // Watch for authentication state changes (token refresh)
-watch(() => userStore.isLoggedIn, async (newValue) => {
-  // If user just logged in or authentication state changed
-  if (newValue && lectureDetails.value) {
-    await recheckPurchaseStatus()
-  }
-})
+watch(
+  () => userStore.isLoggedIn,
+  async (newValue) => {
+    // If user just logged in or authentication state changed
+    if (newValue && lectureDetails.value) {
+      await recheckPurchaseStatus()
+    }
+  },
+)
 
 // Watch for user ID changes (after token refresh, user ID might be updated)
-watch(() => userStore.id, async (newId, oldId) => {
-  // If user ID changed and we have lecture details
-  if (newId && newId !== oldId && lectureDetails.value) {
-    await recheckPurchaseStatus()
-  }
-})
+watch(
+  () => userStore.id,
+  async (newId, oldId) => {
+    // If user ID changed and we have lecture details
+    if (newId && newId !== oldId && lectureDetails.value) {
+      await recheckPurchaseStatus()
+    }
+  },
+)
 
 // Watch for user store loaded state (important for token refresh scenarios)
-watch(() => userStore.isUserLoaded, async (isLoaded) => {
-  // When user data is freshly loaded (including after token refresh)
-  if (isLoaded && lectureDetails.value && userStore.isLoggedIn) {
-    await recheckPurchaseStatus()
-  }
-})
+watch(
+  () => userStore.isUserLoaded,
+  async (isLoaded) => {
+    // When user data is freshly loaded (including after token refresh)
+    if (isLoaded && lectureDetails.value && userStore.isLoggedIn) {
+      await recheckPurchaseStatus()
+    }
+  },
+)
 
 onMounted(() => {
   fetchLectureDetails()
@@ -739,7 +744,6 @@ onMounted(() => {
 
 .btn-enroll:hover {
   background-color: #0056b3;
-  transform: translateY(-2px);
 }
 
 .btn-take-lecture {
@@ -749,7 +753,6 @@ onMounted(() => {
 
 .btn-take-lecture:hover {
   background-color: #218838;
-  transform: translateY(-2px);
 }
 
 .btn-add-cart {
@@ -759,7 +762,6 @@ onMounted(() => {
 
 .btn-add-cart:hover {
   background-color: #5a6268;
-  transform: translateY(-2px);
 }
 
 .btn-delete-lecture {
@@ -769,7 +771,6 @@ onMounted(() => {
 
 .btn-delete-lecture:hover {
   background-color: #c82333;
-  transform: translateY(-2px);
 }
 
 .watch-time-info {
