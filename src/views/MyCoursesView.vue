@@ -105,10 +105,10 @@ onMounted(() => {
 <style scoped>
 .my-courses-page {
   padding: 30px;
-  max-width: 1200px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   box-sizing: border-box;
-  min-height: calc(100vh - 100px); /* 푸터 공간 확보 등 필요에 따라 조절 */
+  min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
 }
@@ -149,19 +149,13 @@ onMounted(() => {
 
 .my-lecture-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
   padding: 20px 0;
   flex-grow: 1;
-  justify-items: center;
 }
 
-/* 미디어 쿼리 (CoursesView와 동일하게 적용) */
 @media (max-width: 1024px) {
-  .my-lecture-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
   .my-courses-page {
     padding: 20px;
   }
@@ -169,8 +163,8 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .my-lecture-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
   }
   .my-courses-page {
     padding: 15px;
@@ -180,6 +174,13 @@ onMounted(() => {
   }
   .my-courses-header p {
     font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .my-lecture-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 }
 </style>
