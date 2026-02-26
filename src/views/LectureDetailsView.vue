@@ -608,8 +608,6 @@ onMounted(() => {
 .content-and-sidebar-wrapper {
   display: flex;
   gap: 30px;
-  flex-wrap: wrap;
-  /* 데스크톱에서는 flex-direction 기본값인 row가 유지됩니다. (main-lecture-content 왼쪽에, sidebar-actions 오른쪽에) */
 }
 
 .main-lecture-content {
@@ -810,6 +808,9 @@ onMounted(() => {
   }
   .detail-container {
     padding: 20px;
+  }
+  .content-and-sidebar-wrapper {
+    flex-direction: column;
   }
   .lecture-title {
     font-size: 28px;
