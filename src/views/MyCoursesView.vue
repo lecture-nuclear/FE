@@ -12,7 +12,8 @@
     </div>
 
     <div v-else>
-      <div v-if="myLectures.length > 0" class="my-lecture-grid">
+      <!-- 그리드 뷰 (데스크탑) -->
+      <div v-if="myLectures.length > 0 && !isMobile" class="my-lecture-grid">
         <LectureItem
           v-for="lecture in myLectures"
           :key="lecture.id"
@@ -21,6 +22,19 @@
           :showCancelButton="true"
           @viewDetails="handleViewDetails"
           @addToCart="handleAddToCartComposables"
+          @cancelEnroll="handleCancelEnroll"
+        />
+      </div>
+
+      <!-- 리스트 뷰 (모바일) -->
+      <div v-else-if="myLectures.length > 0 && isMobile" class="my-lecture-list">
+        <LectureListItem
+          v-for="lecture in myLectures"
+          :key="lecture.id"
+          :lecture="lecture"
+          :noCartButton="true"
+          :showCancelButton="true"
+          @viewDetails="handleViewDetails"
           @cancelEnroll="handleCancelEnroll"
         />
       </div>
@@ -33,12 +47,15 @@
 import { ref, onMounted } from 'vue'
 import axiosInstance from '@/utils/axiosInstance'
 import LectureItem from '@/components/lectures/LectureItem.vue'
+import LectureListItem from '@/components/lectures/LectureListItem.vue'
 import { useRouter } from 'vue-router'
-import { useCartActions } from '@/composables/useCartActions' // 장바구니 관련 컴포저블 재활용
+import { useCartActions } from '@/composables/useCartActions'
 import { useUserStore } from '@/stores/userStore'
+import { useMobileView } from '@/composables/useMobileView'
 
 const router = useRouter()
-const { handleAddToCart: handleAddToCartComposables } = useCartActions() // composable 함수 임포트 및 별칭 사용
+const { handleAddToCart: handleAddToCartComposables } = useCartActions()
+const { isMobile } = useMobileView()
 
 const myLectures = ref([])
 const loading = ref(true)
@@ -156,7 +173,12 @@ onMounted(() => {
   justify-items: center;
 }
 
-/* 미디어 쿼리 (CoursesView와 동일하게 적용) */
+.my-lecture-list {
+  padding: 20px 0;
+  flex-grow: 1;
+}
+
+/* 미디어 쿼리 */
 @media (max-width: 1024px) {
   .my-lecture-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -168,10 +190,6 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .my-lecture-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
   .my-courses-page {
     padding: 15px;
   }
