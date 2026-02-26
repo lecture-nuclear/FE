@@ -384,22 +384,14 @@ watch(
 }
 
 .lecture-grid {
-  /* 🚩 이전 버전의 그리드 레이아웃으로 복원 */
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3개의 동일한 너비의 열 생성 */
-  gap: 25px; /* 아이템 간 간격 */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
   padding: 20px 0;
   flex-grow: 1;
-  justify-items: center; /* 그리드 아이템들을 셀의 중앙에 정렬 */
 }
 
-/* � 개별 미디어 쿼리의 grid-template-columns 복원 */
 @media (max-width: 1024px) {
-  /* 태블릿 */
-  .lecture-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2열로 변경 */
-    gap: 20px;
-  }
   .courses-page {
     padding: 20px;
   }
@@ -410,10 +402,9 @@ watch(
 }
 
 @media (max-width: 768px) {
-  /* 모바일 */
   .lecture-grid {
-    grid-template-columns: 1fr; /* 1열로 변경 */
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
   }
   .courses-page {
     padding: 15px;
@@ -432,6 +423,13 @@ watch(
     position: static; /* 절대 위치 해제 */
     margin-top: 20px; /* 헤더 아래로 이동 */
     justify-content: center; /* 중앙 정렬 */
+  }
+}
+
+@media (max-width: 480px) {
+  .lecture-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 }
 
