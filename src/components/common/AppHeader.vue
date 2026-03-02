@@ -8,8 +8,8 @@
         to="/"
         class="flex items-center text-3xl font-extrabold text-gray-800 no-underline whitespace-nowrap px-2.5 py-1.5 rounded-md transition-colors duration-200 hover:bg-gray-100"
       >
-        <img src="@/assets/logo.svg" alt="MyService Logo" class="h-9 mr-2.5" />
-        <span>Lecture</span>
+        <img src="@/assets/logo.png" alt="MyService Logo" class="h-9 mr-2.5" />
+        <span>new clear</span>
       </router-link>
     </div>
 
