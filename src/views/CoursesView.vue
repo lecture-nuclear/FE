@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <!-- 한 페이지당 강의 개수 선택 드롭다운 -->
+    <!-- 한 페이지당 강의 개수 선택 -->
     <div class="page-size-selector">
       <label for="pageSizeSelect">개수 보기:</label>
       <select
@@ -45,8 +45,20 @@
     </div>
 
     <div v-else>
-      <div v-if="lectures.length > 0" class="lecture-grid">
+      <!-- 그리드 뷰 (데스크탑) -->
+      <div v-if="lectures.length > 0 && !isMobile" class="lecture-grid">
         <LectureItem
+          v-for="lecture in lectures"
+          :key="lecture.id"
+          :lecture="lecture"
+          @viewDetails="handleViewDetails"
+          @addToCart="handleAddToCartComposables"
+        />
+      </div>
+
+      <!-- 리스트 뷰 (모바일) -->
+      <div v-else-if="lectures.length > 0 && isMobile" class="lecture-list">
+        <LectureListItem
           v-for="lecture in lectures"
           :key="lecture.id"
           :lecture="lecture"
@@ -96,12 +108,15 @@
 import { ref, onMounted, watch } from 'vue'
 import axiosInstance from '@/utils/axiosInstance'
 import LectureItem from '@/components/lectures/LectureItem.vue'
+import LectureListItem from '@/components/lectures/LectureListItem.vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useCartActions } from '@/composables/useCartActions' // 새로운 컴포저블 임포트
+import { useCartActions } from '@/composables/useCartActions'
+import { useMobileView } from '@/composables/useMobileView'
 
 const router = useRouter()
 const route = useRoute()
-const { handleAddToCart: handleAddToCartComposables } = useCartActions() // composable 함수 임포트 및 별칭 사용
+const { handleAddToCart: handleAddToCartComposables } = useCartActions()
+const { isMobile } = useMobileView()
 
 const lectures = ref([])
 const loading = ref(true)
@@ -296,6 +311,11 @@ watch(
 
 .clear-button:hover {
   background-color: #5a6268;
+}
+
+.lecture-list {
+  padding: 20px 0;
+  flex-grow: 1;
 }
 
 .page-size-selector {

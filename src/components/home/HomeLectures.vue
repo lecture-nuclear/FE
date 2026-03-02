@@ -11,12 +11,24 @@
       <button @click="loadLectures" class="retry-btn">다시 시도</button>
     </div>
 
-    <div v-else-if="loadedLectures.length > 0" class="lectures-grid">
+    <!-- 그리드 뷰 (데스크탑) -->
+    <div v-else-if="loadedLectures.length > 0 && !isMobile" class="lectures-grid">
       <LectureItem
         v-for="lecture in loadedLectures"
         :key="lecture.id"
         :lecture="lecture"
         :no-cart-button="false"
+        @view-details="handleViewDetails"
+        @add-to-cart="handleAddToCart"
+      />
+    </div>
+
+    <!-- 리스트 뷰 (모바일) -->
+    <div v-else-if="loadedLectures.length > 0 && isMobile" class="lectures-list">
+      <LectureListItem
+        v-for="lecture in loadedLectures"
+        :key="lecture.id"
+        :lecture="lecture"
         @view-details="handleViewDetails"
         @add-to-cart="handleAddToCart"
       />
@@ -32,7 +44,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import LectureItem from '@/components/lectures/LectureItem.vue'
+import LectureListItem from '@/components/lectures/LectureListItem.vue'
 import { useCartActions } from '@/composables/useCartActions'
+import { useMobileView } from '@/composables/useMobileView'
 import axiosInstance from '@/utils/axiosInstance'
 
 const props = defineProps({
@@ -51,6 +65,7 @@ const emit = defineEmits(['navigate'])
 
 const router = useRouter()
 const { addToCart } = useCartActions()
+const { isMobile } = useMobileView()
 
 const isLoading = ref(false)
 const error = ref(null)
@@ -214,6 +229,10 @@ onMounted(() => {
   }
 }
 
+.lectures-list {
+  width: 100%;
+}
+
 @media (max-width: 480px) {
   .home-lectures {
     padding: 0 10px;
@@ -222,11 +241,6 @@ onMounted(() => {
 
   .lectures-header h2 {
     font-size: 1.6rem;
-  }
-
-  .lectures-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
   }
 
   .loading-container,
