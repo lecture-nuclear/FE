@@ -70,7 +70,6 @@ const backupInterval = ref(null)
 const isSendingData = ref(false)
 
 const lectureId = ref(route.params.lectureId)
-const videoIndex = ref(parseInt(route.params.videoIndex))
 const videoUrl = ref(route.query.url)
 // 비디오 소스 URL (상대 경로 → 절대 경로 변환, YouTube가 아닌 경우)
 const videoSrcUrl = computed(() => {
@@ -251,7 +250,7 @@ const initializePlayer = async () => {
 
     // YouTube 링크 체크
     const youtubeRegex =
-      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+      /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
     const youtubeMatch = videoUrl.value.match(youtubeRegex)
 
     if (youtubeMatch) {
@@ -543,7 +542,48 @@ watch(
 .video-container {
   position: relative;
   width: 100%;
+  aspect-ratio: 16 / 9;
   margin-bottom: 30px;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video-container :deep(.plyr),
+.video-container :deep(.plyr__video-wrapper),
+.video-container :deep(.plyr__video-embed),
+.video-container :deep(video),
+.video-container :deep(iframe) {
+  width: 100%;
+  height: 100%;
+}
+
+.video-container :deep(.plyr) {
+  border-radius: 0;
+}
+
+.video-container :deep(.plyr__video-embed) {
+  position: absolute;
+  inset: 0;
+  padding-bottom: 0;
+}
+
+.video-container :deep(video) {
+  object-fit: contain;
+  background-color: #000;
+}
+
+.video-container :deep(.plyr__poster) {
+  background-size: cover;
+}
+
+.video-container :deep(.plyr--fullscreen),
+.video-container :deep(.plyr--fullscreen .plyr__video-wrapper),
+.video-container :deep(.plyr--fullscreen .plyr__video-embed),
+.video-container :deep(.plyr--fullscreen video),
+.video-container :deep(.plyr--fullscreen iframe) {
+  width: 100vw;
+  height: 100vh;
 }
 
 .video-info {
@@ -567,6 +607,8 @@ watch(
 
 /* Plyr 커스터마이징 */
 :deep(.plyr) {
+  width: 100%;
+  height: 100%;
   border-radius: 8px;
   overflow: hidden;
 }
