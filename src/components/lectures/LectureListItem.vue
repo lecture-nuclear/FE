@@ -1,15 +1,15 @@
 <template>
   <div
-    class="bg-white rounded-xl shadow-md overflow-hidden flex w-full transition-all duration-300 hover:bg-gray-50 cursor-pointer mb-3"
+    class="bg-white rounded-xl shadow-md overflow-hidden flex w-full h-[160px] md:h-[190px] transition-all duration-300 hover:bg-gray-50 cursor-pointer mb-3"
     @click="viewDetails"
   >
     <!-- 썸네일 -->
-    <div class="flex-none w-[110px] md:w-[180px] overflow-hidden">
+    <div class="flex-none w-[110px] md:w-[180px] h-full overflow-hidden">
       <img :src="thumbnailSrc" :alt="lecture.title" class="w-full h-full object-cover block" />
     </div>
 
     <!-- 콘텐츠 영역 -->
-    <div class="flex flex-col flex-1 px-3 py-3 md:px-5 md:py-4">
+    <div class="flex flex-col flex-1 h-full min-w-0 px-3 py-3 md:px-5 md:py-4">
       <!-- 제목 + 설명 -->
       <h3
         class="text-sm md:text-lg font-bold text-gray-800 mb-1 leading-snug overflow-hidden [-webkit-line-clamp:2] [-webkit-box-orient:vertical] [display:-webkit-box]"
