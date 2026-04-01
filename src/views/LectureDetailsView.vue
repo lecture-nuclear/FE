@@ -87,7 +87,10 @@
               장바구니 담기
             </button>
 
-            <!-- 관리자 전용 삭제 버튼 -->
+            <button v-if="isAdmin()" @click="handleEditLecture" class="btn-edit-lecture">
+              강의 수정
+            </button>
+
             <button v-if="isAdmin()" @click="handleDeleteLecture" class="btn-delete-lecture">
               강의 삭제
             </button>
@@ -442,6 +445,18 @@ const handleDeleteLecture = async () => {
   }
 }
 
+const handleEditLecture = () => {
+  if (!lectureDetails.value) {
+    alert('강의 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+    return
+  }
+
+  router.push({
+    name: 'EditLecture',
+    params: { lectureId: lectureDetails.value.id },
+  })
+}
+
 const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -718,6 +733,7 @@ onMounted(() => {
 .btn-enroll,
 .btn-take-lecture,
 .btn-add-cart,
+.btn-edit-lecture,
 .btn-delete-lecture {
   padding: 15px 30px;
   border: none;
@@ -766,6 +782,15 @@ onMounted(() => {
 
 .btn-delete-lecture:hover {
   background-color: #c82333;
+}
+
+.btn-edit-lecture {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-edit-lecture:hover {
+  background-color: #d97706;
 }
 
 .watch-time-info {
@@ -834,6 +859,7 @@ onMounted(() => {
   .btn-enroll,
   .btn-take-lecture,
   .btn-add-cart,
+  .btn-edit-lecture,
   .btn-delete-lecture,
   .watch-time-info {
     width: 100%;

@@ -71,6 +71,12 @@ const router = createRouter({
       // meta: { requiresAuth: true, requiresAdmin: true }, // 관리자만 접근 가능
     },
     {
+      path: '/admin/lectures/:lectureId/edit',
+      name: 'EditLecture',
+      component: UploadCourseView,
+      // meta: { requiresAuth: true, requiresAdmin: true }, // 관리자만 접근 가능
+    },
+    {
       path: '/lectures/:lectureId/video/:videoId',
       name: 'VideoPlayer',
       component: VideoPlayerView,

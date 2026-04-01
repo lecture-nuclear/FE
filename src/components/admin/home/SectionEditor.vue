@@ -168,32 +168,92 @@
       <!-- 강의 타입 편집 -->
       <div v-else-if="section.type === 'lectures'" class="editor-fields">
         <div class="field-group">
-          <label>표시할 강의 선택</label>
+          <label>표시할 대표 강의 선택</label>
           <div class="lecture-selector">
-            <div class="selected-lectures">
+            <div class="lecture-search">
+              <div class="lecture-search-controls">
+                <input
+                  v-model.trim="lectureSearchKeyword"
+                  type="text"
+                  placeholder="강의 제목으로 검색"
+                  @keyup.enter="searchLectures"
+                />
+                <button type="button" @click="searchLectures" class="btn-add-lecture">
+                  검색
+                </button>
+                <button
+                  v-if="lectureSearchKeyword"
+                  type="button"
+                  @click="clearLectureSearch"
+                  class="btn-reset-search"
+                >
+                  초기화
+                </button>
+              </div>
+              <p class="lecture-search-help">검색 결과에서 강의를 선택하면 대표 강의 목록에 추가됩니다.</p>
+            </div>
+
+            <div v-if="lectureSearchError" class="lecture-feedback lecture-feedback-error">
+              {{ lectureSearchError }}
+            </div>
+            <div v-else-if="lectureSearchLoading" class="lecture-feedback">
+              강의 목록을 불러오는 중입니다...
+            </div>
+            <div v-else-if="lectureOptions.length === 0" class="lecture-feedback">
+              검색 결과가 없습니다.
+            </div>
+            <div v-else class="lecture-search-results">
+              <button
+                v-for="lecture in lectureOptions"
+                :key="lecture.id"
+                type="button"
+                class="lecture-option"
+                :class="{ selected: isLectureSelected(lecture.id) }"
+                :disabled="isLectureSelected(lecture.id)"
+                @click="addLecture(lecture)"
+              >
+                <img
+                  :src="getLectureThumbnail(lecture)"
+                  :alt="lecture.title || `강의 ${lecture.id}`"
+                  class="lecture-option-thumbnail"
+                />
+                <div class="lecture-option-content">
+                  <strong>{{ lecture.title || `강의 #${lecture.id}` }}</strong>
+                  <span>강의 ID: {{ lecture.id }}</span>
+                  <p>{{ lecture.description || '설명 없음' }}</p>
+                </div>
+                <span class="lecture-option-action">
+                  {{ isLectureSelected(lecture.id) ? '선택됨' : '추가' }}
+                </span>
+              </button>
+            </div>
+
+            <div v-if="selectedLectures.length === 0" class="lecture-feedback">
+              아직 선택된 대표 강의가 없습니다.
+            </div>
+            <div v-else class="selected-lectures">
               <div 
-                v-for="(lectureId, lecIndex) in localSection.lectures" 
-                :key="lecIndex"
+                v-for="(lecture, lecIndex) in selectedLectures"
+                :key="`${lecture.id}-${lecIndex}`"
                 class="selected-lecture"
               >
-                <span>강의 ID: {{ lectureId }}</span>
+                <img
+                  :src="getLectureThumbnail(lecture)"
+                  :alt="lecture.title || `강의 ${lecture.id}`"
+                  class="selected-lecture-thumbnail"
+                />
+                <div class="selected-lecture-info">
+                  <strong>{{ lecture.title || `강의 #${lecture.id}` }}</strong>
+                  <span>강의 ID: {{ lecture.id }}</span>
+                </div>
                 <button 
                   @click="removeLecture(lecIndex)"
                   class="btn-remove-small"
+                  type="button"
                 >
                   ×
                 </button>
               </div>
-            </div>
-            
-            <div class="add-lecture">
-              <input 
-                v-model.number="newLectureId" 
-                type="number" 
-                placeholder="강의 ID 입력"
-                @keyup.enter="addLecture"
-              />
-              <button @click="addLecture" class="btn-add-lecture">추가</button>
             </div>
           </div>
         </div>
@@ -258,6 +318,7 @@
 <script setup>
 import { ref, reactive, watch, computed, nextTick } from 'vue'
 import { uploadHomeImage, validateImageFile } from '@/services/homeService'
+import { getLectureById, getLectureList } from '@/services/lectureService'
 import { getFileUrl } from '@/utils/axiosInstance'
 
 const props = defineProps({
@@ -275,9 +336,13 @@ const emit = defineEmits(['update', 'delete', 'move-up', 'move-down'])
 
 // 로컬 섹션 데이터 (편집용)
 const localSection = reactive({ ...props.section })
-const newLectureId = ref('')
 const fileInput = ref(null)
 const currentCarouselImageIndex = ref(null)
+const lectureSearchKeyword = ref('')
+const lectureSearchLoading = ref(false)
+const lectureSearchError = ref('')
+const lectureOptions = ref([])
+const selectedLectureDetails = ref({})
 
 // 이미지 미리보기 URL (상대경로 → 절대경로 변환)
 const previewImageUrl = computed(() => getFileUrl(localSection.img))
@@ -285,10 +350,19 @@ const previewImageUrl = computed(() => getFileUrl(localSection.img))
 // 캐러셀 이미지 미리보기 URL
 const getCarouselImageUrl = (imgPath) => getFileUrl(imgPath)
 
-// props 변경 시 로컬 데이터 동기화
-watch(() => props.section, (newSection) => {
+const syncLocalSection = (newSection) => {
+  Object.keys(localSection).forEach((key) => {
+    if (!(key in newSection)) {
+      delete localSection[key]
+    }
+  })
+
   Object.assign(localSection, newSection)
-}, { deep: true })
+
+  if (!Array.isArray(localSection.lectures)) {
+    localSection.lectures = []
+  }
+}
 
 // 섹션 타입명 반환
 const getSectionTypeName = (type) => {
@@ -296,7 +370,7 @@ const getSectionTypeName = (type) => {
     image: '배너 이미지',
     carousel: '이미지 캐러셀',
     markdown: '마크다운 텍스트',
-    lectures: '추천 강의',
+    lectures: '대표 강의',
     button: '액션 버튼'
   }
   return typeNames[type] || type
@@ -396,23 +470,133 @@ const removeCarouselImage = (index) => {
   updateSection()
 }
 
-// 강의 추가
-const addLecture = () => {
-  if (!newLectureId.value || isNaN(newLectureId.value)) {
-    alert('유효한 강의 ID를 입력하세요.')
+const selectedLectures = computed(() => {
+  const lectureIds = Array.isArray(localSection.lectures) ? localSection.lectures : []
+
+  return lectureIds.map((lectureId) => {
+    return (
+      selectedLectureDetails.value[lectureId] || {
+        id: lectureId,
+        title: `강의 #${lectureId}`,
+        description: '',
+        thumbnailUrl: '',
+      }
+    )
+  })
+})
+
+const isLectureSelected = (lectureId) => {
+  return Array.isArray(localSection.lectures) && localSection.lectures.includes(lectureId)
+}
+
+const getLectureThumbnail = (lecture) => {
+  return (
+    getFileUrl(lecture?.thumbnailUrl) ||
+    'https://placehold.co/120x80/DBEAFE/1D4ED8?text=Lecture'
+  )
+}
+
+const searchLectures = async () => {
+  try {
+    lectureSearchLoading.value = true
+    lectureSearchError.value = ''
+
+    const response = await getLectureList({
+      pageNo: 0,
+      size: 50,
+      criteria: 'createdAt',
+      keyword: lectureSearchKeyword.value,
+    })
+
+    lectureOptions.value = response?.data?.lectures || []
+  } catch (error) {
+    console.error('강의 검색 실패:', error)
+    lectureOptions.value = []
+    lectureSearchError.value = '강의 목록을 불러오지 못했습니다.'
+  } finally {
+    lectureSearchLoading.value = false
+  }
+}
+
+const clearLectureSearch = () => {
+  lectureSearchKeyword.value = ''
+  searchLectures()
+}
+
+const loadSelectedLectureDetails = async () => {
+  const lectureIds = Array.isArray(localSection.lectures) ? localSection.lectures : []
+  const missingLectureIds = lectureIds.filter((lectureId) => !selectedLectureDetails.value[lectureId])
+
+  if (missingLectureIds.length === 0) {
     return
   }
-  
-  if (!localSection.lectures) {
+
+  try {
+    const lectureResponses = await Promise.all(
+      missingLectureIds.map(async (lectureId) => {
+        try {
+          const response = await getLectureById(lectureId)
+          return response?.data || { id: lectureId, title: `강의 #${lectureId}` }
+        } catch (error) {
+          console.warn(`강의 정보 로드 실패 - lectureId: ${lectureId}`, error)
+          return { id: lectureId, title: `강의 #${lectureId}` }
+        }
+      }),
+    )
+
+    const lectureDetailMap = lectureResponses.reduce((acc, lecture) => {
+      acc[lecture.id] = lecture
+      return acc
+    }, {})
+
+    selectedLectureDetails.value = {
+      ...selectedLectureDetails.value,
+      ...lectureDetailMap,
+    }
+  } catch (error) {
+    console.error('선택된 강의 정보 로드 실패:', error)
+  }
+}
+
+// props 변경 시 로컬 데이터 동기화
+watch(() => props.section, (newSection) => {
+  syncLocalSection(newSection)
+
+  if (newSection.type === 'lectures' && lectureOptions.value.length === 0) {
+    searchLectures()
+  }
+}, { deep: true, immediate: true })
+
+watch(
+  () => localSection.lectures,
+  () => {
+    if (props.section.type === 'lectures') {
+      loadSelectedLectureDetails()
+    }
+  },
+  { deep: true, immediate: true },
+)
+
+// 강의 추가
+const addLecture = (lecture) => {
+  if (!lecture?.id) {
+    return
+  }
+
+  if (!Array.isArray(localSection.lectures)) {
     localSection.lectures = []
   }
-  
-  if (!localSection.lectures.includes(newLectureId.value)) {
-    localSection.lectures.push(newLectureId.value)
-    updateSection()
+
+  if (localSection.lectures.includes(lecture.id)) {
+    return
   }
-  
-  newLectureId.value = ''
+
+  localSection.lectures.push(lecture.id)
+  selectedLectureDetails.value = {
+    ...selectedLectureDetails.value,
+    [lecture.id]: lecture,
+  }
+  updateSection()
 }
 
 // 강의 제거
@@ -655,44 +839,165 @@ const removeLecture = (index) => {
   padding: 15px;
 }
 
+.lecture-search {
+  margin-bottom: 16px;
+}
+
+.lecture-search-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.lecture-search-controls input {
+  flex: 1;
+}
+
+.lecture-search-help {
+  margin: 8px 0 0;
+  color: #7f8c8d;
+  font-size: 13px;
+}
+
+.lecture-feedback {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  color: #475569;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.lecture-feedback-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.lecture-search-results {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.lecture-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #dbe4ee;
+  border-radius: 10px;
+  background-color: white;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.lecture-option:hover:not(:disabled) {
+  border-color: #3498db;
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.12);
+}
+
+.lecture-option:disabled {
+  cursor: default;
+}
+
+.lecture-option.selected {
+  border-color: #93c5fd;
+  background-color: #eff6ff;
+}
+
+.lecture-option-thumbnail {
+  width: 72px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.lecture-option-content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lecture-option-content strong,
+.selected-lecture-info strong {
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.lecture-option-content span,
+.selected-lecture-info span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.lecture-option-content p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lecture-option-action {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .selected-lectures {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 15px;
+  flex-direction: column;
+  gap: 10px;
   min-height: 32px;
 }
 
 .selected-lecture {
   display: flex;
   align-items: center;
-  gap: 5px;
-  background-color: #3498db;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 14px;
+  gap: 12px;
+  background-color: #f8fafc;
+  color: #0f172a;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #dbe4ee;
+}
+
+.selected-lecture-thumbnail {
+  width: 72px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.selected-lecture-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .btn-remove-small {
-  background: none;
+  background-color: #fee2e2;
   border: none;
-  color: white;
+  color: #b91c1c;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
-  padding: 0;
-  margin-left: 5px;
-}
-
-.add-lecture {
-  display: flex;
-  gap: 10px;
-}
-
-.add-lecture input {
-  flex: 1;
-  margin: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
 }
 
 .btn-add-lecture {
@@ -708,6 +1013,21 @@ const removeLecture = (index) => {
 
 .btn-add-lecture:hover {
   background-color: #219a52;
+}
+
+.btn-reset-search {
+  background-color: #e2e8f0;
+  color: #334155;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.btn-reset-search:hover {
+  background-color: #cbd5e1;
 }
 
 /* 반응형 디자인 */
@@ -728,8 +1048,11 @@ const removeLecture = (index) => {
     flex-direction: column;
     gap: 5px;
   }
-  
-  .add-lecture {
+
+  .lecture-search-controls,
+  .lecture-option,
+  .selected-lecture {
     flex-direction: column;
+    align-items: stretch;
   }
 }</style>

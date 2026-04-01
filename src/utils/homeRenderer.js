@@ -133,7 +133,7 @@ const validateSectionByType = (section, sectionNum) => {
       
     case 'lectures':
       if (!section.lectures || !Array.isArray(section.lectures) || section.lectures.length === 0) {
-        errors.push(`섹션 ${sectionNum}: 강의 ID 배열이 필요합니다`)
+        errors.push(`섹션 ${sectionNum}: 대표 강의를 한 개 이상 선택해주세요`)
       }
       break
       
