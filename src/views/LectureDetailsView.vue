@@ -244,6 +244,15 @@ const handleEnrollLecture = async () => {
     return
   }
 
+  if (!userStore.getMemberId) {
+    await userStore.checkLoginStatus().catch(() => {})
+  }
+
+  if (!userStore.getMemberId) {
+    alert('사용자 정보를 다시 불러오지 못했습니다. 다시 로그인해주세요.')
+    return
+  }
+
   if (!lectureDetails.value) {
     alert('강의 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
     return
