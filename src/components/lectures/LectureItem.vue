@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col transition-all duration-300 w-full max-w-[320px] m-4 hover:bg-gray-50"
+    class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col w-full h-full transition-all duration-300 hover:bg-gray-50 hover:shadow-lg"
   >
     <div class="w-full h-[200px] overflow-hidden">
       <img :src="thumbnailSrc" :alt="lecture.title" class="w-full h-full object-cover block" />
@@ -12,7 +12,7 @@
         {{ lecture.title }}
       </h3>
       <p
-        class="text-sm text-gray-600 leading-6 mb-4 h-[3em] overflow-hidden text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:3] [display:-webkit-box]"
+        class="text-sm text-gray-600 leading-6 mb-4 h-[4.5em] overflow-hidden text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:3] [display:-webkit-box]"
       >
         {{ lecture.description }}
       </p>

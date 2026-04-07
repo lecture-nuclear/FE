@@ -12,7 +12,10 @@
     </div>
 
     <!-- 그리드 뷰 (데스크탑) -->
-    <div v-else-if="loadedLectures.length > 0 && !isMobile" class="lectures-grid">
+    <div
+      v-else-if="loadedLectures.length > 0 && !isMobile"
+      :class="['lectures-grid', 'lecture-grid-layout', lectureGridClass]"
+    >
       <LectureItem
         v-for="lecture in loadedLectures"
         :key="lecture.id"
@@ -48,6 +51,7 @@ import LectureListItem from '@/components/lectures/LectureListItem.vue'
 import { useCartActions } from '@/composables/useCartActions'
 import { useMobileView } from '@/composables/useMobileView'
 import axiosInstance from '@/utils/axiosInstance'
+import { getLectureGridClass } from '@/utils/lectureGrid'
 
 const props = defineProps({
   lectures: {
@@ -70,6 +74,7 @@ const { isMobile } = useMobileView()
 const isLoading = ref(false)
 const error = ref(null)
 const loadedLectures = ref([])
+const lectureGridClass = computed(() => getLectureGridClass(loadedLectures.value.length))
 
 // 강의 정보 로드
 const loadLectures = async () => {
@@ -190,9 +195,6 @@ onMounted(() => {
 }
 
 .lectures-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
   max-width: var(--page-max-width);
   margin: 0 auto;
 }
@@ -223,10 +225,6 @@ onMounted(() => {
     font-size: 1rem;
   }
 
-  .lectures-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-  }
 }
 
 .lectures-list {

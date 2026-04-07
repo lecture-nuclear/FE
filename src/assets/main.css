@@ -13,3 +13,57 @@
   padding: 0;
   font-weight: normal;
 }
+
+.lecture-grid-layout {
+  display: grid;
+  gap: 30px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.lecture-grid-layout.lecture-grid--1 {
+  grid-template-columns: minmax(0, 340px);
+  max-width: 340px;
+  justify-content: center;
+}
+
+.lecture-grid-layout.lecture-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 340px));
+  max-width: 710px;
+  justify-content: center;
+}
+
+.lecture-grid-layout.lecture-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 340px));
+  max-width: 1080px;
+  justify-content: center;
+}
+
+.lecture-grid-layout.lecture-grid--4plus {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .lecture-grid-layout {
+    gap: 20px;
+  }
+
+  .lecture-grid-layout.lecture-grid--2,
+  .lecture-grid-layout.lecture-grid--3,
+  .lecture-grid-layout.lecture-grid--4plus {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .lecture-grid-layout,
+  .lecture-grid-layout.lecture-grid--1,
+  .lecture-grid-layout.lecture-grid--2,
+  .lecture-grid-layout.lecture-grid--3,
+  .lecture-grid-layout.lecture-grid--4plus {
+    grid-template-columns: 1fr;
+    max-width: none;
+    gap: 15px;
+  }
+}

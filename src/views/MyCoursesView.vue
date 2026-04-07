@@ -13,7 +13,10 @@
 
     <div v-else>
       <!-- 그리드 뷰 (데스크탑) -->
-      <div v-if="myLectures.length > 0 && !isMobile" class="my-lecture-grid">
+      <div
+        v-if="myLectures.length > 0 && !isMobile"
+        :class="['my-lecture-grid', 'lecture-grid-layout', lectureGridClass]"
+      >
         <LectureItem
           v-for="lecture in myLectures"
           :key="lecture.id"
@@ -44,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axiosInstance from '@/utils/axiosInstance'
 import LectureItem from '@/components/lectures/LectureItem.vue'
 import LectureListItem from '@/components/lectures/LectureListItem.vue'
@@ -52,6 +55,7 @@ import { useRouter } from 'vue-router'
 import { useCartActions } from '@/composables/useCartActions'
 import { useUserStore } from '@/stores/userStore'
 import { useMobileView } from '@/composables/useMobileView'
+import { getLectureGridClass } from '@/utils/lectureGrid'
 
 const router = useRouter()
 const { handleAddToCart: handleAddToCartComposables } = useCartActions()
@@ -60,6 +64,7 @@ const { isMobile } = useMobileView()
 const myLectures = ref([])
 const loading = ref(true)
 const errorMessage = ref('')
+const lectureGridClass = computed(() => getLectureGridClass(myLectures.value.length))
 
 const userStore = useUserStore() // user 정보 pinia
 
@@ -165,9 +170,6 @@ onMounted(() => {
 }
 
 .my-lecture-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
   padding: 20px 0;
   flex-grow: 1;
 }
@@ -185,10 +187,6 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .my-lecture-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-  }
   .my-courses-page {
     padding: 15px;
   }
@@ -201,9 +199,5 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .my-lecture-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
 }
 </style>

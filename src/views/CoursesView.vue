@@ -46,7 +46,10 @@
 
     <div v-else>
       <!-- 그리드 뷰 (데스크탑) -->
-      <div v-if="lectures.length > 0 && !isMobile" class="lecture-grid">
+      <div
+        v-if="lectures.length > 0 && !isMobile"
+        :class="['lecture-grid', 'lecture-grid-layout', lectureGridClass]"
+      >
         <LectureItem
           v-for="lecture in lectures"
           :key="lecture.id"
@@ -105,13 +108,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import axiosInstance from '@/utils/axiosInstance'
 import LectureItem from '@/components/lectures/LectureItem.vue'
 import LectureListItem from '@/components/lectures/LectureListItem.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCartActions } from '@/composables/useCartActions'
 import { useMobileView } from '@/composables/useMobileView'
+import { getLectureGridClass } from '@/utils/lectureGrid'
 
 const router = useRouter()
 const route = useRoute()
@@ -128,6 +132,7 @@ const totalElements = ref(0)
 const searchKeyword = ref(route.query.keyword || '') // URL 쿼리 파라미터에서 검색어 가져오기
 
 const pageSizes = [6, 9, 12, 15]
+const lectureGridClass = computed(() => getLectureGridClass(lectures.value.length))
 
 const fetchLectures = async () => {
   loading.value = true
@@ -384,9 +389,6 @@ watch(
 }
 
 .lecture-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
   padding: 20px 0;
   flex-grow: 1;
 }
@@ -402,10 +404,6 @@ watch(
 }
 
 @media (max-width: 768px) {
-  .lecture-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-  }
   .courses-page {
     padding: 15px;
   }
@@ -427,10 +425,6 @@ watch(
 }
 
 @media (max-width: 480px) {
-  .lecture-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
 }
 
 /* Pagination Styles */
