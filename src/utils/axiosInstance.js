@@ -146,12 +146,6 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // 418 에러 (기존 로직 유지)
-    if (error.response.status === 418) {
-      console.warn('🫖 서버에서 418 에러 응답')
-      // 418 에러에 대한 특별한 처리가 필요하다면 여기에 추가
-    }
-
     // 기타 에러는 그대로 전달
     return Promise.reject(error)
   },

@@ -69,7 +69,7 @@ export function useCartActions() {
         } else if (error.response.status === 400) {
           // Bad Request: 유효하지 않은 요청 등
           alert(`장바구니 추가 실패: ${error.response.data.message || '요청이 잘못되었습니다.'}`)
-        } else if (error.response.status === 401 || error.response.status === 418) {
+        } else if (error.response.status === 401 || error.response.status === 403) {
           // Unauthorized (토큰 만료 등은 axiosInstance 인터셉터에서 처리)
           // 인터셉터가 로그인 페이지로 리디렉션하므로 여기서는 추가 메시지 필요 없음
           alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해주세요.')

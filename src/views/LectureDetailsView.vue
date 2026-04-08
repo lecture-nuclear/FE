@@ -294,7 +294,7 @@ const handleEnrollLecture = async () => {
         alert('이미 구매한 강의입니다.')
       } else if (error.response.status === 400) {
         alert(`구매 실패: ${error.response.data.message || '요청이 잘못되었습니다.'}`)
-      } else if (error.response.status === 401 || error.response.status === 418) {
+      } else if (error.response.status === 401 || error.response.status === 403) {
         alert('세션이 만료되었습니다. 다시 로그인해주세요.')
       } else {
         alert(`구매 중 오류가 발생했습니다: ${error.response.status}`)

@@ -110,7 +110,7 @@ src/
 
 - [ ] Responsive polish for mobile/tablet button layout and spacing
 - [ ] Improve user-facing API error messages
-- [ ] Remove frontend reliance on `418` auth handling and align with standard auth status codes
+- [x] Remove frontend reliance on `418` auth handling and align with standard auth status codes
 - [ ] Make logout / expired-token UX more robust after refresh edge cases
 
 ### Medium Priority
