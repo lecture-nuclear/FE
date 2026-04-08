@@ -1,7 +1,10 @@
 <template>
   <div class="settings-page">
     <div class="settings-header">
-      <h1>설정 ⚙️</h1>
+      <h1 class="page-title">
+        <PhGearSix :size="32" weight="duotone" />
+        <span>설정</span>
+      </h1>
     </div>
 
     <!-- 메인 컨텐츠 영역 -->
@@ -14,7 +17,7 @@
             :class="{ active: activeTab === 'profile' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">👤</span>
+            <PhUserCircle class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">프로필 정보</span>
           </button>
           <button
@@ -22,7 +25,7 @@
             :class="{ active: activeTab === 'nickname' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">✏️</span>
+            <PhPencilSimpleLine class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">닉네임 변경</span>
           </button>
           <button
@@ -30,7 +33,7 @@
             :class="{ active: activeTab === 'password' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">🔐</span>
+            <PhLockKey class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">비밀번호 변경</span>
           </button>
           <button
@@ -38,7 +41,7 @@
             :class="{ active: activeTab === 'delete' }"
             class="sidebar-tab danger-tab"
           >
-            <span class="tab-icon">⚠️</span>
+            <PhWarningCircle class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">회원탈퇴</span>
           </button>
         </nav>
@@ -49,7 +52,10 @@
         <!-- 프로필 정보 탭 -->
         <div v-if="activeTab === 'profile'" class="content-section">
           <div class="section-header">
-            <h2>👤 프로필 정보</h2>
+            <h2 class="section-title">
+              <PhUserCircle :size="24" weight="duotone" />
+              <span>프로필 정보</span>
+            </h2>
             <p>현재 계정의 기본 정보를 확인할 수 있습니다.</p>
           </div>
           <div class="user-info">
@@ -67,7 +73,10 @@
         <!-- 닉네임 변경 탭 -->
         <div v-if="activeTab === 'nickname'" class="content-section">
           <div class="section-header">
-            <h2>✏️ 닉네임 변경</h2>
+            <h2 class="section-title">
+              <PhPencilSimpleLine :size="24" weight="duotone" />
+              <span>닉네임 변경</span>
+            </h2>
             <p>다른 사용자에게 표시될 닉네임을 변경할 수 있습니다.</p>
           </div>
           <NicknameChangeForm />
@@ -76,7 +85,10 @@
         <!-- 비밀번호 변경 탭 -->
         <div v-if="activeTab === 'password'" class="content-section">
           <div class="section-header">
-            <h2>🔐 비밀번호 변경</h2>
+            <h2 class="section-title">
+              <PhLockKey :size="24" weight="duotone" />
+              <span>비밀번호 변경</span>
+            </h2>
             <p>계정 보안을 위해 주기적으로 비밀번호를 변경해주세요.</p>
           </div>
           <PasswordChangeForm />
@@ -85,7 +97,10 @@
         <!-- 회원탈퇴 탭 -->
         <div v-if="activeTab === 'delete'" class="content-section">
           <div class="section-header">
-            <h2>⚠️ 회원탈퇴</h2>
+            <h2 class="section-title danger-text">
+              <PhWarningCircle :size="24" weight="duotone" />
+              <span>회원탈퇴</span>
+            </h2>
             <p>계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
           </div>
           <AccountDeleteForm />
@@ -96,8 +111,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import {
+  PhGearSix,
+  PhLockKey,
+  PhPencilSimpleLine,
+  PhUserCircle,
+  PhWarningCircle,
+} from '@phosphor-icons/vue'
 import { useUserStore } from '@/stores/userStore'
 import NicknameChangeForm from '@/components/settings/NicknameChangeForm.vue'
 import PasswordChangeForm from '@/components/profile/PasswordChangeForm.vue'
@@ -148,6 +170,13 @@ const activeTab = computed({
   color: #2c3e50;
   margin-bottom: 10px;
   font-weight: 800;
+}
+
+.page-title,
+.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* 메인 컨텐츠 영역 */
@@ -216,8 +245,11 @@ const activeTab = computed({
 }
 
 .tab-icon {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 24px;
+  flex-shrink: 0;
 }
 
 .tab-text {
@@ -244,6 +276,10 @@ const activeTab = computed({
   color: #2c3e50;
   margin-bottom: 8px;
   font-weight: 700;
+}
+
+.danger-text {
+  color: #dc2626;
 }
 
 .section-header p {

@@ -3,7 +3,10 @@
     <!-- 리스트 뷰 -->
     <div v-if="viewMode === 'list'" class="flex flex-col">
       <div class="mb-7 pb-5 border-b-2 border-[#e1e8ed] text-center">
-        <h2 class="text-3xl text-gray-800 m-0">👥 사용자 관리</h2>
+        <h2 class="m-0 inline-flex items-center gap-3 text-3xl text-gray-800">
+          <PhUsersThree :size="30" weight="duotone" />
+          <span>사용자 관리</span>
+        </h2>
       </div>
 
       <!-- 검색 및 정렬 영역 -->
@@ -18,9 +21,10 @@
           />
           <button
             @click="handleSearch"
-            class="py-3 px-5 border-0 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600"
+            class="inline-flex items-center gap-2 py-3 px-5 border-0 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600"
           >
-            🔍 검색
+            <PhMagnifyingGlass :size="16" weight="bold" />
+            <span>검색</span>
           </button>
           <button
             @click="clearSearch"
@@ -65,9 +69,10 @@
 
             <button
               @click="refreshUsers"
-              class="py-2 px-4 bg-green-600 text-white border-0 rounded-md text-sm font-semibold cursor-pointer transition-colors duration-200 hover:bg-green-700"
+              class="inline-flex items-center gap-2 py-2 px-4 bg-green-600 text-white border-0 rounded-md text-sm font-semibold cursor-pointer transition-colors duration-200 hover:bg-green-700"
             >
-              🔄 새로고침
+              <PhArrowsClockwise :size="16" weight="bold" />
+              <span>새로고침</span>
             </button>
           </div>
         </div>
@@ -83,7 +88,10 @@
 
       <!-- 오류 상태 -->
       <div v-else-if="error" class="text-center py-15 text-red-600">
-        <p>❌ {{ error }}</p>
+        <p class="inline-flex items-center gap-2">
+          <PhXCircle :size="18" weight="fill" />
+          <span>{{ error }}</span>
+        </p>
         <button
           @click="fetchUsers"
           class="py-2.5 px-5 bg-red-600 text-white border-0 rounded-md cursor-pointer mt-2.5 hover:bg-red-700"
@@ -150,9 +158,10 @@
                 <td class="py-4 px-3 border-b border-[#e1e8ed] text-sm">
                   <button
                     @click="viewUserDetail(user)"
-                    class="py-1.5 px-3 bg-blue-500 text-white border-0 rounded-md cursor-pointer text-xs transition-colors duration-200 hover:bg-blue-600"
+                    class="inline-flex items-center gap-1.5 py-1.5 px-3 bg-blue-500 text-white border-0 rounded-md cursor-pointer text-xs transition-colors duration-200 hover:bg-blue-600"
                   >
-                    📋 상세보기
+                    <PhClipboardText :size="14" weight="duotone" />
+                    <span>상세보기</span>
                   </button>
                 </td>
               </tr>
@@ -163,7 +172,9 @@
 
       <!-- 사용자 없음 상태 -->
       <div v-else class="text-center py-20 text-gray-500">
-        <div class="text-5xl mb-5">👥</div>
+        <div class="mb-5 flex justify-center text-blue-500">
+          <PhUsersThree :size="52" weight="duotone" />
+        </div>
         <h3 class="text-2xl mb-2.5 text-gray-800">사용자가 없습니다</h3>
         <p v-if="searchKeyword" class="text-base">검색 조건에 맞는 사용자를 찾을 수 없습니다.</p>
         <p v-else class="text-base">등록된 사용자가 없습니다.</p>
@@ -176,11 +187,15 @@
         <div class="flex items-center gap-4">
           <button
             @click="closeDetail"
-            class="py-2.5 px-5 border-0 rounded-md cursor-pointer text-sm font-semibold transition-all duration-300 bg-gray-500 text-white hover:bg-gray-600"
+            class="inline-flex items-center gap-2 py-2.5 px-5 border-0 rounded-md cursor-pointer text-sm font-semibold transition-all duration-300 bg-gray-500 text-white hover:bg-gray-600"
           >
-            ◀ 뒤로가기
+            <PhCaretLeft :size="14" weight="bold" />
+            <span>뒤로가기</span>
           </button>
-          <h2 class="text-2xl text-gray-800 m-0">👤 사용자 상세 정보</h2>
+          <h2 class="m-0 inline-flex items-center gap-3 text-2xl text-gray-800">
+            <PhUserCircle :size="26" weight="duotone" />
+            <span>사용자 상세 정보</span>
+          </h2>
         </div>
       </div>
 
@@ -244,8 +259,9 @@
         </div>
 
         <div class="pt-5 border-t border-[#e1e8ed]">
-          <div class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            📊 계정 정보
+          <div class="mb-4 flex items-center gap-2 text-base font-semibold text-gray-800">
+            <PhChartBar :size="18" weight="duotone" />
+            <span>계정 정보</span>
           </div>
           <div class="grid grid-cols-1 gap-4 max-w-[300px]">
             <div class="bg-gray-50 border border-[#e1e8ed] p-5 rounded-lg text-center">
@@ -274,6 +290,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import {
+  PhArrowsClockwise,
+  PhCaretLeft,
+  PhChartBar,
+  PhClipboardText,
+  PhMagnifyingGlass,
+  PhUserCircle,
+  PhUsersThree,
+  PhXCircle,
+} from '@phosphor-icons/vue'
 import { getAllUsers } from '@/services/adminService'
 
 // 뷰 모드

@@ -3,9 +3,14 @@
     <!-- 리스트 뷰 -->
     <div v-if="viewMode === 'list'" class="list-view">
       <div class="editor-header">
-        <h2>📄 서비스 소개 관리</h2>
+        <h2 class="title-with-icon">
+          <PhFileText :size="26" weight="duotone" />
+          <span>서비스 소개 관리</span>
+        </h2>
         <div class="header-actions">
-          <button @click="openEditor('create')" class="btn-create" title="새로 생성">➕</button>
+          <button @click="openEditor('create')" class="btn-create btn-icon-only" title="새로 생성">
+            <PhPlus :size="18" weight="bold" />
+          </button>
           <button @click="openEditor('edit')" class="btn-edit" :disabled="!selectedAbout">
             수정
           </button>
@@ -26,9 +31,15 @@
         </div>
       </div>
 
-      <div v-if="loading" class="loading-message">⏳ 로딩 중...</div>
+      <div v-if="loading" class="loading-message status-message">
+        <PhSpinnerGap class="spin" :size="18" weight="bold" />
+        <span>로딩 중...</span>
+      </div>
 
-      <div v-else-if="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
+      <div v-else-if="errorMessage" class="error-message status-message">
+        <PhXCircle :size="18" weight="fill" />
+        <span>{{ errorMessage }}</span>
+      </div>
 
       <div v-else class="about-list">
         <div
@@ -49,20 +60,29 @@
           </div>
         </div>
 
-        <div v-if="aboutList.length === 0" class="empty-message">📭 등록된 About이 없습니다.</div>
+        <div v-if="aboutList.length === 0" class="empty-message status-message">
+          <PhTray :size="18" weight="duotone" />
+          <span>등록된 About이 없습니다.</span>
+        </div>
       </div>
 
       <div v-if="totalPages > 1" class="pagination">
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 0" class="btn-page">
-          ◀ 이전
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage === 0"
+          class="btn-page btn-with-icon"
+        >
+          <PhCaretLeft :size="14" weight="bold" />
+          <span>이전</span>
         </button>
         <span class="page-info">{{ currentPage + 1 }} / {{ totalPages }}</span>
         <button
           @click="goToPage(currentPage + 1)"
           :disabled="currentPage >= totalPages - 1"
-          class="btn-page"
+          class="btn-page btn-with-icon"
         >
-          다음 ▶
+          <span>다음</span>
+          <PhCaretRight :size="14" weight="bold" />
         </button>
       </div>
     </div>
@@ -71,8 +91,18 @@
     <div v-if="viewMode === 'editor'" class="editor-view">
       <div class="editor-header">
         <div class="header-left">
-          <button @click="closeEditor" class="btn-back">◀ 뒤로가기</button>
-          <h2>{{ editorMode === 'create' ? '➕ About 생성' : '✏️ About 편집' }}</h2>
+          <button @click="closeEditor" class="btn-back btn-with-icon">
+            <PhCaretLeft :size="16" weight="bold" />
+            <span>뒤로가기</span>
+          </button>
+          <h2 class="title-with-icon">
+            <component
+              :is="editorMode === 'create' ? PhPlusCircle : PhPencilSimpleLine"
+              :size="24"
+              weight="duotone"
+            />
+            <span>{{ editorMode === 'create' ? 'About 생성' : 'About 편집' }}</span>
+          </h2>
         </div>
       </div>
 
@@ -87,8 +117,13 @@
           ></textarea>
           <div class="editor-help">
             <small>
-              💡 HTML 태그 사용 가능: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;h2&gt;,
-              &lt;h3&gt;, &lt;ul&gt;, &lt;li&gt; 등
+              <span class="help-with-icon">
+                <PhLightbulbFilament :size="16" weight="duotone" />
+                <span>
+                  HTML 태그 사용 가능: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;,
+                  &lt;h2&gt;, &lt;h3&gt;, &lt;ul&gt;, &lt;li&gt; 등
+                </span>
+              </span>
             </small>
           </div>
         </div>
@@ -110,14 +145,33 @@
         <button @click="closeEditor" class="btn-cancel" :disabled="saving">취소</button>
       </div>
 
-      <div v-if="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
-      <div v-if="successMessage" class="success-message">✅ {{ successMessage }}</div>
+      <div v-if="errorMessage" class="error-message status-message">
+        <PhXCircle :size="18" weight="fill" />
+        <span>{{ errorMessage }}</span>
+      </div>
+      <div v-if="successMessage" class="success-message status-message">
+        <PhCheckCircle :size="18" weight="fill" />
+        <span>{{ successMessage }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import {
+  PhCaretLeft,
+  PhCaretRight,
+  PhCheckCircle,
+  PhFileText,
+  PhLightbulbFilament,
+  PhPencilSimpleLine,
+  PhPlus,
+  PhPlusCircle,
+  PhSpinnerGap,
+  PhTray,
+  PhXCircle,
+} from '@phosphor-icons/vue'
 import axiosInstance from '@/utils/axiosInstance'
 
 // 뷰 모드
@@ -344,6 +398,15 @@ onMounted(() => {
   margin: 0;
 }
 
+.title-with-icon,
+.btn-with-icon,
+.status-message,
+.help-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .header-left {
   display: flex;
   align-items: center;
@@ -375,8 +438,13 @@ button:disabled {
 .btn-create {
   background-color: #3498db;
   color: white;
-  font-size: 18px;
-  padding: 10px 15px;
+}
+
+.btn-icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
 }
 
 .btn-create:hover:not(:disabled) {
@@ -448,6 +516,16 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .about-item {

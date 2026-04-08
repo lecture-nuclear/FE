@@ -18,13 +18,9 @@
               <button
                 @click="logout"
                 title="로그아웃"
-                class="bg-transparent border-0 cursor-pointer p-1 rounded transition-all duration-200 flex items-center justify-center hover:bg-gray-100"
+                class="bg-transparent border-0 cursor-pointer p-1 rounded transition-all duration-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-red-600"
               >
-                <img
-                  src="@/assets/logout-svgrepo-com.svg"
-                  alt="로그아웃"
-                  class="w-4 h-4 transition-[filter] duration-200 hover:brightness-0 hover:saturate-100 hover:invert-[27%] hover:sepia-[93%] hover:saturate-[1352%] hover:hue-rotate-[336deg] hover:brightness-[93%] hover:contrast-[96%]"
-                />
+                <PhSignOut :size="16" weight="bold" aria-label="로그아웃" />
               </button>
             </div>
           </div>
@@ -124,6 +120,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { PhSignOut } from '@phosphor-icons/vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'

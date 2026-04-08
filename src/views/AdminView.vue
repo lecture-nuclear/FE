@@ -2,7 +2,10 @@
 <template>
   <div class="admin-page">
     <div class="admin-header">
-      <h1>관리자 페이지 ⚙️</h1>
+      <h1 class="page-title">
+        <PhGearSix :size="32" weight="duotone" />
+        <span>관리자 페이지</span>
+      </h1>
     </div>
 
     <!-- 메인 컨텐츠 영역 -->
@@ -15,7 +18,7 @@
             :class="{ active: activeTab === 'users' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">👥</span>
+            <PhUsersThree class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">사용자 관리</span>
           </button>
           <button
@@ -23,7 +26,7 @@
             :class="{ active: activeTab === 'upload' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">📚</span>
+            <PhBookOpenText class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">강의 업로드</span>
           </button>
           <button
@@ -31,7 +34,7 @@
             :class="{ active: activeTab === 'home' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">🏠</span>
+            <PhHouseLine class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">홈화면 꾸미기</span>
           </button>
           <button
@@ -39,7 +42,7 @@
             :class="{ active: activeTab === 'about' }"
             class="sidebar-tab"
           >
-            <span class="tab-icon">📄</span>
+            <PhFileText class="tab-icon" :size="20" weight="duotone" />
             <span class="tab-text">서비스 소개 편집</span>
           </button>
         </nav>
@@ -64,8 +67,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import {
+  PhBookOpenText,
+  PhFileText,
+  PhGearSix,
+  PhHouseLine,
+  PhUsersThree,
+} from '@phosphor-icons/vue'
 import { useUserStore } from '@/stores/userStore'
 import { isAdmin } from '@/utils/auth'
 import UserManagement from '@/components/admin/UserManagement.vue'
@@ -137,6 +147,12 @@ onMounted(async () => {
   font-weight: 800;
 }
 
+.page-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .admin-header p {
   font-size: 18px;
   color: #7f8c8d;
@@ -196,8 +212,11 @@ onMounted(async () => {
 }
 
 .tab-icon {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 24px;
+  flex-shrink: 0;
 }
 
 .tab-text {

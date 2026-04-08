@@ -47,14 +47,14 @@
         >
         <!-- 로그인한 사용자만 보이는 조건부 메뉴 -->
         <template v-if="userStore.isLoggedIn">
-          <!-- 관리자는 "관리⚙️" 탭, 일반 사용자는 "수강 중 강의" 탭 -->
           <router-link
             v-if="isAdmin()"
             to="/admin"
             @click="closeMobileMenu"
-            class="px-5 py-3 text-center w-full border-b border-gray-200 text-[17px] rounded-none text-gray-600 no-underline font-medium transition-all duration-200 hover:text-gray-800 hover:bg-gray-100 md:px-2.5 md:py-1.5 md:w-auto md:border-0 md:rounded-md md:text-lg md:whitespace-nowrap"
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 text-center w-full border-b border-gray-200 text-[17px] rounded-none text-gray-600 no-underline font-medium transition-all duration-200 hover:text-gray-800 hover:bg-gray-100 md:px-2.5 md:py-1.5 md:w-auto md:border-0 md:rounded-md md:text-lg md:whitespace-nowrap"
           >
-            관리⚙️
+            <PhGearSix :size="18" weight="duotone" />
+            <span>관리</span>
           </router-link>
           <router-link
             v-else
@@ -75,6 +75,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { PhGearSix } from '@phosphor-icons/vue'
 import { useUserStore } from '@/stores/userStore'
 import { isAdmin } from '@/utils/auth'
 import UserBar from './UserBar.vue'

@@ -1,7 +1,9 @@
 <template>
   <div class="account-delete-form">
     <div class="warning-section">
-      <div class="warning-icon">⚠️</div>
+      <div class="warning-icon">
+        <PhWarningCircle :size="32" weight="fill" />
+      </div>
       <div class="warning-content">
         <h3>회원탈퇴 시 주의사항</h3>
         <ul>
@@ -116,6 +118,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { PhWarningCircle } from '@phosphor-icons/vue'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 import axiosInstance from '@/utils/axiosInstance'
@@ -266,7 +269,10 @@ const resetForm = () => {
 }
 
 .warning-icon {
-  font-size: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97706;
   flex-shrink: 0;
 }
 

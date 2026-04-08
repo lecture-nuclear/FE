@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { PhWarningCircle } from '@phosphor-icons/vue'
 import { getHomeContent } from '@/services/homeService'
 import { renderHomeContent, getDefaultHomeData } from '@/utils/homeRenderer'
 
@@ -76,7 +77,7 @@ onMounted(() => {
     
     <!-- 에러 상태 -->
     <div v-else-if="error" class="error-container">
-      <div class="error-icon">⚠️</div>
+      <PhWarningCircle class="error-icon" :size="56" weight="duotone" />
       <h3>페이지를 불러올 수 없습니다</h3>
       <p>{{ error }}</p>
       <button @click="loadHomeContent" class="retry-btn">다시 시도</button>
@@ -144,7 +145,7 @@ onMounted(() => {
 }
 
 .error-icon {
-  font-size: 4rem;
+  color: #e67e22;
   margin-bottom: 20px;
 }
 
@@ -195,7 +196,8 @@ onMounted(() => {
   }
   
   .error-icon {
-    font-size: 3rem;
+    width: 48px;
+    height: 48px;
   }
   
   .error-container h3 {

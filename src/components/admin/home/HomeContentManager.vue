@@ -3,24 +3,32 @@
   <div class="home-content-manager">
     <div class="manager-header">
       <div class="header-title">
-        <h2>🏠 홈화면 관리</h2>
+        <h2 class="title-with-icon">
+          <PhHouseLine :size="28" weight="duotone" />
+          <span>홈화면 관리</span>
+        </h2>
         <div v-if="hasUnsavedChanges" class="unsaved-indicator">
           <span class="unsaved-dot">●</span>
           <span class="unsaved-text">저장되지 않은 변경사항</span>
         </div>
       </div>
       <div class="header-actions">
-        <button @click="addSection" class="btn-add">+ 섹션 추가</button>
-        <button @click="togglePreview" class="btn-preview">
-          {{ previewMode ? '편집 모드' : '미리보기' }}
+        <button @click="addSection" class="btn-add btn-with-icon">
+          <PhPlus :size="16" weight="bold" />
+          <span>섹션 추가</span>
+        </button>
+        <button @click="togglePreview" class="btn-preview btn-with-icon">
+          <component :is="previewMode ? PhPencilSimpleLine : PhEye" :size="16" weight="bold" />
+          <span>{{ previewMode ? '편집 모드' : '미리보기' }}</span>
         </button>
         <button
           @click="saveContent"
-          class="btn-save"
+          class="btn-save btn-with-icon"
           :disabled="saving"
           :class="{ 'has-changes': hasUnsavedChanges }"
         >
-          {{ saving ? '저장 중...' : '저장' }}
+          <component :is="saving ? PhSpinnerGap : PhFloppyDisk" :size="16" weight="bold" />
+          <span>{{ saving ? '저장 중...' : '저장' }}</span>
         </button>
       </div>
     </div>
@@ -81,6 +89,14 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
+import {
+  PhEye,
+  PhFloppyDisk,
+  PhHouseLine,
+  PhPencilSimpleLine,
+  PhPlus,
+  PhSpinnerGap,
+} from '@phosphor-icons/vue'
 import { getHomeContentForAdmin, updateHomeContent } from '@/services/homeService'
 import { renderHomeContent, validateHomeData, calculateDataSize } from '@/utils/homeRenderer'
 import SectionEditor from './SectionEditor.vue'
@@ -337,6 +353,13 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
+.title-with-icon,
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .unsaved-indicator {
   display: flex;
   align-items: center;
@@ -385,6 +408,20 @@ onBeforeUnmount(() => {
   font-size: 14px;
   font-weight: 600;
   transition: all 0.3s ease;
+}
+
+.btn-save svg {
+  animation: none;
+}
+
+.btn-save:disabled svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-add {
