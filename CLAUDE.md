@@ -1,135 +1,133 @@
-# CLAUDE.md
+# FE/CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides frontend-specific guidance for the Vue application in `FE/`.
+
+## Stack
+
+- Vue 3
+- Composition API
+- Vite
+- Vue Router 4
+- Pinia
+- Axios
+- Plyr
+- Tailwind CSS
 
 ## Development Commands
 
-**Start Development:**
 ```bash
 npm run dev
+npm run build
+npm run preview
+npm run test:unit
+npm run lint
+npm run format
 ```
 
-**Build & Testing:**
-```bash
-npm run build          # Production build
-npm run preview        # Preview production build
-npm run test:unit      # Run Vitest unit tests
-npm run lint           # ESLint with auto-fix
-npm run format         # Prettier formatting
+## Directory Guide
+
+```text
+src/
+├── views/         page components
+├── components/    reusable UI
+├── stores/        Pinia stores
+├── composables/   shared logic
+├── services/      API helpers
+├── utils/         axios instance and shared utilities
+└── router/        route definitions
 ```
 
-## Project Architecture
+## Core Frontend Rules
 
-This is a Vue 3 e-learning platform built with:
-- **Frontend**: Vue 3 + Composition API, Vite, Vue Router 4, Pinia
-- **HTTP Client**: Axios with configured interceptors for auth/refresh tokens
-- **Video Player**: Plyr library for course video playback
-- **Backend API**: REST API at `http://localhost:8080/api`
+### API Usage
 
-### Key Architectural Patterns
+- Use `src/utils/axiosInstance.js` for all HTTP requests.
+- Assume backend base path includes `/api`.
+- File URLs must go through `getFileUrl()` when backend returns `/files/...`.
 
-**Authentication Flow:**
-- JWT-based auth with refresh tokens stored in HTTP-only cookies
-- `axiosInstance.js` handles automatic token refresh on 401 errors
-- `userStore.js` manages authentication state and user profile data
+### Auth State
 
-**State Management:**
-- `userStore.js`: Authentication, user profile, login/logout
-- `cartStore.js`: Shopping cart with backend integration
-- All stores use Pinia with Composition API pattern
+- User state lives in `userStore`.
+- Prefer `userStore.getMemberId` over reading `id` directly in components.
+- Refresh flow must preserve user id and role after `/auth/refresh`.
 
-**Component Structure:**
-- `views/`: Main page components (SettingsView, AdminView 등)
-- `components/common/`: AppHeader, UserBar, AppFooter - shared UI components
-- `components/settings/`: User settings forms (nickname, password, account deletion)
-- `components/admin/`: Admin dashboard components
-- `components/home/`: Homepage content components
+### Component Conventions
 
-### Critical Implementation Details
-
-**API Integration:**
-- All HTTP requests go through `src/utils/axiosInstance.js`
-- Automatic credential inclusion (`withCredentials: true`)
-- 401 errors trigger automatic token refresh attempt
-- Failed refresh redirects to login and clears user state
-
-**Video Player Integration:**
-- Plyr library integrated in VideoPlayerView
-- Course access control: purchased courses only
-- Real-time watch time tracking with multiple transmission triggers
-
-**Settings & Admin Pages:**
-- Tabbed interface with URL query parameter state management
-- Tab state persists through page refresh
-- Responsive design matching admin page layout
-
-### Path Aliases
-- `@/` → `src/` directory
-- Use `@/` imports throughout the codebase for consistency
-
-### Video Time Tracking System
-
-**Core Features:**
-- **Automatic tracking**: Plyr player integration with 1-second intervals
-- **Multiple triggers**: Tab visibility, page unload, route navigation, 30-second backup
-- **API endpoint**: `PUT /v1/last-view` with watchTimeMillis and lastTimeMillis
-- **Duplicate prevention**: Flag-based protection for concurrent requests
-
-**Backend API:**
-```
-PUT /v1/last-view
-- Request: { watchTimeMillis, lastTimeMillis, memberId, videoId }
-- Response: Standard API response with success confirmation
-```
-
-### Component Naming
-- Views: `*View.vue` (e.g., SettingsView, AdminView)
-- Reusable components: descriptive names (LectureItem, UserBar)
-- Modals: `*Modal.vue` suffix
+- Views: `*View.vue`
+- Reusable components: descriptive names like `LectureItem`, `UserBar`
+- Modals: `*Modal.vue`
 
 ### Icon Usage
-- UI에서 이모티콘을 아이콘 대용으로 사용하지 말 것
-- 아이콘이 필요하면 `Phosphor Icons` 또는 `Google Material Icons`를 우선 사용할 것
-- 기존 이모티콘 UI가 보이면 점진적으로 아이콘 컴포넌트로 교체하는 방향 권장
 
-## Current Issues & TODO
+- Do not use emoji as UI icons.
+- Prefer `Phosphor Icons` or `Google Material Icons`.
+- Replace legacy emoji UI gradually when touching nearby code.
+
+## UI / UX Conventions
+
+### Layout
+
+- Desktop lecture card layouts should keep width and spacing stable.
+- Mobile and tablet layouts should avoid cramped multi-button rows.
+- Reuse shared layout patterns before introducing new one-off variants.
+
+### Error Handling
+
+- Prefer user-facing failure messages over silent console-only handling.
+- Network failure, auth failure, and business-rule failure should be distinguishable.
+
+### File and Video Flows
+
+- Upload UI should reflect in-progress state clearly.
+- Edit flows must preserve existing file URLs unless the user explicitly replaces them.
+
+## Video Playback / LastView
+
+### Current Implemented Behavior
+
+- Last viewed position lookup exists.
+- Recent video lookup for lecture resume exists.
+- Enter/exit lecture events exist.
+- Client sends watch time updates through `/v1/last-view`.
+
+### Related Files
+
+- `src/views/VideoPlayerView.vue`
+- `src/views/LectureDetailsView.vue`
+- `src/utils/axiosInstance.js`
+
+## Frontend Completed Work
+
+- Lecture edit UI
+- Video player fixed aspect ratio
+- Lecture list item fixed height
+- Featured lecture selection UX
+- Lecture card layout stabilization
+
+## Frontend TODO
 
 ### High Priority
 
-**Security & Authentication:**
-- [ ] **토큰 검증 로깅**: 인증 성공/실패 로깅 추가 (보안 모니터링)
-- [ ] **에러 응답 표준화**: HTTP 418 대신 표준 상태 코드 사용 (401/403)
-- [ ] **access 토큰 만료 시 로그아웃 처리 개선**
-
-**UI/UX Improvements:**
-- [ ] **반응형 디자인**: 모바일/태블릿에서 버튼 배치 및 간격 최적화
-- [ ] **에러 처리**: API 실패 시 사용자 친화적 메시지 개선
-- [x] **강의 카드 레이아웃 안정화 검토**: 브라우저 크기 변경 시 카드 간격/폭이 흔들리지 않도록 그리드 전략 점검 (`auto-fit`, `minmax`, breakpoint`, 고정 column 수 등)
+- [ ] Responsive polish for mobile/tablet button layout and spacing
+- [ ] Improve user-facing API error messages
+- [ ] Remove frontend reliance on `418` auth handling and align with standard auth status codes
+- [ ] Make logout / expired-token UX more robust after refresh edge cases
 
 ### Medium Priority
 
-**Feature Enhancements:**
-- [ ] **LastView 시스템**: 시청 위치 조회 API 구현 및 "이어보기" 기능
-- [ ] **누적 시청 시간 과대 집계 수정**: 브라우저를 켜두기만 해도 `누적 시청 시간: 550시간 29분 15초`처럼 비정상적으로 커지는 문제 점검
-- [ ] **성능 최적화**: 대용량 비디오 파일 로딩 시간 단축
-- [ ] **강의 관리**: 관리자 페이지에 강의 목록 조회 및 관리 기능
-
-**Security & Performance:**
-- [ ] **Rate Limiting**: 토큰 검증 실패 시 브루트포스 공격 방지
-- [ ] **Redis 연결 관리**: Circuit Breaker 패턴으로 Redis 장애 시 fallback
-- [ ] **데이터베이스 인덱스**: Member, LastView, Lecture 테이블 성능 최적화
+- [ ] Reclassify LastView / resume-playback feature as fully complete or document remaining UX gaps
+- [ ] Fix inflated total watch time on the frontend side
+- [ ] Review duplicate watch-time sends from interval, visibility change, unload, and route leave
+- [ ] Add stronger lecture-management UI in admin pages if needed beyond upload/edit
+- [ ] Reduce large video UX friction where loading feels slow
 
 ### Low Priority
 
-**Advanced Features:**
-- [ ] **비디오 보안**: 다운로드 방지 및 스트리밍 보안 강화
-- [ ] **강의 승인 워크플로우**: 강의 검토 및 승인 프로세스
-- [ ] **강의 통계 대시보드**: 수강생 수, 완주율, 매출 통계
+- [ ] Replace remaining legacy emoji UI with icon components where still present
+- [ ] Add richer lecture stats/dashboard views if product scope requires them
 
-## Implementation Notes
+## Notes
 
-- All time values in milliseconds for precision
-- User ID retrieved from Pinia user store (`userStore.getMemberId`)
-- Tab state management via URL query parameters
-- Soft delete pattern with `deleted_at` timestamp
-- Comprehensive error handling with console logging
+- Time values are handled in milliseconds.
+- Query-parameter tab state is already used in `AdminView` and `SettingsView`.
+- When fixing auth issues, check both UI behavior and Pinia state restoration.
