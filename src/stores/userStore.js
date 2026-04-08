@@ -19,7 +19,7 @@ export const useUserStore = defineStore('user', {
       if (!this.isInitialized) {
         setUserStoreCallbacks({
           loginSuccess: (userData) => this.loginSuccess(userData),
-          logout: () => this.logout()
+          logout: () => this.logout(),
         })
         this.isInitialized = true
       }
@@ -45,6 +45,7 @@ export const useUserStore = defineStore('user', {
       console.log('data', data)
       this.isLoggedIn = true
       this.name = data.data.name || '사용자'
+      this.email = data.data.email || ''
       this.id = data.data.id
       this.role = data.data.role || null
       this.isLoaded = true

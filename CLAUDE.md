@@ -113,6 +113,9 @@ src/
 - [x] Remove frontend reliance on `418` auth handling and align with standard auth status codes
 - [ ] Make logout / expired-token UX more robust after refresh edge cases
 
+Auth planning note:
+- Prefer finishing the shared auth/session error-code contract first, then tighten logout / expired-token UX on the frontend using `status + code` instead of status-only branching
+
 ### Medium Priority
 
 - [ ] Reclassify LastView / resume-playback feature as fully complete or document remaining UX gaps

@@ -111,6 +111,7 @@ axiosInstance.interceptors.response.use(
               name: userData.name || '사용자',
               email: userData.email || '',
               id: userData.id || null,
+              role: userData.role || null,
             })
           }
 
