@@ -87,6 +87,11 @@ PUT /v1/last-view
 - Reusable components: descriptive names (LectureItem, UserBar)
 - Modals: `*Modal.vue` suffix
 
+### Icon Usage
+- UI에서 이모티콘을 아이콘 대용으로 사용하지 말 것
+- 아이콘이 필요하면 `Phosphor Icons` 또는 `Google Material Icons`를 우선 사용할 것
+- 기존 이모티콘 UI가 보이면 점진적으로 아이콘 컴포넌트로 교체하는 방향 권장
+
 ## Current Issues & TODO
 
 ### High Priority
