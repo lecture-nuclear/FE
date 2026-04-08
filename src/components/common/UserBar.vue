@@ -58,8 +58,9 @@
 
     <div
       @click="toggleCartDropdown"
-      class="relative cursor-pointer text-gray-600 flex items-center px-2.5 py-1.5 rounded-md transition-colors duration-200 z-[100] hover:bg-gray-100"
+      class="relative cursor-pointer text-gray-600 flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-colors duration-200 z-[100] hover:bg-gray-100"
     >
+      <PhShoppingCartSimple :size="18" weight="duotone" aria-label="장바구니" />
       <span>장바구니</span>
       <span
         v-if="cartStore.itemCount > 0"
@@ -120,7 +121,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { PhSignOut } from '@phosphor-icons/vue'
+import { PhShoppingCartSimple, PhSignOut } from '@phosphor-icons/vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
